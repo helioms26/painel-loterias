@@ -595,7 +595,7 @@ const GAMES = {
                   odds:()=>C(25,15), oddsDesc:'15 acertos, aposta simples de 15 dezenas'},
   quina:         {label:'Quina',          min:1, max:80, pick:5,  cols:10, comboMax:5, pad:2, price:3.00,
                   odds:()=>C(80,5), oddsDesc:'quina (5 acertos), aposta simples de 5 dezenas'},
-  lotomania:     {label:'Lotomania',      min:0, max:99, pick:20, cols:10, comboMax:2, pad:2, price:3.50,
+  lotomania:     {label:'Lotomania',      min:0, max:99, pick:20, cols:10, comboMax:2, pad:2, price:3.00,
                   odds:()=>C(100,20)/C(50,20), oddsDesc:'20 acertos, aposta de 50 dezenas'},
   duplasena:     {label:'Dupla-Sena',     min:1, max:50, pick:6,  cols:10, comboMax:4, pad:2, price:3.00, dupla:true,
                   odds:()=>C(50,6), oddsDesc:'sena em um sorteio, aposta simples de 6 dezenas'},
@@ -603,7 +603,7 @@ const GAMES = {
                   odds:()=>C(80,7)/C(10,7), oddsDesc:'7 acertos, aposta fixa de 10 dezenas'},
   diadesorte:    {label:'Dia de Sorte',   min:1, max:31, pick:7,  cols:7,  comboMax:4, pad:2, price:2.50, extraName:'Mês da Sorte',
                   odds:()=>C(31,7), oddsDesc:'7 acertos, aposta simples de 7 dezenas'},
-  supersete:     {label:'Super Sete',     min:0, max:9,  pick:7,  cols:7,  comboMax:0, pad:1, price:2.50, colunas:true,
+  supersete:     {label:'Super Sete',     min:0, max:9,  pick:7,  cols:7,  comboMax:0, pad:1, price:3.00, colunas:true,
                   odds:()=>Math.pow(10,7), oddsDesc:'7 colunas certas, aposta simples'},
   maismilionaria:{label:'+Milionária',    min:1, max:50, pick:6,  cols:10, comboMax:4, pad:2, price:6.00, trevos:true,
                   odds:()=>C(50,6)*C(6,2), oddsDesc:'6 dezenas + 2 trevos, aposta simples'}
@@ -908,6 +908,7 @@ function renderVisao(m){
   }
   ev.appendChild(el('p',{class:'note'},'Preço de referência — confira o valor vigente na Caixa. Retorno esperado abaixo do custo significa que, na média, cada real apostado devolve menos de um real. Quanto maior a acumulação, menos desfavorável fica a conta.'));
   m.appendChild(ev);
+  m.appendChild(painelTabelaApostas(g));
 
   m.appendChild(el('div',{class:'warnbox'},'<b>Independência dos sorteios:</b> cada concurso é um evento independente — frequência passada e atraso <i>não</i> alteram a probabilidade de qualquer dezena no próximo sorteio. Use as estatísticas para conhecer o histórico e para montar jogos menos populares (melhor rateio se ganhar), nunca como previsão.'));
 }
@@ -930,6 +931,138 @@ async function renderComparar(m){
     '<p class="note" style="margin-bottom:0">Nenhuma modalidade fica matematicamente favorável na prática. O que esta tabela responde não é "vale a pena apostar?", e sim: <b>se você já decidiu gastar, onde o mesmo dinheiro rende mais.</b></p>'));
   m.appendChild(comparativoModalidades());
 }
+
+
+/* Diagnóstico de um jogo montado: mede exatamente o que a regra R do método olha —
+   o quanto ele se parece com o que a multidão joga. Nada aqui prevê sorteio. */
+function perfilJogo(g, nums){
+  const cfg=GAMES[g], N=cfg.max-cfg.min+1;
+  const s=[...nums].sort((a,b)=>a-b);
+  const datas=s.filter(v=>v<=31).length;
+  const espDatas = s.length*Math.min(31,cfg.max)/N;
+  let maiorSeq=1, seq=1;
+  for(let i=1;i<s.length;i++){ if(s[i]===s[i-1]+1){ seq++; maiorSeq=Math.max(maiorSeq,seq);} else seq=1; }
+  const pares=s.filter(v=>v%2===0).length;
+  const soma=s.reduce((a,b)=>a+b,0);
+  const somaEsp=s.length*(cfg.min+cfg.max)/2;
+  const linhas=new Set(s.map(v=>Math.floor((v-cfg.min)/cfg.cols)));
+  const {map}=combos(g,2);
+  let co=0,pares2=0;
+  for(let i=0;i<s.length;i++) for(let j=i+1;j<s.length;j++){ co+=map.get(s[i]+','+s[j])||0; pares2++; }
+  const coMedio = pares2? co/pares2 : 0;
+  const draws=DB[g].draws;
+  const coEsperado = draws.length*cfg.pick*(cfg.pick-1)/(N*(N-1));
+  // já saiu exatamente assim?
+  let jaSaiu=null;
+  if(s.length===cfg.pick){
+    const chave=s.join(',');
+    for(const d of draws) for(const set of d.sets) if([...set].sort((a,b)=>a-b).join(',')===chave){ jaSaiu=d.n; break; }
+  }
+  const alertas=[];
+  if(datas>espDatas+1.2) alertas.push({nivel:'ruim', txt:datas+' das '+s.length+' dezenas são ≤ 31 (cara de aniversário) — esperado ~'+espDatas.toFixed(1)+'. Muita gente joga assim, então o rateio piora.'});
+  else if(datas<espDatas-1.2) alertas.push({nivel:'bom', txt:'só '+datas+' dezenas ≤ 31 — foge do padrão de datas, que é o ponto forte do método.'});
+  if(maiorSeq>=3) alertas.push({nivel:'ruim', txt:'tem '+maiorSeq+' dezenas seguidas — sequências são muito jogadas.'});
+  if(linhas.size<=2 && s.length>=5) alertas.push({nivel:'ruim', txt:'as dezenas se concentram em '+linhas.size+' linha(s) do volante — padrão visual popular.'});
+  if(jaSaiu) alertas.push({nivel:'ruim', txt:'esta combinação exata já foi sorteada (concurso '+fmtInt(jaSaiu)+') — jogos premiados são repetidos por muita gente.'});
+  if(coMedio < coEsperado*0.75) alertas.push({nivel:'bom', txt:'as duplas deste jogo saíram juntas menos que a média histórica — combinação pouco trilhada.'});
+  if(!alertas.length) alertas.push({nivel:'bom', txt:'nenhum padrão popular detectado. Perfil equilibrado.'});
+  const nota = alertas.filter(a=>a.nivel==='ruim').length;
+  return {datas, espDatas, maiorSeq, pares, impares:s.length-pares, soma, somaEsp,
+          linhas:linhas.size, coMedio, coEsperado, jaSaiu, alertas,
+          score: nota===0?'exclusivo':(nota===1?'aceitável':'popular')};
+}
+function chipPerfil(p){
+  const cor={exclusivo:['var(--good-wash)','var(--status-good)'],
+             'aceitável':['var(--accent-wash)','var(--accent)'],
+             popular:['var(--warning-wash)','var(--status-warning)']}[p.score];
+  const txt={exclusivo:'POUCO DISPUTADO','aceitável':'RAZOÁVEL',popular:'MUITO DISPUTADO'}[p.score];
+  return '<span style="display:inline-flex;align-items:center;font-size:var(--text-2xs);font-weight:var(--weight-semi);'+
+         'padding:2px var(--space-3);border-radius:var(--radius-full);background:'+cor[0]+';border-left:2px solid '+cor[1]+'">'+txt+'</span>';
+}
+
+/* ===== TABELA DE APOSTAS =====
+   Faixas e preços conferidos nas páginas oficiais de cada modalidade em
+   loterias.caixa.gov.br (consultadas em 26/07/2026). O número de apostas e as
+   probabilidades são calculados por combinatória e batem exatamente com as
+   tabelas publicadas — conferi linha a linha na Mega-Sena, Quina, Lotofácil,
+   Super Sete e +Milionária. */
+const APOSTAS = {
+  megasena:      {minN:6,  maxN:20},
+  lotofacil:     {minN:15, maxN:20},
+  quina:         {minN:5,  maxN:15},
+  duplasena:     {minN:6,  maxN:15},
+  diadesorte:    {minN:7,  maxN:15},
+  lotomania:     {minN:50, maxN:50, fixo:true, nota:'Na Lotomania você marca sempre 50 dezenas (ou deixa o sistema escolher).'},
+  timemania:     {minN:10, maxN:10, fixo:true, nota:'Na Timemania a aposta é sempre de 10 dezenas mais o Time do Coração.'},
+  supersete:     {minN:7,  maxN:21, colunas:true, nota:'No Super Sete você marca de 1 a 3 dígitos em cada uma das 7 colunas. O custo é o produto das escolhas.'},
+  maismilionaria:{minN:6,  maxN:12, trevoMin:2, trevoMax:6}
+};
+/* nº de apostas simples equivalentes a marcar n dezenas (e t trevos) */
+function qtdApostas(g, n, t){
+  const cfg=GAMES[g], a=APOSTAS[g];
+  if(a.fixo) return 1;
+  if(a.colunas){                      // Super Sete: n = total de dígitos marcados nas 7 colunas
+    const base=Math.floor(n/7), resto=n%7;
+    return Math.pow(base+1, resto) * Math.pow(base, 7-resto) || 1;
+  }
+  if(cfg.trevos) return C(n,6)*C(t||2,2);
+  return C(n, cfg.pick);
+}
+function custoAposta(g, n, t){ return qtdApostas(g,n,t)*GAMES[g].price; }
+/* 1 em quantos para o prêmio máximo, marcando n dezenas */
+function oddsCom(g, n, t){
+  const cfg=GAMES[g];
+  return cfg.odds()/qtdApostas(g,n,t);
+}
+function faixaApostas(g){
+  const a=APOSTAS[g]; const out=[];
+  if(a.colunas){ for(let n=7;n<=a.maxN;n++) out.push({n}); return out; }
+  if(GAMES[g].trevos){
+    for(let n=a.minN;n<=a.maxN;n++) for(let t=a.trevoMin;t<=a.trevoMax;t++) out.push({n,t});
+    return out;
+  }
+  for(let n=a.minN;n<=a.maxN;n++) out.push({n});
+  return out;
+}
+function rotuloAposta(g, n, t){
+  const a=APOSTAS[g];
+  if(a.colunas) return n+' dígitos';
+  if(GAMES[g].trevos) return n+' + '+t+' trevos';
+  return n+' dezenas';
+}
+function painelTabelaApostas(g){
+  const cfg=GAMES[g], a=APOSTAS[g];
+  const p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Quanto custa e qual a chance'));
+  if(a.nota) p.appendChild(el('p',{class:'note'},a.nota+' Valores conferidos na página oficial da Caixa.'));
+  else p.appendChild(el('p',{class:'note'},'Marcar mais dezenas multiplica as apostas simples equivalentes — e o custo sobe exatamente na mesma proporção da chance. Não existe desconto por volume na sorte.'));
+  const linhas=faixaApostas(g);
+  const compacto = linhas.length>16;
+  const mostrar = compacto ? linhas.filter((x,i)=> i<6 || i===linhas.length-1 || (x.t? x.t===a.trevoMin : true)).slice(0,20) : linhas;
+  let ht='<div style="overflow-x:auto"><table style="min-width:520px"><tr>'+
+    '<th>Aposta</th><th class="num">Apostas simples</th><th class="num">Custo</th>'+
+    '<th class="num">Chance do prêmio máximo</th><th class="num">Custo por chance</th></tr>';
+  const base=custoAposta(g,a.minN,a.trevoMin)/ (1/oddsCom(g,a.minN,a.trevoMin));
+  for(const x of mostrar){
+    const q=qtdApostas(g,x.n,x.t), c=custoAposta(g,x.n,x.t), od=oddsCom(g,x.n,x.t);
+    const destaque = x.n===a.minN && (!x.t || x.t===a.trevoMin);
+    ht+='<tr'+(destaque?' style="background:var(--accent-wash);font-weight:var(--weight-semi)"':'')+'>'+
+      '<td style="white-space:nowrap">'+rotuloAposta(g,x.n,x.t)+(destaque?' <span class="t-label">mínima</span>':'')+'</td>'+
+      '<td class="num">'+fmtInt(q)+'</td>'+
+      '<td class="num" style="white-space:nowrap">R$ '+c.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
+      '<td class="num" style="white-space:nowrap">1 em '+fmtInt(Math.round(od))+'</td>'+
+      '<td class="num" style="white-space:nowrap">R$ '+(c*od).toLocaleString('pt-BR',{maximumFractionDigits:0})+'</td></tr>';
+  }
+  ht+='</table></div>';
+  p.innerHTML+=ht;
+  if(compacto) p.appendChild(el('p',{class:'note'},'Mostrando as primeiras faixas e a maior. A tabela completa tem '+linhas.length+' combinações.'));
+  p.appendChild(el('div',{class:'okbox'},
+    '<b>A coluna que importa é a última.</b> "Custo por chance" é quanto você paga por cada unidade de probabilidade — e ela é <b>praticamente constante</b> em toda a tabela. '+
+    'É a prova aritmética de que marcar mais dezenas não é mais eficiente: você compra exatamente a probabilidade que pagou. '+
+    'A única razão real para marcar mais é querer gastar mais de uma vez só, não obter vantagem.'));
+  return p;
+}
+
 /* ===== Comparativo CRIVO entre as 9 modalidades ===== */
 const IR_LOTERIA = 0.30;   // Lei 4.506/1964 art.14 e RIR/2018 art.732
 
@@ -2337,69 +2470,215 @@ function renderQuandoJogar(){
 }
 /* ================= RENDER: GERADOR ================= */
 function renderGerador(m){
-  const g=state.game,cfg=GAMES[g];
+  const g=state.game,cfg=GAMES[g],ap=APOSTAS[g];
   const p=el('div',{class:'panel'});
   p.appendChild(el('h3',null,'Gerador de jogos · anti-popularidade'));
-  p.appendChild(el('p',{class:'note'},'Nenhuma combinação tem probabilidade maior que outra. O que o gerador faz é evitar padrões que <i>muita gente</i> joga (datas, sequências, jogos já premiados) — se você ganhar, divide com menos gente.'));
-  const ctr=el('div',{class:'controls'});
-  ctr.appendChild(el('label',null,'Quantidade de jogos:'));
-  const qty=el('input',{type:'number',min:1,max:50,value:5,style:'width:70px'});
-  ctr.appendChild(qty);
-  ctr.appendChild(el('label',null,'Preço por aposta (R$):'));
-  const price=el('input',{type:'number',step:'0.5',min:0,value:cfg.price,style:'width:80px'});
-  ctr.appendChild(price);
-  const btn=el('button',{class:'primary'},'Gerar jogos');
-  ctr.appendChild(btn);
-  p.appendChild(ctr);
+  p.appendChild(el('p',{class:'note'},'Nenhuma combinação tem probabilidade maior que outra. O que o gerador faz é evitar padrões que <i>muita gente</i> joga — datas, sequências, jogos já premiados, concentração no volante. Se você ganhar, divide com menos gente.'));
+
+  // ---------- modo ----------
+  const modos=el('div',{class:'controls'});
+  const bOrc=el('button',{class:'primary'},'Tenho um orçamento');
+  const bComp=el('button',null,'Quero um tamanho de jogo');
+  modos.appendChild(bOrc); modos.appendChild(bComp);
+  p.appendChild(modos);
+
+  const painelOrc=el('div'), painelComp=el('div');
+  p.appendChild(painelOrc); p.appendChild(painelComp);
+  const plano=el('div'), out=el('div'), rodape=el('div');
+  p.appendChild(plano); p.appendChild(out); p.appendChild(rodape);
+  m.appendChild(p);
+
+  const opcoes=faixaApostas(g);
+  const custoMin=custoAposta(g, ap.minN, ap.trevoMin);
+
+  // ---------- MODO ORÇAMENTO ----------
+  const c1=el('div',{class:'controls'});
+  c1.appendChild(el('label',null,'Quanto quero gastar (R$):'));
+  const inOrc=el('input',{type:'number',min:custoMin,step:'1',value:Math.max(30,Math.ceil(custoMin*5)),style:'width:110px'});
+  c1.appendChild(inOrc);
+  c1.appendChild(el('label',null,'Incluir jogos maiores:'));
+  const selMaior=el('select',{style:'min-width:200px'});
+  selMaior.appendChild(el('option',{value:''},'não — só apostas mínimas'));
+  for(const x of opcoes){
+    if(x.n===ap.minN && (!x.t||x.t===ap.trevoMin)) continue;
+    const c=custoAposta(g,x.n,x.t);
+    if(c>1e6) continue;
+    selMaior.appendChild(el('option',{value:x.n+(x.t?('|'+x.t):'')},
+      rotuloAposta(g,x.n,x.t)+' — R$ '+c.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})));
+  }
+  c1.appendChild(selMaior);
+  const qtMaior=el('input',{type:'number',min:0,max:20,value:1,style:'width:60px',title:'quantos jogos maiores'});
+  c1.appendChild(qtMaior);
+  painelOrc.appendChild(c1);
+
+  // ---------- MODO COMPOSIÇÃO ----------
+  const c2=el('div',{class:'controls'});
+  c2.appendChild(el('label',null,'Tamanho de cada jogo:'));
+  const selN=el('select',{style:'min-width:230px'});
+  for(const x of opcoes){
+    const c=custoAposta(g,x.n,x.t);
+    selN.appendChild(el('option',{value:x.n+(x.t?('|'+x.t):'')},
+      rotuloAposta(g,x.n,x.t)+' — R$ '+c.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+
+      (x.n===ap.minN&&(!x.t||x.t===ap.trevoMin)?' (mínima)':'')));
+  }
+  selN.value = ap.minN + (cfg.trevos? '|'+ap.trevoMin : '');
+  c2.appendChild(selN);
+  c2.appendChild(el('label',null,'Quantos jogos:'));
+  const qtd=el('input',{type:'number',min:1,max:50,value:3,style:'width:70px'});
+  c2.appendChild(qtd);
+  painelComp.appendChild(c2);
+
+  // ---------- filtros ----------
   const opts=el('div',{class:'controls'});
-  const mkChk=(id,lbl,on)=>{const l=el('label');const c=el('input',{type:'checkbox',id});c.checked=on!==false;l.appendChild(c);l.append(' '+lbl);return l;};
+  const mkChk=(id,lbl)=>{const l=el('label');const c=el('input',{type:'checkbox',id});c.checked=true;l.appendChild(c);l.append(' '+lbl);return l;};
   if(!cfg.colunas){
     opts.appendChild(mkChk('fSeq','evitar 3+ dezenas consecutivas'));
-    if(cfg.max>31) opts.appendChild(mkChk('fBday','evitar jogo só com dezenas ≤ 31 (datas)'));
-    opts.appendChild(mkChk('fWin','evitar conjuntos já premiados'));
+    if(cfg.max>31) opts.appendChild(mkChk('fBday','evitar excesso de dezenas ≤ 31'));
+    opts.appendChild(mkChk('fWin','evitar combinações já premiadas'));
+    opts.appendChild(mkChk('fLinha','espalhar pelo volante'));
   }
-  p.appendChild(opts);
-  const out=el('div'); p.appendChild(out);
-  const cost=el('p',{class:'note',style:'margin-top:var(--space-5)'}); p.appendChild(cost);
+  p.insertBefore(opts, plano);
+  const btn=el('button',{class:'primary',style:'margin-top:var(--space-4)'},'Gerar jogos');
+  p.insertBefore(btn, plano);
+
+  function setModo(orc){
+    painelOrc.style.display = orc?'':'none';
+    painelComp.style.display = orc?'none':'';
+    bOrc.className = orc?'primary':''; bComp.className = orc?'':'primary';
+    montaPlano();
+  }
+  // ---------- monta o plano de compra ----------
+  function planoAtual(){
+    if(painelOrc.style.display==='none'){
+      const [n,t]=String(selN.value).split('|').map(Number);
+      const q=Math.min(50,Math.max(1,+qtd.value||1));
+      return {itens:[{n,t,q,unit:custoAposta(g,n,t||undefined)}], sobra:0};
+    }
+    const orc=Math.max(0,+inOrc.value||0);
+    const itens=[]; let resta=orc; let naoCoube=null;
+    if(selMaior.value){
+      const [n,t]=String(selMaior.value).split('|').map(Number);
+      const unit=custoAposta(g,n,t||undefined);
+      const pedidos=Math.max(0,+qtMaior.value||0);
+      const cabem=Math.floor(resta/unit);
+      const q=Math.min(pedidos, cabem);
+      if(q>0){ itens.push({n,t,q,unit}); resta-=q*unit; }
+      if(q<pedidos) naoCoube={n,t,unit,pedidos,cabem,rotulo:rotuloAposta(g,n,t||undefined)};
+    }
+    const qMin=Math.floor(resta/custoMin);
+    if(qMin>0){ itens.push({n:ap.minN,t:ap.trevoMin,q:Math.min(qMin,200),unit:custoMin}); resta-=Math.min(qMin,200)*custoMin; }
+    return {itens, sobra:resta, orcamento:orc, naoCoube};
+  }
+  function montaPlano(){
+    const pl=planoAtual();
+    const total=pl.itens.reduce((a,i)=>a+i.q*i.unit,0);
+    const apostas=pl.itens.reduce((a,i)=>a+i.q*qtdApostas(g,i.n,i.t),0);
+    const oddsTot = apostas? cfg.odds()/apostas : Infinity;
+    let avisoTopo='';
+    if(pl.naoCoube){
+      const nc=pl.naoCoube;
+      avisoTopo='<div class="warnbox" style="margin-top:0"><b>O jogo de '+nc.rotulo+' não cabe no orçamento.</b> '+
+        'Cada um custa <b>R$ '+nc.unit.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</b> e você tem R$ '+
+        (pl.orcamento||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'. '+
+        (nc.cabem>0 ? 'Cabem '+nc.cabem+' em vez de '+nc.pedidos+'. ' : 'Não cabe nenhum. ')+
+        'Para incluir '+nc.pedidos+', o orçamento precisa ser de pelo menos <b>R$ '+
+        (nc.unit*nc.pedidos).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</b>.</div>';
+    }
+    if(!pl.itens.length){
+      plano.innerHTML=avisoTopo+'<div class="warnbox">Orçamento menor que a aposta mínima (R$ '+custoMin.toLocaleString('pt-BR',{minimumFractionDigits:2})+').</div>';
+      return;
+    }
+    plano.innerHTML=avisoTopo+'<div class="panel" style="background:var(--surface-sunken);box-shadow:none;margin-top:var(--space-5)">'+
+      '<h3>Plano de compra</h3>'+
+      '<table><tr><th>Jogos</th><th>Tamanho</th><th class="num">Apostas simples</th><th class="num">Custo unitário</th><th class="num">Subtotal</th></tr>'+
+      pl.itens.map(i=>'<tr><td class="tabular"><b>'+i.q+'</b></td><td>'+rotuloAposta(g,i.n,i.t)+'</td>'+
+        '<td class="num">'+fmtInt(i.q*qtdApostas(g,i.n,i.t))+'</td>'+
+        '<td class="num">R$ '+i.unit.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
+        '<td class="num">R$ '+(i.q*i.unit).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td></tr>').join('')+
+      '<tr style="font-weight:var(--weight-semi);background:var(--accent-wash)"><td colspan="2">Total</td>'+
+        '<td class="num">'+fmtInt(apostas)+'</td><td></td>'+
+        '<td class="num">R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td></tr></table>'+
+      '<p class="note" style="margin-top:var(--space-4)">Chance do prêmio máximo com este conjunto: <b>1 em '+fmtInt(Math.round(oddsTot))+'</b>'+
+      (pl.sobra>0.005? ' · sobram R$ '+pl.sobra.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' do orçamento (não dá para outra aposta mínima)':'')+'</p>'+
+      '<p class="note"><b>Concentrar ou espalhar?</b> Gastando o mesmo valor, a chance do prêmio máximo é idêntica nos dois casos. '+
+      'Um jogo grande <i>concentra</i>: se acertar, leva várias faixas de uma vez. Vários jogos mínimos <i>espalham</i>: cobrem mais combinações distintas, '+
+      'o que pelo nosso método é preferível, porque é mais fácil manter todas longe dos padrões que a multidão joga.</p></div>';
+  }
+  [inOrc,selMaior,qtMaior,selN,qtd].forEach(e=>{ e.oninput=montaPlano; e.onchange=montaPlano; });
+  bOrc.onclick=()=>setModo(true); bComp.onclick=()=>setModo(false);
+
+  // ---------- geração ----------
   btn.onclick=()=>{
-    const n=Math.min(50,Math.max(1,+qty.value||1));
-    const games=[];
+    const pl=planoAtual();
     const winners=new Set();
     if(!cfg.colunas && $('#fWin') && $('#fWin').checked)
       for(const d of DB[g].draws) for(const s of d.sets) winners.add([...s].sort((a,b)=>a-b).join(','));
-    let guard=0;
-    while(games.length<n && guard<5000){
-      guard++;
-      let pick;
-      if(cfg.colunas){ pick=Array.from({length:7},()=>Math.floor(Math.random()*10)); }
-      else {
-        const pool=Array.from({length:cfg.max-cfg.min+1},(_,i)=>i+cfg.min);
-        pick=[];
-        while(pick.length<cfg.pick){ const i=Math.floor(Math.random()*pool.length); pick.push(pool.splice(i,1)[0]); }
-        pick.sort((a,b)=>a-b);
-        if($('#fSeq')&&$('#fSeq').checked){ let run=1,bad=false; for(let i=1;i<pick.length;i++){ run=pick[i]===pick[i-1]+1?run+1:1; if(run>=3){bad=true;break;} } if(bad) continue; }
-        if($('#fBday')&&$('#fBday').checked && pick.every(v=>v<=31)) continue;
-        if($('#fWin')&&$('#fWin').checked && winners.has(pick.join(','))) continue;
+    const N=cfg.max-cfg.min+1;
+    const jogos=[];
+    for(const item of pl.itens){
+      for(let k=0;k<item.q;k++){
+        const alvo = cfg.colunas ? 7 : item.n;
+        let escolhido=null, tentativas=0;
+        while(!escolhido && tentativas<800){
+          tentativas++;
+          let pick;
+          if(cfg.colunas){ pick=Array.from({length:7},()=>Math.floor(Math.random()*10)); }
+          else {
+            const pool=Array.from({length:N},(_,i)=>i+cfg.min);
+            pick=[];
+            while(pick.length<alvo){ pick.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); }
+            pick.sort((a,b)=>a-b);
+            if($('#fSeq')&&$('#fSeq').checked){ let run=1,bad=false;
+              for(let i=1;i<pick.length;i++){ run=pick[i]===pick[i-1]+1?run+1:1; if(run>=3){bad=true;break;} }
+              if(bad) continue; }
+            if($('#fBday')&&$('#fBday').checked && cfg.max>31){
+              const esp=alvo*Math.min(31,cfg.max)/N;
+              if(pick.filter(v=>v<=31).length > esp+1) continue; }
+            if($('#fWin')&&$('#fWin').checked && alvo===cfg.pick && winners.has(pick.join(','))) continue;
+            if($('#fLinha')&&$('#fLinha').checked){
+              const ls=new Set(pick.map(v=>Math.floor((v-cfg.min)/cfg.cols)));
+              if(ls.size < Math.min(3, Math.ceil(alvo/2))) continue; }
+          }
+          escolhido=pick;
+        }
+        if(escolhido) jogos.push({nums:escolhido, n:item.n, t:item.t, unit:item.unit});
       }
-      games.push(pick);
     }
     out.innerHTML='';
-    games.forEach((game,i)=>{
-      const row=el('div',{class:'gen-game'});
-      row.appendChild(el('span',{style:'color:var(--ink-muted);font-size:var(--text-sm);width:34px'},'Jogo '+(i+1)));
+    jogos.forEach((jg,i)=>{
+      const row=el('div',{class:'gen-game',style:'align-items:flex-start;flex-wrap:wrap'});
+      row.appendChild(el('span',{style:'color:var(--ink-muted);font-size:var(--text-sm);width:88px;padding-top:3px'},
+        'Jogo '+(i+1)+'<br><span style="font-size:var(--text-2xs)">'+rotuloAposta(g,jg.n,jg.t)+'</span>'));
+      const bloco=el('div',{style:'flex:1;min-width:260px'});
       const b=el('div',{class:'balls'});
-      if(cfg.colunas) game.forEach((v,c)=>b.appendChild(el('span',{class:'ball mini',title:'coluna '+(c+1)},String(v))));
-      else game.forEach(v=>b.appendChild(el('span',{class:'ball mini'},pad(v,g))));
-      if(cfg.trevos){ const t=[];while(t.length<2){const x=1+Math.floor(Math.random()*6);if(!t.includes(x))t.push(x);} t.sort().forEach(x=>b.appendChild(el('span',{class:'ball mini trevo'},'🍀'+x))); }
-      row.appendChild(b);
+      if(cfg.colunas) jg.nums.forEach((v,c)=>b.appendChild(el('span',{class:'ball mini',title:'coluna '+(c+1)},String(v))));
+      else jg.nums.forEach(v=>b.appendChild(el('span',{class:'ball mini'},pad(v,g))));
+      if(cfg.trevos){ const tr=[]; while(tr.length<(jg.t||2)){const x=1+Math.floor(Math.random()*6); if(!tr.includes(x))tr.push(x);} 
+        tr.sort((a,b)=>a-b).forEach(x=>b.appendChild(el('span',{class:'ball mini trevo'},'🍀'+x))); }
+      bloco.appendChild(b);
+      if(!cfg.colunas){
+        const pf=perfilJogo(g, jg.nums);
+        const exp=el('div',{style:'margin-top:var(--space-3);font-size:var(--text-xs);color:var(--ink-secondary);line-height:1.55'});
+        exp.innerHTML=chipPerfil(pf)+
+          ' <span class="tabular">'+pf.datas+' dezenas ≤31 (esperado '+pf.espDatas.toFixed(1)+') · '+
+          pf.pares+' pares / '+pf.impares+' ímpares · soma '+fmtInt(pf.soma)+' (média '+Math.round(pf.somaEsp)+') · '+
+          'espalhado por '+pf.linhas+' linhas</span>'+
+          '<div style="margin-top:var(--space-2)">'+pf.alertas.map(a=>
+            '<span style="color:'+(a.nivel==='bom'?'var(--status-good-ink)':'var(--status-warning)')+'">'+
+            (a.nivel==='bom'?'✓ ':'▲ ')+'</span>'+a.txt).join('<br>')+'</div>';
+        bloco.appendChild(exp);
+      }
+      row.appendChild(bloco);
       out.appendChild(row);
     });
-    const pr=+price.value||0;
-    cost.innerHTML='Custo total: <b>'+ (pr>0? ('R$ '+(n*pr).toLocaleString('pt-BR',{minimumFractionDigits:2})) : 'informe o preço') +'</b> ('+n+' apostas). Confira o preço vigente da aposta na Caixa.';
+    const total=pl.itens.reduce((a,i)=>a+i.q*i.unit,0);
+    rodape.innerHTML='<div class="okbox"><b>'+jogos.length+' jogo(s) · R$ '+
+      total.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</b><br>'+
+      'Cada jogo passou pelos filtros marcados acima. O rótulo ao lado das dezenas diz o quanto aquela combinação se parece com o que a multidão joga — '+
+      'quanto menos parecida, maior o prêmio que sobra para você <i>se</i> ganhar. Isso não muda a chance de ganhar.</div>';
   };
-  m.appendChild(p);
+  setModo(true);
 }
-/* ================= RENDER: FINANCEIRO ================= */
 function renderFinanceiro(m){
   const g=state.game,cfg=GAMES[g],st=STATUS[g]||{};
   const cards=el('div',{class:'cards'});

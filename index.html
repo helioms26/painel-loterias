@@ -805,9 +805,27 @@ function renderVisao(m){
      acum==null ? '<span style="color:var(--ink-muted)">sem dado</span>'
                 : (acum?'<span class="badge acum">▲ ACUMULOU</span>':'<span class="badge nacum">✓ Teve ganhador</span>'),
      acum==null ? 'consulte a Caixa' : (st.acumuladoValor? 'Acumulado: '+fmtBRL(st.acumuladoValor):''), true));
-  cards.appendChild(cardHtml('Próximo prêmio estimado', st.proxEstimativa? fmtBRL(st.proxEstimativa):'—', st.proxData? 'Próximo sorteio: '+st.proxData:''));
+  const pi=infoProximo(st.proxData, g);
+  cards.appendChild(cardHtml('Próximo prêmio estimado', st.proxEstimativa? fmtBRL(st.proxEstimativa):'—',
+    pi.estado==='desconhecida' ? '' : 'Sorteio '+(pi.estado==='hoje'?'<b>HOJE</b>, '+pi.diaTxt+' '+pi.dataTxt : pi.txt)));
   cards.appendChild(cardHtml('Base carregada', fmtInt(d.draws.length)+' concursos', 'histórico completo desde o nº 1'));
   m.appendChild(cards);
+
+  if(pi.estado!=='desconhecida'){
+    const cor = pi.estado==='hoje' ? 'var(--status-good)' : 'var(--accent)';
+    const pn=el('div',{class:'panel',style:'border-left:3px solid '+cor});
+    pn.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-4)">'+
+      '<span class="t-eyebrow">Próximo sorteio · concurso '+fmtInt(DB[g].last.n+1)+'</span></div>'+
+      '<div style="font-size:var(--text-2xl);font-weight:var(--weight-semi);letter-spacing:var(--track-tight);margin-top:var(--space-2)">'+
+        (pi.estado==='hoje' ? 'É hoje — '+pi.diaTxt+', '+pi.dataTxt
+                            : pi.diaTxt.charAt(0).toUpperCase()+pi.diaTxt.slice(1)+', '+pi.dataTxt)+'</div>'+
+      (st.proxEstimativa? '<div class="t-note" style="margin-top:var(--space-2)">Prêmio estimado '+fmtBRL(st.proxEstimativa)+'</div>':'');
+    if(pi.aviso) pn.appendChild(el('div',{class:'warnbox',style:'margin-bottom:0'},
+      '<b>Data corrigida por nós.</b> '+pi.aviso));
+    if(pi.atrasados>0) pn.appendChild(el('div',{class:'warnbox',style:'margin-bottom:0'},
+      '<b>'+pi.atrasados+' sorteio(s) já ocorreram e ainda não estão na base.</b> Clique em "Atualizar estatísticas" para buscar os resultados.'));
+    m.appendChild(pn);
+  }
 
   const p=el('div',{class:'panel'});
   p.appendChild(el('h3',null,'Dezenas do último sorteio'));
@@ -820,18 +838,31 @@ function renderVisao(m){
   m.appendChild(p);
 
   const odds=cfg.odds();
+  const linha=indiceCrivo().find(x=>x.g===g);
   const ev=el('div',{class:'panel'});
   ev.appendChild(el('h3',null,'Leitura de oportunidade'));
   let evHtml='<table><tr><th>Indicador</th><th class="num">Valor</th></tr>';
   evHtml+='<tr><td>Probabilidade do prêmio máximo ('+cfg.oddsDesc+')</td><td class="num">1 em '+fmtInt(Math.round(odds))+'</td></tr>';
-  if(st.proxEstimativa){
-    evHtml+='<tr><td>Prêmio estimado ÷ custo da aposta simples (R$ '+cfg.price.toFixed(2).replace('.',',')+'*)</td><td class="num">'+fmtInt(Math.round(st.proxEstimativa/cfg.price))+'×</td></tr>';
-    const evRatio = st.proxEstimativa/(odds*cfg.price);
-    evHtml+='<tr><td>Retorno esperado bruto por R$ 1 apostado (só prêmio máximo)</td><td class="num">R$ '+evRatio.toFixed(3).replace('.',',')+'</td></tr>';
+  evHtml+='<tr><td>Custo da aposta simples</td><td class="num">R$ '+cfg.price.toFixed(2).replace('.',',')+'</td></tr>';
+  if(linha){
+    if(linha.medido)
+      evHtml+='<tr><td>Retorno das faixas menores (medido em '+fmtInt(linha.nConc)+' concursos)</td><td class="num">R$ '+linha.evMenores.toFixed(2).replace('.',',')+'</td></tr>';
+    if(linha.partilha!=null && linha.partilha<0.999)
+      evHtml+='<tr><td>Fator de partilha (chance de dividir o prêmio)</td><td class="num">'+linha.partilha.toFixed(3).replace('.',',')+'</td></tr>';
+    evHtml+='<tr><td><b>Retorno esperado da aposta</b></td><td class="num"><b>R$ '+linha.ev.toFixed(2).replace('.',',')+'</b></td></tr>';
+    evHtml+='<tr><td><b>Índice CRIVO</b> (break-even em 1,000)</td><td class="num"><b>'+linha.indice.toFixed(3).replace('.',',')+'</b></td></tr>';
+    evHtml+='<tr><td>Prêmio de gatilho — faria o índice bater 1,00</td><td class="num">'+fmtBRL(linha.gatilho)+'</td></tr>';
   }
   evHtml+='</table>';
   ev.innerHTML+=evHtml;
-  ev.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},'*Preço de referência — confira o valor vigente na Caixa. Retorno esperado &lt; R$ 1 significa que, na média matemática, cada real apostado devolve menos de um real. Quanto maior o prêmio acumulado, menos desfavorável fica essa razão — é o único “timing” que a matemática reconhece.'));
+  if(linha){
+    ev.appendChild(el('div',{class:'okbox'},
+      'Cada R$ '+cfg.price.toFixed(2).replace('.',',')+' apostados devolvem, na média matemática, <b>R$ '+linha.ev.toFixed(2).replace('.',',')+'</b> — '+
+      'veredito <b>'+linha.veredito.txt.toLowerCase()+'</b>. '+
+      (linha.medido? '' : 'O histórico de prêmios deste jogo ainda não foi carregado, então o número conta só o prêmio máximo e está subestimado. ')+
+      'Veja a aba <b>Onde apostar</b> para comparar com as outras oito modalidades.'));
+  }
+  ev.appendChild(el('p',{class:'note'},'Preço de referência — confira o valor vigente na Caixa. Retorno esperado abaixo do custo significa que, na média, cada real apostado devolve menos de um real. Quanto maior a acumulação, menos desfavorável fica a conta.'));
   m.appendChild(ev);
 
   m.appendChild(el('div',{class:'warnbox'},'<b>Independência dos sorteios:</b> cada concurso é um evento independente — frequência passada e atraso <i>não</i> alteram a probabilidade de qualquer dezena no próximo sorteio. Use as estatísticas para conhecer o histórico e para montar jogos menos populares (melhor rateio se ganhar), nunca como previsão.'));
@@ -932,7 +963,7 @@ function indiceCrivo(){
                  rtpMenores: mt?mt.rtpMenores:null, rtpTotal: mt?mt.rtpTotal:null,
                  nConc: mt?mt.nConc:0,
                  acum: st.acumulado===true||st.acumulado==='True'||st.acumulado==='true',
-                 proxData: st.proxData, proxInfo: infoProximo(st.proxData)});
+                 proxData: st.proxData, proxInfo: infoProximo(st.proxData, g)});
   }
   linhas.sort((a,b)=>b.indice-a.indice);
   const melhor = linhas.length ? linhas[0].indice : 0;
@@ -961,19 +992,76 @@ function indiceCrivo(){
   });
   return linhas;
 }
-/* Trata a data do próximo sorteio: a API às vezes anuncia data já vencida. */
-function infoProximo(dataBr){
-  const ts=brToTs(dataBr);
-  if(ts==null) return {estado:'desconhecida', txt:'data não informada'};
-  const hoje=new Date();
-  const hojeTs=Date.UTC(hoje.getFullYear(),hoje.getMonth(),hoje.getDate());
-  const dias=Math.round((ts-hojeTs)/86400000);
-  if(dias<0)   return {estado:'vencida', dias, txt:'a fonte ainda anuncia '+dataBr+' — data já passou'};
-  if(dias===0) return {estado:'hoje',    dias, txt:'é hoje'};
-  if(dias===1) return {estado:'amanha',  dias, txt:'é amanhã ('+dataBr+')'};
-  return {estado:'futuro', dias, txt:'em '+dias+' dias ('+dataBr+')'};
+/* Descobre o calendário REAL de sorteios a partir das datas dos últimos concursos.
+   Necessário porque o campo "dataProximoConcurso" da API às vezes fica desatualizado —
+   foi o que ocorreu na mudança de calendário de julho/2026, quando sete modalidades
+   migraram de sábado para domingo e a API continuou anunciando a data antiga. */
+const MS_DIA = 86400000;
+function calendarioSorteios(g){
+  const draws=DB[g].draws, dts=DATES[g]||{};
+  const ultimos=[];
+  for(let i=draws.length-1; i>=0 && ultimos.length<14; i--){
+    const s=dts[String(draws[i].n)];
+    const ts=s? brToTs(s) : null;
+    if(ts!=null) ultimos.push({n:draws[i].n, ts});
+  }
+  if(ultimos.length<2) return null;
+  const ultimaTs=ultimos[0].ts;
+  // Janela curta e recente: 10 dias cobrem pelo menos um ciclo semanal completo
+  // em todas as modalidades (todas sorteiam 2× por semana ou mais) e evitam
+  // arrastar o calendário antigo para dentro da inferência.
+  let base=ultimos.filter(x=>ultimaTs-x.ts<=10*MS_DIA);
+  if(base.length<2) base=ultimos.slice(0,4);
+  const dias=[...new Set(base.map(x=>new Date(x.ts).getUTCDay()))].sort();
+  return {dias, ultimaTs, ultimoConc:ultimos[0].n, amostra:base.length};
 }
+function proximasDatas(g, quantas){
+  const cal=calendarioSorteios(g);
+  if(!cal) return null;
+  const out=[];
+  for(let k=1; k<=28 && out.length<(quantas||3); k++){
+    const t=cal.ultimaTs + k*MS_DIA;
+    if(cal.dias.indexOf(new Date(t).getUTCDay())>=0) out.push(t);
+  }
+  return {datas:out, cal};
+}
+const NOME_DIA=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+function fmtDataBr(ts){ const d=new Date(ts);
+  return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear(); }
+function hojeTs(){ const h=new Date(); return Date.UTC(h.getFullYear(),h.getMonth(),h.getDate()); }
 
+/* Decide a data do próximo sorteio combinando o que a API diz com o calendário
+   observado. A API só é usada quando ainda não venceu; senão vale a inferência. */
+function infoProximo(dataApi, g){
+  const hoje=hojeTs();
+  const tsApi=brToTs(dataApi);
+  const apiValida = tsApi!=null && tsApi>=hoje;
+  let inferida=null, cal=null, atrasados=0;
+  if(g && DB[g]){
+    const pr=proximasDatas(g,4);
+    if(pr){
+      cal=pr.cal;
+      atrasados=pr.datas.filter(t=>t<hoje).length;   // sorteios que já ocorreram e não estão na base
+      inferida=pr.datas.find(t=>t>=hoje) ?? null;
+    }
+  }
+  const ts = apiValida ? tsApi : inferida;
+  if(ts==null) return {estado:'desconhecida', txt:'data não informada', fonte:'—'};
+  const dias=Math.round((ts-hoje)/MS_DIA);
+  const dataTxt=fmtDataBr(ts);
+  const diaTxt=NOME_DIA[new Date(ts).getUTCDay()];
+  const fonte = apiValida ? 'caixa' : 'inferida';
+  let txt;
+  if(dias===0)      txt='HOJE, '+diaTxt;
+  else if(dias===1) txt='amanhã ('+diaTxt+', '+dataTxt+')';
+  else              txt='em '+dias+' dias ('+diaTxt+', '+dataTxt+')';
+  return {estado: dias===0?'hoje':(dias===1?'amanha':'futuro'), dias, ts, txt, dataTxt, diaTxt,
+          fonte, atrasados, cal,
+          aviso: fonte==='inferida'
+            ? 'A Caixa ainda anuncia '+(dataApi||'—')+', data já vencida. Esta é a previsão pelo calendário real dos últimos sorteios'+
+              (cal? ' ('+cal.dias.map(d=>NOME_DIA[d]).join(', ')+')':'')+'. Confirme no site oficial.'
+            : null};
+}
 function vereditoChip(v){
   const est={
     otimo:{bg:'var(--good-wash)',  bd:'var(--status-good)',     ic:'✓'},
@@ -1023,13 +1111,20 @@ function comparativoModalidades(){
         '<div style="width:56px;height:9px;background:var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden"><div style="height:100%;width:'+bar+'%;background:'+(destaque?'var(--series-1)':'var(--ink-muted)')+';border-radius:0 var(--radius-xs) var(--radius-xs) 0"></div></div>'+
         '<b>'+l.indice.toFixed(3).replace('.',',')+'</b></div></td>'+
       '<td>'+vereditoChip(l.veredito)+'</td>'+
-      '<td style="font-size:var(--text-sm);white-space:nowrap;color:'+
-        (l.proxInfo.estado==='vencida'?'var(--status-warning)':(l.proxInfo.estado==='hoje'?'var(--status-good-ink)':'var(--ink-secondary)'))+'">'+
-        (l.proxInfo.estado==='vencida'?'⚠ ':(l.proxInfo.estado==='hoje'?'● ':''))+l.proxInfo.txt+'</td></tr>';
+      '<td class="proxcel" data-aviso="'+(l.proxInfo.aviso?l.proxInfo.aviso.replace(/"/g,'&quot;'):'')+'" '+
+        'style="font-size:var(--text-sm);white-space:nowrap;color:'+
+        (l.proxInfo.estado==='hoje'?'var(--status-good-ink)':'var(--ink-secondary)')+
+        (l.proxInfo.fonte==='inferida'?';cursor:help':'')+'">'+
+        (l.proxInfo.estado==='hoje'?'● ':'')+l.proxInfo.txt+
+        (l.proxInfo.fonte==='inferida'?' <span style="color:var(--status-warning)" title="data corrigida">✎</span>':'')+'</td></tr>';
   });
   h+='</table></div>';
   p.innerHTML+=h;
 
+  p.querySelectorAll('.proxcel').forEach(c=>{
+    const av=c.getAttribute('data-aviso');
+    if(av) attachTip(c,()=>'<b>Data corrigida</b><br>'+av);
+  });
   p.querySelectorAll('.veredito').forEach(c=>{
     attachTip(c,()=>'<b>'+c.textContent.trim()+'</b><br>'+c.getAttribute('data-porque'));
   });
@@ -2215,7 +2310,9 @@ function renderFinanceiro(m){
   const g=state.game,cfg=GAMES[g],st=STATUS[g]||{};
   const cards=el('div',{class:'cards'});
   const acum = isAcum(st);
-  cards.appendChild(cardHtml('Próximo prêmio estimado', st.proxEstimativa?fmtBRL(st.proxEstimativa):'—', st.proxData?('sorteio em '+st.proxData):''));
+  const piF=infoProximo(st.proxData, g);
+  cards.appendChild(cardHtml('Próximo prêmio estimado', st.proxEstimativa?fmtBRL(st.proxEstimativa):'—',
+    piF.estado==='desconhecida'?'':'sorteio '+piF.txt));
   cards.appendChild(cardHtml('Valor acumulado', st.acumuladoValor?fmtBRL(st.acumuladoValor):'—', acum===true?'prêmio principal acumulou':(acum===false?'teve ganhador no último concurso':'—')));
   cards.appendChild(cardHtml('Custo aposta simples (ref.)','R$ '+cfg.price.toFixed(2).replace('.',','),'confira o valor vigente'));
   m.appendChild(cards);

@@ -5,88 +5,574 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Loterias · Caixa</title>
 <style>
-:root{
+/* ===== DESIGN SYSTEM: tokens ===== */
+/* ============================================================================
+   PAINEL LOTERIAS — DESIGN SYSTEM · camada de tokens
+   Direção: sóbrio e analítico. O número é o herói; a interface recua.
+   Paleta validada por script (CVD, banda de luminosidade, croma, contraste)
+   nos dois modos. Não altere hex sem revalidar.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   1. ESCALAS PRIMITIVAS — valores crus, nunca usados direto no componente
+   --------------------------------------------------------------------------- */
+:root {
+  /* Espaçamento — base 4px, escala não-linear (cresce como a percepção) */
+  --space-0:   0;
+  --space-1:   2px;   /* separador entre preenchimentos adjacentes */
+  --space-2:   4px;   /* respiro mínimo, entre ícone e texto */
+  --space-3:   6px;
+  --space-4:   8px;   /* padrão interno de elementos pequenos */
+  --space-5:   12px;  /* padrão entre elementos irmãos */
+  --space-6:   16px;  /* padrão interno de painel */
+  --space-7:   20px;
+  --space-8:   24px;  /* entre blocos de conteúdo */
+  --space-9:   32px;  /* entre seções */
+  --space-10:  40px;
+  --space-11:  56px;  /* respiro de fim de página */
+  --space-12:  80px;
+
+  /* Tipografia — uma família só, escala de 9 degraus */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  --text-2xs:  10.5px;  --lh-2xs:  1.30;  /* rótulo de eixo em gráfico */
+  --text-xs:   11.5px;  --lh-xs:   1.35;  /* legenda, metadado */
+  --text-sm:   12.5px;  --lh-sm:   1.45;  /* nota, texto auxiliar */
+  --text-base: 14px;    --lh-base: 1.55;  /* corpo — leitura longa */
+  --text-md:   15px;    --lh-md:   1.45;  /* corpo em destaque */
+  --text-lg:   17px;    --lh-lg:   1.35;  /* título de painel */
+  --text-xl:   20px;    --lh-xl:   1.25;  /* título de seção */
+  --text-2xl:  26px;    --lh-2xl:  1.15;  /* número de card */
+  --text-3xl:  38px;    --lh-3xl:  1.05;  /* número herói */
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semi:    600;
+  --weight-bold:    680;
+
+  --track-tight:  -0.015em;   /* números grandes */
+  --track-normal:  0;
+  --track-wide:    0.03em;    /* rótulo em caixa alta */
+
+  /* Raio — objetos maiores pedem raio maior, senão parecem quadrados */
+  --radius-xs:   4px;   /* ponta de barra de dados */
+  --radius-sm:   6px;   /* chip, tag */
+  --radius-md:   8px;   /* botão, campo */
+  --radius-lg:   12px;  /* painel, card */
+  --radius-xl:   16px;  /* modal */
+  --radius-full: 999px; /* bola, pílula */
+
+  /* Movimento — rápido o bastante para não atrapalhar, lento o bastante para ser lido */
+  --motion-instant: 90ms;
+  --motion-fast:    140ms;
+  --motion-base:    200ms;
+  --motion-slow:    320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);      /* padrão, entra e sai */
+  --ease-enter:    cubic-bezier(0, 0, 0, 1);        /* algo aparecendo */
+  --ease-exit:     cubic-bezier(0.3, 0, 1, 1);      /* algo saindo */
+  --ease-spring:   cubic-bezier(0.34, 1.4, 0.64, 1);/* feedback tátil, com leve passar do ponto */
+
+  /* Largura de traço */
+  --stroke-hair: 1px;   /* grade, borda */
+  --stroke-thin: 1.5px; /* eixo, linha de referência */
+  --stroke-mark: 2px;   /* linha de dados, anel de separação */
+
+  /* Camadas */
+  --z-base: 1;
+  --z-sticky: 20;
+  --z-overlay: 40;
+  --z-modal: 60;
+  --z-tooltip: 80;
+}
+
+/* ---------------------------------------------------------------------------
+   2. TOKENS SEMÂNTICOS — MODO CLARO (padrão)
+   O componente usa SÓ estes. Trocar de tema troca só este bloco.
+   --------------------------------------------------------------------------- */
+:root {
   color-scheme: light;
-  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
-  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
-  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
-  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
-  --good-text:#006300;
+
+  /* Superfícies — três planos de profundidade, sem sombra pesada */
+  --surface-page:    #f9f9f7;  /* plano de fundo da página */
+  --surface-raised:  #fcfcfb;  /* painel, card — sobe um degrau */
+  --surface-overlay: #ffffff;  /* modal, popover — sobe dois */
+  --surface-sunken:  #f2f2ef;  /* trilho de barra, campo recuado */
+  --surface-hover:   rgba(11,11,11,.045);
+  --surface-active:  rgba(11,11,11,.075);
+
+  /* Tinta — quatro níveis, do mais forte ao mais discreto */
+  --ink-primary:   #0b0b0b;  /* número, título */
+  --ink-secondary: #52514e;  /* corpo */
+  --ink-muted:     #898781;  /* rótulo, eixo, metadado */
+  --ink-inverse:   #ffffff;  /* sobre cor sólida */
+
+  /* Traços */
+  --border-subtle: #e1e0d9;  /* grade, divisor */
+  --border-default:#c3c2b7;  /* eixo, borda de campo */
+  --border-strong: #898781;  /* borda de foco secundário */
+  --border-hair:   rgba(11,11,11,.10);
+
+  /* Cor primária de ação */
+  --accent:          #2a78d6;
+  --accent-hover:    #256abf;
+  --accent-active:   #1c5cab;
+  --accent-wash:     rgba(42,120,214,.09);  /* fundo de destaque */
+  --accent-ink:      #1c5cab;               /* texto na cor da marca, legível */
+  --focus-ring:      #2a78d6;
+
+  /* Série categórica — ordem fixa, nunca ciclada. Validada para daltonismo. */
+  --series-1: #2a78d6;  /* azul    */
+  --series-2: #eb6834;  /* laranja */
+  --series-3: #1baf7a;  /* água    */
+  --series-4: #eda100;  /* amarelo */
+  --series-5: #e87ba4;  /* magenta */
+  --series-6: #008300;  /* verde   */
+  --series-7: #4a3aa7;  /* violeta */
+  --series-8: #e34948;  /* vermelho*/
+
+  /* Estado — reservados, nunca reutilizar como série */
+  --status-good:     #0ca30c;
+  --status-warning:  #fab219;
+  --status-serious:  #ec835a;
+  --status-critical: #d03b3b;
+  --status-good-ink: #006300;   /* texto positivo legível no claro */
+  --good-wash:     rgba(12,163,12,.10);
+  --warning-wash:  rgba(250,178,25,.13);
+  --critical-wash: rgba(208,59,59,.10);
+
+  /* Rampa sequencial — azul, claro→escuro. Só para magnitude contínua. */
+  --seq-1: #cde2fb; --seq-2: #9ec5f4; --seq-3: #6da7ec; --seq-4: #3987e5;
+  --seq-5: #256abf; --seq-6: #1c5cab; --seq-7: #104281; --seq-8: #0d366b;
+  /* Rampa secundária — laranja, para o segundo contexto sequencial (atraso) */
+  --seq2-1: #fde3d6; --seq2-2: #f9c7ae; --seq2-3: #f4a985; --seq2-4: #ef8b5c;
+  --seq2-5: #eb6834; --seq2-6: #c94f1c; --seq2-7: #9c3d13; --seq2-8: #7a2f0e;
+
+  /* Elevação — luz vinda de cima, sombra curta e de baixa opacidade */
+  --elev-0: none;
+  --elev-1: 0 1px 2px rgba(11,11,11,.05);
+  --elev-2: 0 2px 6px rgba(11,11,11,.07), 0 1px 2px rgba(11,11,11,.05);
+  --elev-3: 0 12px 32px rgba(11,11,11,.16), 0 2px 8px rgba(11,11,11,.08);
 }
-:root[data-theme="dark"]{
+
+/* ---------------------------------------------------------------------------
+   3. MODO ESCURO — degraus próprios, não é inversão automática
+   --------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-page:    #0d0d0d;
+    --surface-raised:  #1a1a19;
+    --surface-overlay: #232322;
+    --surface-sunken:  #111110;
+    --surface-hover:   rgba(255,255,255,.06);
+    --surface-active:  rgba(255,255,255,.10);
+
+    --ink-primary:   #ffffff;
+    --ink-secondary: #c3c2b7;
+    --ink-muted:     #898781;
+    --ink-inverse:   #0b0b0b;
+
+    --border-subtle: #2c2c2a;
+    --border-default:#383835;
+    --border-strong: #55544f;
+    --border-hair:   rgba(255,255,255,.10);
+
+    --accent:        #3987e5;
+    --accent-hover:  #5598e7;
+    --accent-active: #6da7ec;
+    --accent-wash:   rgba(57,135,229,.16);
+    --accent-ink:    #86b6ef;
+    --focus-ring:    #5598e7;
+
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+
+    --status-good-ink: #0ca30c;
+    --good-wash:     rgba(12,163,12,.16);
+    --warning-wash:  rgba(250,178,25,.16);
+    --critical-wash: rgba(208,59,59,.18);
+
+    --seq-1: #0d366b; --seq-2: #104281; --seq-3: #1c5cab; --seq-4: #256abf;
+    --seq-5: #3987e5; --seq-6: #6da7ec; --seq-7: #9ec5f4; --seq-8: #cde2fb;
+    --seq2-1: #7a2f0e; --seq2-2: #9c3d13; --seq2-3: #c94f1c; --seq2-4: #eb6834;
+    --seq2-5: #ef8b5c; --seq2-6: #f4a985; --seq2-7: #f9c7ae; --seq2-8: #fde3d6;
+
+    --elev-1: 0 1px 2px rgba(0,0,0,.4);
+    --elev-2: 0 2px 8px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.4);
+    --elev-3: 0 12px 36px rgba(0,0,0,.62), 0 2px 8px rgba(0,0,0,.5);
+  }
+}
+/* Alternância manual vence a preferência do sistema, nos dois sentidos */
+:root[data-theme="dark"] {
   color-scheme: dark;
-  --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
-  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
-  --good-text:#0ca30c;
+  --surface-page:#0d0d0d; --surface-raised:#1a1a19; --surface-overlay:#232322; --surface-sunken:#111110;
+  --surface-hover:rgba(255,255,255,.06); --surface-active:rgba(255,255,255,.10);
+  --ink-primary:#ffffff; --ink-secondary:#c3c2b7; --ink-muted:#898781; --ink-inverse:#0b0b0b;
+  --border-subtle:#2c2c2a; --border-default:#383835; --border-strong:#55544f; --border-hair:rgba(255,255,255,.10);
+  --accent:#3987e5; --accent-hover:#5598e7; --accent-active:#6da7ec; --accent-wash:rgba(57,135,229,.16);
+  --accent-ink:#86b6ef; --focus-ring:#5598e7;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
+  --series-5:#d55181; --series-6:#008300; --series-7:#9085e9; --series-8:#e66767;
+  --status-good-ink:#0ca30c;
+  --good-wash:rgba(12,163,12,.16); --warning-wash:rgba(250,178,25,.16); --critical-wash:rgba(208,59,59,.18);
+  --seq-1:#0d366b; --seq-2:#104281; --seq-3:#1c5cab; --seq-4:#256abf;
+  --seq-5:#3987e5; --seq-6:#6da7ec; --seq-7:#9ec5f4; --seq-8:#cde2fb;
+  --seq2-1:#7a2f0e; --seq2-2:#9c3d13; --seq2-3:#c94f1c; --seq2-4:#eb6834;
+  --seq2-5:#ef8b5c; --seq2-6:#f4a985; --seq2-7:#f9c7ae; --seq2-8:#fde3d6;
+  --elev-1:0 1px 2px rgba(0,0,0,.4);
+  --elev-2:0 2px 8px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.4);
+  --elev-3:0 12px 36px rgba(0,0,0,.62), 0 2px 8px rgba(0,0,0,.5);
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.45}
-a{color:var(--s1)}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--grid);background:var(--surface);position:sticky;top:0;z-index:20}
-header h1{font-size:17px;margin:0;font-weight:650}
-header .src{font-size:12px;color:var(--muted)}
-.spacer{flex:1}
-button,select,input{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--grid);border-radius:8px;padding:6px 10px}
-button{cursor:pointer}
-button:hover{border-color:var(--axis)}
-button.primary{background:var(--s1);border-color:var(--s1);color:#fff}
-.chips{display:flex;flex-wrap:wrap;gap:6px;padding:12px 18px 0}
-.chip{padding:6px 12px;border-radius:999px;border:1px solid var(--grid);background:var(--surface);cursor:pointer;font-size:13px;color:var(--ink2)}
-.chip.on{background:var(--s1);border-color:var(--s1);color:#fff}
-.tabs{display:flex;flex-wrap:wrap;gap:2px;padding:10px 18px 0;border-bottom:1px solid var(--grid)}
-.tab{padding:8px 14px;border:none;background:none;border-bottom:2px solid transparent;border-radius:0;color:var(--ink2);font-size:13.5px}
-.tab.on{border-bottom-color:var(--s1);color:var(--ink);font-weight:600}
-main{padding:16px 18px 60px;max-width:1180px;margin:0 auto}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
-.card .k{font-size:12px;color:var(--muted);margin-bottom:4px}
-.card .v{font-size:22px;font-weight:650}
-.card .v.small{font-size:15px}
-.card .sub{font-size:12px;color:var(--ink2);margin-top:3px}
-.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px}
-.badge.acum{background:color-mix(in srgb,var(--warning) 18%,transparent);color:var(--ink)}
-.badge.nacum{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--ink)}
-.balls{display:flex;flex-wrap:wrap;gap:5px}
-.ball{width:30px;height:30px;border-radius:50%;background:var(--s1);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600}
-.ball.mini{width:24px;height:24px;font-size:11px}
-.ball.trevo{background:var(--s3)}
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:12px 0}
-.panel h3{margin:0 0 4px;font-size:14.5px;font-weight:650}
-.panel .note{font-size:12px;color:var(--muted);margin:0 0 10px}
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 12px;font-size:13px}
-.controls label{color:var(--ink2)}
-.grid-volante{display:grid;gap:4px}
-.cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:7px;font-size:12px;font-weight:600;cursor:default;min-width:0}
-.cell small{font-weight:400;font-size:9.5px;opacity:.85}
-.tworow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:820px){.tworow{grid-template-columns:1fr}}
-.hbar{display:grid;grid-template-columns:34px 1fr 52px;align-items:center;gap:8px;margin:4px 0;font-size:12.5px}
-.hbar .track{height:14px;position:relative}
-.hbar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0}
-.hbar .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink2)}
-.hbar .lbl{display:flex;justify-content:flex-end}
-.combo-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--grid)}
-.combo-row:last-child{border-bottom:none}
-.combo-row .ct{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink2);font-size:13px}
-table{border-collapse:collapse;width:100%;font-size:13px}
-th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--grid)}
-th{color:var(--muted);font-weight:600;font-size:12px}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-.warnbox{border-left:3px solid var(--warning);background:color-mix(in srgb,var(--warning) 8%,transparent);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;margin:12px 0}
-.okbox{border-left:3px solid var(--s1);background:color-mix(in srgb,var(--s1) 7%,transparent);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;margin:12px 0}
-#tooltip{position:fixed;pointer-events:none;background:var(--ink);color:var(--page);padding:6px 9px;border-radius:7px;font-size:12px;z-index:50;display:none;max-width:260px}
-.gen-game{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--grid)}
-.gen-game:last-child{border-bottom:none}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-top:8px}
-.legend .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.loading{padding:60px;text-align:center;color:var(--muted)}
-svg text{fill:var(--muted);font-size:10.5px}
-.footer-note{font-size:12px;color:var(--muted);margin-top:30px;border-top:1px solid var(--grid);padding-top:12px}
+
+/* ---------------------------------------------------------------------------
+   4. BASE
+   --------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--ink-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Foco visível e consistente — nunca remover sem substituir */
+:where(a, button, select, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Respeita quem pediu menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Números que precisam alinhar em coluna */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ===== DESIGN SYSTEM: componentes ===== */
+/* ============================================================================
+   PAINEL LOTERIAS — DESIGN SYSTEM · camada de componentes
+   Regra: nenhum valor cru aqui. Só tokens de tokens.css.
+   Todo componente interativo declara os cinco estados: repouso, hover, foco,
+   ativo e desabilitado. Se um estado não existe, é bug.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   TIPOGRAFIA
+   --------------------------------------------------------------------------- */
+.t-hero    { font-size: var(--text-3xl); line-height: var(--lh-3xl); font-weight: var(--weight-bold);
+             letter-spacing: var(--track-tight); }
+.t-metric  { font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: var(--weight-semi);
+             letter-spacing: var(--track-tight); }
+.t-title   { font-size: var(--text-xl);  line-height: var(--lh-xl);  font-weight: var(--weight-semi); }
+.t-panel   { font-size: var(--text-lg);  line-height: var(--lh-lg);  font-weight: var(--weight-semi); }
+.t-body    { font-size: var(--text-base);line-height: var(--lh-base); }
+.t-note    { font-size: var(--text-sm);  line-height: var(--lh-sm);  color: var(--ink-muted); }
+.t-label   { font-size: var(--text-xs);  line-height: var(--lh-xs);  color: var(--ink-muted);
+             font-weight: var(--weight-medium); }
+.t-eyebrow { font-size: var(--text-2xs); line-height: var(--lh-2xs); color: var(--ink-muted);
+             font-weight: var(--weight-semi); letter-spacing: var(--track-wide); text-transform: uppercase; }
+
+/* ---------------------------------------------------------------------------
+   SUPERFÍCIES
+   --------------------------------------------------------------------------- */
+.panel {
+  background: var(--surface-raised);
+  border: var(--stroke-hair) solid var(--border-hair);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-block: var(--space-5);
+  box-shadow: var(--elev-1);
+}
+.panel > h3 { margin: 0 0 var(--space-2); font-size: var(--text-lg); line-height: var(--lh-lg);
+              font-weight: var(--weight-semi); }
+.panel > .note { margin: 0 0 var(--space-5); font-size: var(--text-sm); color: var(--ink-muted); }
+.panel > p { margin: 0 0 var(--space-4); }
+.panel > p:last-child { margin-bottom: 0; }
+
+/* Card de indicador — o número é o herói */
+.card {
+  background: var(--surface-raised);
+  border: var(--stroke-hair) solid var(--border-hair);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  transition: border-color var(--motion-fast) var(--ease-standard),
+              transform var(--motion-fast) var(--ease-standard);
+}
+.card:hover { border-color: var(--border-default); }
+.card .k   { font-size: var(--text-xs); color: var(--ink-muted); margin-bottom: var(--space-2);
+             font-weight: var(--weight-medium); }
+.card .v   { font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: var(--weight-semi);
+             letter-spacing: var(--track-tight); }
+.card .v.small { font-size: var(--text-md); letter-spacing: var(--track-normal); }
+.card .sub { font-size: var(--text-xs); color: var(--ink-secondary); margin-top: var(--space-2); }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(182px, 1fr));
+  gap: var(--space-4);
+  margin-block: var(--space-6);
+}
+
+/* ---------------------------------------------------------------------------
+   AÇÕES
+   --------------------------------------------------------------------------- */
+button, .btn {
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-secondary);
+  background: var(--surface-raised);
+  border: var(--stroke-hair) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard),
+              border-color var(--motion-fast) var(--ease-standard),
+              color var(--motion-fast) var(--ease-standard),
+              transform var(--motion-instant) var(--ease-standard);
+}
+button:hover, .btn:hover { background: var(--surface-hover); border-color: var(--border-default);
+                           color: var(--ink-primary); }
+button:active, .btn:active { background: var(--surface-active); transform: translateY(1px); }
+button:disabled, .btn:disabled { opacity: .5; cursor: not-allowed; transform: none;
+                                 background: var(--surface-raised); border-color: var(--border-subtle); }
+
+button.primary, .btn-primary {
+  background: var(--accent); border-color: var(--accent); color: var(--ink-inverse);
+  font-weight: var(--weight-semi);
+}
+button.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--ink-inverse); }
+button.primary:active { background: var(--accent-active); border-color: var(--accent-active); }
+button.primary:disabled { background: var(--accent); border-color: var(--accent); }
+
+button.ghost { background: transparent; border-color: transparent; }
+button.ghost:hover { background: var(--surface-hover); border-color: transparent; }
+
+select, input {
+  font: inherit; font-size: var(--text-sm);
+  color: var(--ink-primary);
+  background: var(--surface-raised);
+  border: var(--stroke-hair) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+select:hover, input:hover { border-color: var(--border-default); }
+
+/* Chip — seletor de jogo */
+.chip {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-secondary);
+  background: var(--surface-raised);
+  border: var(--stroke-hair) solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-5);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard),
+              border-color var(--motion-fast) var(--ease-standard),
+              color var(--motion-fast) var(--ease-standard);
+}
+.chip:hover { background: var(--surface-hover); border-color: var(--border-default); color: var(--ink-primary); }
+.chip.on {
+  background: var(--accent); border-color: var(--accent); color: var(--ink-inverse);
+  font-weight: var(--weight-semi);
+}
+.chip.on:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+/* Aba — indicador de 2px, o mesmo peso das linhas de dados */
+.tab {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-muted);
+  background: none;
+  border: none;
+  border-bottom: var(--stroke-mark) solid transparent;
+  border-radius: 0;
+  padding: var(--space-4) var(--space-5);
+  transition: color var(--motion-fast) var(--ease-standard),
+              border-color var(--motion-fast) var(--ease-standard);
+}
+.tab:hover { color: var(--ink-primary); background: none; border-bottom-color: var(--border-default); }
+.tab:active { transform: none; background: none; }
+.tab.on { color: var(--ink-primary); font-weight: var(--weight-semi); border-bottom-color: var(--accent); }
+
+/* ---------------------------------------------------------------------------
+   MARCAS DE DADO
+   --------------------------------------------------------------------------- */
+/* Bola — a dezena. Objeto mais reconhecível do domínio. */
+.ball {
+  width: 30px; height: 30px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--ink-inverse);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--track-tight);
+  flex: 0 0 auto;
+}
+.ball.mini  { width: 24px; height: 24px; font-size: var(--text-xs); }
+.ball.trevo { background: var(--series-3); }
+.balls { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* Barra horizontal — ponta arredondada só no lado do dado, ancorada na linha de base */
+.hbar { display: grid; align-items: center; gap: var(--space-4); margin-block: var(--space-2);
+        font-size: var(--text-sm); }
+.hbar .track { height: 14px; position: relative; background: var(--surface-sunken);
+               border-radius: var(--radius-xs); overflow: hidden; }
+.hbar .fill  { position: absolute; inset-block: 0; left: 0;
+               border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+               transition: width var(--motion-slow) var(--ease-standard); }
+.hbar .num   { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-secondary); }
+.hbar .lbl   { display: flex; justify-content: flex-end; }
+
+/* Célula de mapa de calor */
+.cell {
+  aspect-ratio: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+  transition: transform var(--motion-fast) var(--ease-spring),
+              box-shadow var(--motion-fast) var(--ease-standard);
+}
+.cell small { font-weight: var(--weight-regular); font-size: var(--text-2xs); opacity: .85; }
+.cell[data-interactive]:hover { transform: scale(1.08); box-shadow: var(--elev-2); z-index: var(--z-base); }
+
+/* ---------------------------------------------------------------------------
+   TABELA
+   --------------------------------------------------------------------------- */
+table { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+th, td { text-align: left; padding: var(--space-3) var(--space-4);
+         border-bottom: var(--stroke-hair) solid var(--border-subtle); }
+th { color: var(--ink-muted); font-weight: var(--weight-semi); font-size: var(--text-xs);
+     white-space: nowrap; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tbody tr { transition: background var(--motion-instant) var(--ease-standard); }
+tr:last-child td { border-bottom: none; }
+
+/* ---------------------------------------------------------------------------
+   COMUNICAÇÃO — avisos com borda à esquerda, nunca cor sozinha
+   --------------------------------------------------------------------------- */
+.callout, .okbox, .warnbox, .criticalbox, .goodbox {
+  border-left: 3px solid var(--border-default);
+  padding: var(--space-4) var(--space-5);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: var(--text-sm); line-height: var(--lh-sm);
+  margin-block: var(--space-5);
+}
+.okbox       { border-left-color: var(--accent);          background: var(--accent-wash); }
+.warnbox     { border-left-color: var(--status-warning);  background: var(--warning-wash); }
+.criticalbox { border-left-color: var(--status-critical); background: var(--critical-wash); }
+.goodbox     { border-left-color: var(--status-good);     background: var(--good-wash); }
+.callout b, .okbox b, .warnbox b, .criticalbox b, .goodbox b { font-weight: var(--weight-semi); }
+
+/* Selo de estado — sempre ícone + rótulo, nunca só cor */
+.badge { display: inline-flex; align-items: center; gap: var(--space-2);
+         font-size: var(--text-xs); font-weight: var(--weight-semi);
+         padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); }
+.badge.acum  { background: var(--warning-wash); color: var(--ink-primary); }
+.badge.nacum { background: var(--good-wash);    color: var(--ink-primary); }
+
+/* Legenda */
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-6);
+          font-size: var(--text-xs); color: var(--ink-secondary); margin-top: var(--space-4); }
+.legend .sw { display: inline-block; width: 11px; height: 11px; border-radius: var(--radius-xs);
+              margin-right: var(--space-2); vertical-align: -1px; }
+
+/* Dica flutuante */
+#tooltip {
+  position: fixed; pointer-events: none; z-index: var(--z-tooltip); display: none;
+  background: var(--ink-primary); color: var(--surface-page);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs); line-height: var(--lh-sm);
+  max-width: 270px;
+  box-shadow: var(--elev-3);
+}
+
+/* ---------------------------------------------------------------------------
+   ESTRUTURA
+   --------------------------------------------------------------------------- */
+.app-header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4);
+  padding: var(--space-5) var(--space-7);
+  background: var(--surface-raised);
+  border-bottom: var(--stroke-hair) solid var(--border-subtle);
+  position: sticky; top: 0; z-index: var(--z-sticky);
+}
+.app-header h1 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-5) var(--space-7) 0; }
+.tabs  { display: flex; flex-wrap: wrap; gap: var(--space-1);
+         padding: var(--space-4) var(--space-7) 0;
+         border-bottom: var(--stroke-hair) solid var(--border-subtle); }
+main   { padding: var(--space-6) var(--space-7) var(--space-12); max-width: 1180px; margin-inline: auto; }
+
+.controls { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center;
+            margin-block: var(--space-4) var(--space-5); font-size: var(--text-sm); }
+.controls label { color: var(--ink-secondary); }
+
+.tworow { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+@media (max-width: 820px) { .tworow { grid-template-columns: 1fr; } }
+
+/* Estados de página */
+.state-loading, .state-empty {
+  padding: var(--space-12) var(--space-6);
+  text-align: center; color: var(--ink-muted); font-size: var(--text-sm);
+}
+.state-loading::before {
+  content: ""; display: block; width: 22px; height: 22px; margin: 0 auto var(--space-5);
+  border: var(--stroke-mark) solid var(--border-subtle);
+  border-top-color: var(--accent);
+  border-radius: var(--radius-full);
+  animation: spin var(--motion-slow) linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Entrada de conteúdo — sutil, some rápido, respeita reduced-motion */
+@keyframes riseIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.animate-in { animation: riseIn var(--motion-base) var(--ease-enter) both; }
+
+/* Gráficos */
+svg text { fill: var(--ink-muted); font-size: var(--text-2xs); font-family: var(--font-sans); }
+.footer-note { font-size: var(--text-xs); color: var(--ink-muted); margin-top: var(--space-10);
+               border-top: var(--stroke-hair) solid var(--border-subtle); padding-top: var(--space-5); }
+
+/* ===== ajustes específicos do painel (usam só tokens) ===== */
+a { color: var(--accent-ink); }
+header .src { font-size: var(--text-xs); color: var(--ink-muted); }
+.spacer { flex: 1; }
+.grid-volante { display: grid; gap: var(--space-2); }
+.combo-row { display: flex; align-items: center; gap: var(--space-4);
+             padding: var(--space-3) 0; border-bottom: var(--stroke-hair) solid var(--border-subtle); }
+.combo-row:last-child { border-bottom: none; }
+.combo-row .ct { margin-left: auto; font-variant-numeric: tabular-nums;
+                 color: var(--ink-secondary); font-size: var(--text-sm); }
+.gen-game { display: flex; align-items: center; gap: var(--space-4);
+            padding: var(--space-4) 0; border-bottom: var(--stroke-hair) solid var(--border-subtle); }
+.gen-game:last-child { border-bottom: none; }
+.loading { padding: var(--space-12); text-align: center; color: var(--ink-muted); }
 </style>
 </head>
 <body>
-<header>
+<header class="app-header">
   <h1>Painel Loterias</h1>
   <span class="src" id="srcInfo">carregando…</span>
   <div class="spacer"></div>
@@ -122,8 +608,8 @@ const GAMES = {
   maismilionaria:{label:'+Milionária',    min:1, max:50, pick:6,  cols:10, comboMax:4, pad:2, price:6.00, trevos:true,
                   odds:()=>C(50,6)*C(6,2), oddsDesc:'6 dezenas + 2 trevos, aposta simples'}
 };
-const SEQ_BLUE = ['#cde2fb','#9ec5f4','#6da7ec','#3987e5','#256abf','#1c5cab','#104281','#0d366b'];
-const SEQ_ORANGE = ['#fde3d6','#f9c7ae','#f4a985','#ef8b5c','#eb6834','#c94f1c','#9c3d13','#7a2f0e'];
+const SEQ_BLUE = ['var(--seq-1)','var(--seq-2)','var(--seq-3)','var(--seq-4)','var(--seq-5)','var(--seq-6)','var(--seq-7)','var(--seq-8)'];
+const SEQ_ORANGE = ['var(--seq2-1)','var(--seq2-2)','var(--seq2-3)','var(--seq2-4)','var(--seq2-5)','var(--seq2-6)','var(--seq2-7)','var(--seq2-8)'];
 /* ================= STATE ================= */
 const state = { game:'megasena', tab:'visao', windowN:0, metric:'freq', comboK:2, comboDir:'top', topN:10 };
 const DB = {};        // game -> {draws:[{n, sets:[[..]], extra}], byN: Map}
@@ -262,7 +748,7 @@ function neverDrawn(g,k,map,limit){ // enumerate only when feasible
 }
 /* ================= RENDER: SHELL ================= */
 const TABS = [
-  ['visao','Visão geral'],['volante','Volante'],['ranking','Mais & menos'],
+  ['visao','Visão geral'],['comparar','Onde apostar'],['volante','Volante'],['ranking','Mais & menos'],
   ['combos','Conjuntos 2–6'],['meujogo','Meu jogo'],['gerador','Gerador de jogos'],
   ['metodo','Nosso método'],['evidencia','Evidências & testes'],['evolucao','Evolução do método'],['financeiro','Financeiro'],['risco','Risco']
 ];
@@ -294,8 +780,8 @@ async function refresh(){
   try{ await loadGame(state.game); }catch(e){ m.innerHTML='<div class="warnbox">Erro ao carregar dados: '+e.message+'</div>'; return; }
   srcInfo();
   m.innerHTML='';
-  const fn={visao:renderVisao, volante:renderVolante, ranking:renderRanking, combos:renderCombos, meujogo:renderMeuJogo, gerador:renderGerador, metodo:renderMetodo, evidencia:renderEvidencia, evolucao:renderEvolucao, financeiro:renderFinanceiro, risco:renderRisco}[state.tab];
-  fn(m);
+  const fn={visao:renderVisao, comparar:renderComparar, volante:renderVolante, ranking:renderRanking, combos:renderCombos, meujogo:renderMeuJogo, gerador:renderGerador, metodo:renderMetodo, evidencia:renderEvidencia, evolucao:renderEvolucao, financeiro:renderFinanceiro, risco:renderRisco}[state.tab];
+  await fn(m);
 }
 function windowSelector(){
   const wrap=el('div',{class:'controls'});
@@ -316,7 +802,7 @@ function renderVisao(m){
   cards.appendChild(cardHtml('Último concurso','#'+fmtInt(last.n), st.data? 'Sorteio de '+st.data : ''));
   const acum = isAcum(st);
   cards.appendChild(cardHtml('Situação',
-     acum==null ? '<span style="color:var(--muted)">sem dado</span>'
+     acum==null ? '<span style="color:var(--ink-muted)">sem dado</span>'
                 : (acum?'<span class="badge acum">▲ ACUMULOU</span>':'<span class="badge nacum">✓ Teve ganhador</span>'),
      acum==null ? 'consulte a Caixa' : (st.acumuladoValor? 'Acumulado: '+fmtBRL(st.acumuladoValor):''), true));
   cards.appendChild(cardHtml('Próximo prêmio estimado', st.proxEstimativa? fmtBRL(st.proxEstimativa):'—', st.proxData? 'Próximo sorteio: '+st.proxData:''));
@@ -329,8 +815,8 @@ function renderVisao(m){
   for(const s of last.sets){ for(const v of [...s].sort((a,b)=>a-b)) balls.appendChild(el('span',{class:'ball'},pad(v,g))); }
   if(cfg.trevos && last.extra) for(const t of last.extra) balls.appendChild(el('span',{class:'ball trevo',title:'trevo'},'🍀'+t));
   p.appendChild(balls);
-  if(cfg.extraName && last.extra) p.appendChild(el('p',{class:'note',style:'margin-top:8px'},cfg.extraName+': <b>'+last.extra+'</b>'));
-  if(cfg.dupla) p.appendChild(el('p',{class:'note',style:'margin-top:8px'},'1º e 2º sorteios do concurso, em sequência.'));
+  if(cfg.extraName && last.extra) p.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},cfg.extraName+': <b>'+last.extra+'</b>'));
+  if(cfg.dupla) p.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},'1º e 2º sorteios do concurso, em sequência.'));
   m.appendChild(p);
 
   const odds=cfg.odds();
@@ -345,10 +831,8 @@ function renderVisao(m){
   }
   evHtml+='</table>';
   ev.innerHTML+=evHtml;
-  ev.appendChild(el('p',{class:'note',style:'margin-top:8px'},'*Preço de referência — confira o valor vigente na Caixa. Retorno esperado &lt; R$ 1 significa que, na média matemática, cada real apostado devolve menos de um real. Quanto maior o prêmio acumulado, menos desfavorável fica essa razão — é o único “timing” que a matemática reconhece.'));
+  ev.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},'*Preço de referência — confira o valor vigente na Caixa. Retorno esperado &lt; R$ 1 significa que, na média matemática, cada real apostado devolve menos de um real. Quanto maior o prêmio acumulado, menos desfavorável fica essa razão — é o único “timing” que a matemática reconhece.'));
   m.appendChild(ev);
-
-  m.appendChild(comparativoModalidades());
 
   m.appendChild(el('div',{class:'warnbox'},'<b>Independência dos sorteios:</b> cada concurso é um evento independente — frequência passada e atraso <i>não</i> alteram a probabilidade de qualquer dezena no próximo sorteio. Use as estatísticas para conhecer o histórico e para montar jogos menos populares (melhor rateio se ganhar), nunca como previsão.'));
 }
@@ -358,25 +842,149 @@ function isAcum(st){
   if(v===false||v==='False'||v==='false') return false;
   return null;
 }
+async function renderComparar(m){
+  const aviso=el('div',{class:'state-loading'},'Carregando o histórico de prêmios das nove modalidades…');
+  m.appendChild(aviso);
+  for(const g in GAMES){ try{ await loadGame(g); }catch(e){} }
+  aviso.remove();
+  m.appendChild(el('div',{class:'panel'},
+    '<h3>Onde o seu dinheiro rende mais hoje</h3>'+
+    '<p>Esta página compara <b>as nove modalidades entre si</b> e independe do jogo selecionado lá em cima. '+
+    'A régua é a regra <b>V</b> do método: quanto uma aposta simples devolve, na média matemática, dividido pelo que ela custa. '+
+    'Conta as faixas menores (medidas no histórico real) e desconta tanto o imposto quanto a chance de dividir o prêmio.</p>'+
+    '<p class="note" style="margin-bottom:0">Nenhuma modalidade fica matematicamente favorável na prática. O que esta tabela responde não é "vale a pena apostar?", e sim: <b>se você já decidiu gastar, onde o mesmo dinheiro rende mais.</b></p>'));
+  m.appendChild(comparativoModalidades());
+}
 /* ===== Comparativo CRIVO entre as 9 modalidades ===== */
-const IR_LOTERIA = 0.30;   // Lei 4.506/1964 art.14 e RIR/2018 art.732 — 30% exclusivo na fonte
+const IR_LOTERIA = 0.30;   // Lei 4.506/1964 art.14 e RIR/2018 art.732
+
+/* ===== ÍNDICE CRIVO v2 — retorno esperado real da aposta =====
+   O índice antigo só olhava o prêmio máximo, o que penalizava injustamente jogos
+   como a Lotofácil, que devolvem muito nas faixas menores. Este mede o retorno
+   esperado completo de uma aposta simples:
+
+     EV = (retorno medido das faixas menores)  +  P(acerto máximo) × prêmio × E[1/(1+K)]
+
+   · o retorno das faixas menores é MEDIDO no histórico (prêmios pagos ÷ arrecadação);
+     é robusto porque essas faixas pagam todo concurso, sem acumular.
+   · K é o número de OUTROS acertadores, modelado como Poisson(λ), com
+     λ = apostas estimadas × P(acerto). E[1/(1+K)] = (1 − e^−λ)/λ é o fator de partilha:
+     é o que desconta o fato de você ter de dividir o prêmio.
+   · o prêmio entra líquido de 30% de IR na fonte.
+
+   Índice = EV ÷ preço da aposta. Break-even em 1,00 — aí a aposta deixa de ser
+   desfavorável. O "prêmio de gatilho" é o valor do prêmio que faria o índice bater 1,00. */
+function metricasJogo(g){
+  const cfg=GAMES[g], prem=PREMIOS[g];
+  if(!prem) return null;
+  let arrTot=0, pagoMenores=0, pagoTot=0;
+  const arrs=[];
+  const chaves=Object.keys(prem).map(Number).sort((a,b)=>a-b);
+  for(const n of chaves){
+    const p=prem[String(n)];
+    if(!p||!p.a||p.a<1000||!p.f||!p.f.length) continue;
+    arrTot+=p.a; arrs.push({n, a:p.a});
+    for(let i=0;i<p.f.length;i++){
+      const v=p.f[i][0]*p.f[i][1];
+      pagoTot+=v;
+      if(i>0) pagoMenores+=v;
+    }
+  }
+  if(!arrTot||arrs.length<30) return null;
+  const rtpMenores = pagoMenores/arrTot;
+  const rtpTotal   = pagoTot/arrTot;
+  // arrecadação típica: mediana dos 60 concursos mais recentes com dado
+  const recentes=arrs.slice(-60).map(x=>x.a).sort((a,b)=>a-b);
+  const arrTipica=recentes[Math.floor(recentes.length/2)];
+  return {rtpMenores, rtpTotal, arrTipica, nConc:arrs.length};
+}
+function fatorPartilha(lambda){ return lambda>1e-9 ? (1-Math.exp(-lambda))/lambda : 1; }
 function indiceCrivo(){
   const linhas=[];
   for(const g in GAMES){
     const cfg=GAMES[g], st=STATUS[g];
     if(!st || !st.proxEstimativa) continue;
     const odds=cfg.odds();
-    const equilibrio = odds*cfg.price;                  // prêmio que zeraria a aposta simples
-    const bruto = st.proxEstimativa;
-    const liquido = bruto*(1-IR_LOTERIA);               // depois do IR na fonte
-    const indice = liquido/equilibrio;                  // >1 = matematicamente favorável (nunca acontece)
-    const retornoPorReal = liquido/(odds*cfg.price);
-    linhas.push({g, label:cfg.label, odds, price:cfg.price, equilibrio, bruto, liquido, indice, retornoPorReal,
+    const bruto=st.proxEstimativa;
+    const liquido=bruto*(1-IR_LOTERIA);
+    const mt=metricasJogo(g);
+
+    let evMenores, apostas, lambda, partilha, ev, indice, gatilho, medido;
+    if(mt){
+      medido=true;
+      evMenores = cfg.price*mt.rtpMenores;
+      apostas   = mt.arrTipica/cfg.price;
+      lambda    = apostas/odds;
+      partilha  = fatorPartilha(lambda);
+      ev        = evMenores + (liquido/odds)*partilha;
+      indice    = ev/cfg.price;
+      gatilho   = ((cfg.price-evMenores)*odds/partilha)/(1-IR_LOTERIA);
+    } else {
+      // sem histórico de prêmios ainda: só a faixa principal, e avisamos
+      medido=false;
+      evMenores=0; apostas=null; lambda=null; partilha=1;
+      ev=liquido/odds;
+      indice=ev/cfg.price;
+      gatilho=cfg.price*odds/(1-IR_LOTERIA);
+    }
+    linhas.push({g, label:cfg.label, odds, price:cfg.price, bruto, liquido,
+                 evMenores, ev, indice, gatilho, lambda, partilha, medido,
+                 rtpMenores: mt?mt.rtpMenores:null, rtpTotal: mt?mt.rtpTotal:null,
+                 nConc: mt?mt.nConc:0,
                  acum: st.acumulado===true||st.acumulado==='True'||st.acumulado==='true',
-                 proxData: st.proxData});
+                 proxData: st.proxData, proxInfo: infoProximo(st.proxData)});
   }
   linhas.sort((a,b)=>b.indice-a.indice);
+  const melhor = linhas.length ? linhas[0].indice : 0;
+  linhas.forEach((l,pos)=>{
+    const razao = melhor ? l.indice/melhor : 0;
+    l.pos=pos;
+    if(l.indice>=1){
+      l.veredito={txt:'APOSTAR', nivel:'otimo',
+        porque:'Índice ≥ 1,00: o retorno esperado da aposta cobre o custo. Situação rara, criada por acumulação alta. Ainda assim, a chance de você especificamente ganhar continua desprezível — EV positivo não faz da loteria um bom investimento.'};
+    } else if(l.indice>=0.75){
+      l.veredito={txt:'MOMENTO BOM', nivel:'bom',
+        porque:'O retorno esperado cobre mais de 75% do custo — bem acima do patamar normal deste jogo, que fica perto de '+(l.rtpMenores!=null? (l.rtpMenores*100).toFixed(0)+'% só nas faixas menores':'40%')+'. É o tipo de momento que a regra V do método procura.'};
+    } else if(pos===0 && l.indice>=0.30){
+      l.veredito={txt:'MELHOR OPÇÃO', nivel:'bom',
+        porque:'É onde o mesmo dinheiro rende mais nesta rodada. Não é lucro esperado — é o menor prejuízo esperado entre as nove modalidades.'};
+    } else if(razao>=0.80 && l.indice>=0.30){
+      l.veredito={txt:'BOA ALTERNATIVA', nivel:'bom',
+        porque:'Muito perto do primeiro colocado — a diferença de retorno esperado é pequena. Se a preferência for por este jogo, o custo de escolher ele é baixo.'};
+    } else if(razao>=0.50 && l.indice>=0.20){
+      l.veredito={txt:'SÓ SE FOR JOGAR', nivel:'medio',
+        porque:'Aceitável, mas há opção melhor na tabela. Se a preferência for por este jogo, o custo dessa escolha é pequeno.'};
+    } else {
+      l.veredito={txt:'NÃO APOSTAR', nivel:'ruim',
+        porque:'Retorno esperado bem abaixo das primeiras colocadas. O mesmo dinheiro rende mais em outra modalidade.'};
+    }
+  });
   return linhas;
+}
+/* Trata a data do próximo sorteio: a API às vezes anuncia data já vencida. */
+function infoProximo(dataBr){
+  const ts=brToTs(dataBr);
+  if(ts==null) return {estado:'desconhecida', txt:'data não informada'};
+  const hoje=new Date();
+  const hojeTs=Date.UTC(hoje.getFullYear(),hoje.getMonth(),hoje.getDate());
+  const dias=Math.round((ts-hojeTs)/86400000);
+  if(dias<0)   return {estado:'vencida', dias, txt:'a fonte ainda anuncia '+dataBr+' — data já passou'};
+  if(dias===0) return {estado:'hoje',    dias, txt:'é hoje'};
+  if(dias===1) return {estado:'amanha',  dias, txt:'é amanhã ('+dataBr+')'};
+  return {estado:'futuro', dias, txt:'em '+dias+' dias ('+dataBr+')'};
+}
+
+function vereditoChip(v){
+  const est={
+    otimo:{bg:'var(--good-wash)',  bd:'var(--status-good)',     ic:'✓'},
+    bom:  {bg:'var(--accent-wash)',bd:'var(--accent)',          ic:'✓'},
+    medio:{bg:'var(--warning-wash)',bd:'var(--status-warning)', ic:'~'},
+    ruim: {bg:'var(--critical-wash)',bd:'var(--status-critical)',ic:'✕'}
+  }[v.nivel];
+  return '<span class="veredito" data-porque="'+v.porque.replace(/"/g,'&quot;')+'" style="display:inline-flex;align-items:center;gap:var(--space-2);'+
+         'white-space:nowrap;font-size:var(--text-xs);font-weight:var(--weight-semi);padding:var(--space-2) var(--space-4);'+
+         'border-radius:var(--radius-full);background:'+est.bg+';border-left:3px solid '+est.bd+';cursor:help">'+
+         '<span aria-hidden="true">'+est.ic+'</span>'+v.txt+'</span>';
 }
 function comparativoModalidades(){
   const linhas=indiceCrivo();
@@ -386,54 +994,73 @@ function comparativoModalidades(){
     p.appendChild(el('div',{class:'warnbox'},'Dados de prêmio estimado indisponíveis. Atualize <code>data/status.json</code>.'));
     return p;
   }
-  p.appendChild(el('p',{class:'note'},'A régua é a regra <b>V</b> do método: comparamos o prêmio estimado com o <b>prêmio de equilíbrio</b> — o valor que o prêmio precisaria ter para a aposta simples deixar de ser desfavorável. '+
-    'O índice é prêmio líquido ÷ prêmio de equilíbrio. Índice 1,00 seria o ponto de virada; qualquer coisa abaixo disso é perda esperada. Prêmio líquido já desconta os 30% de IR na fonte.'));
+  p.appendChild(el('p',{class:'note'},'<b>Índice = retorno esperado de uma aposta simples ÷ custo dela.</b> Break-even em 1,00: abaixo disso a aposta é desfavorável. '+
+    'O <b>prêmio de gatilho</b> é o valor que o prêmio precisaria alcançar para o índice bater 1,00 naquele jogo.'));
 
   const melhor=linhas[0];
   const cards=el('div',{class:'cards'});
-  cards.appendChild(cardHtml('Melhor relação agora', melhor.label, 'índice '+melhor.indice.toFixed(3).replace('.',',')));
-  cards.appendChild(cardHtml('Prêmio estimado', fmtBRL(melhor.bruto), 'líquido ≈ '+fmtBRL(melhor.liquido)));
-  cards.appendChild(cardHtml('Prêmio de equilíbrio', fmtBRL(melhor.equilibrio), 'para a aposta simples empatar'));
-  cards.appendChild(cardHtml('Retorno esperado', 'R$ '+melhor.retornoPorReal.toFixed(3).replace('.',','), 'por R$ 1 apostado (só prêmio máximo)'));
+  cards.appendChild(cardHtml('Melhor agora', melhor.label, melhor.veredito.txt.toLowerCase()));
+  cards.appendChild(cardHtml('Índice CRIVO', melhor.indice.toFixed(3).replace('.',','), 'break-even em 1,000'));
+  cards.appendChild(cardHtml('Retorno esperado', 'R$ '+melhor.ev.toFixed(2).replace('.',','), 'por aposta de R$ '+melhor.price.toFixed(2).replace('.',',')));
+  cards.appendChild(cardHtml('Prêmio de gatilho', fmtBRL(melhor.gatilho), 'faria o índice bater 1,00'));
   p.appendChild(cards);
 
   const maxIdx=Math.max(...linhas.map(l=>l.indice));
-  let h='<div style="overflow-x:auto"><table style="min-width:780px"><tr>'+
+  let h='<div style="overflow-x:auto"><table style="min-width:1080px"><tr>'+
     '<th>#</th><th>Modalidade</th><th class="num">Prêmio estimado</th><th class="num">Chance (1 em)</th>'+
-    '<th class="num">Aposta</th><th class="num">Prêmio de equilíbrio</th><th class="num">Índice CRIVO</th><th>Situação</th></tr>';
+    '<th class="num">Aposta</th><th class="num">Prêmio de gatilho</th><th class="num">Índice CRIVO</th><th>Vale a pena?</th><th>Próximo sorteio</th></tr>';
   linhas.forEach((l,i)=>{
     const bar=Math.max(2,Math.round(l.indice/maxIdx*100));
     const destaque = i===0;
-    h+='<tr'+(destaque?' style="background:color-mix(in srgb,var(--s1) 8%,transparent)"':'')+'>'+
-      '<td style="color:var(--muted)">'+(i+1)+'</td>'+
-      '<td'+(destaque?' style="font-weight:650"':'')+'>'+l.label+'</td>'+
-      '<td class="num">'+fmtBRL(l.bruto)+'</td>'+
+    h+='<tr'+(destaque?' style="background:color-mix(in srgb,var(--series-1) 8%,transparent)"':'')+'>'+
+      '<td style="color:var(--ink-muted)">'+(i+1)+'</td>'+
+      '<td'+(destaque?' style="font-weight:var(--weight-semi);white-space:nowrap"':' style="white-space:nowrap"')+'>'+l.label+'</td>'+
+      '<td class="num" style="white-space:nowrap">'+fmtBRL(l.bruto)+'</td>'+
       '<td class="num">'+fmtInt(Math.round(l.odds))+'</td>'+
-      '<td class="num">R$ '+l.price.toFixed(2).replace('.',',')+'</td>'+
-      '<td class="num">'+fmtBRL(l.equilibrio)+'</td>'+
+      '<td class="num" style="white-space:nowrap">R$ '+l.price.toFixed(2).replace('.',',')+'</td>'+
+      '<td class="num" style="white-space:nowrap">'+fmtBRL(l.gatilho)+'</td>'+
       '<td class="num"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">'+
-        '<div style="width:56px;height:9px;background:var(--grid);border-radius:5px;overflow:hidden"><div style="height:100%;width:'+bar+'%;background:'+(destaque?'var(--s1)':'var(--muted)')+';border-radius:0 4px 4px 0"></div></div>'+
+        '<div style="width:56px;height:9px;background:var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden"><div style="height:100%;width:'+bar+'%;background:'+(destaque?'var(--series-1)':'var(--ink-muted)')+';border-radius:0 var(--radius-xs) var(--radius-xs) 0"></div></div>'+
         '<b>'+l.indice.toFixed(3).replace('.',',')+'</b></div></td>'+
-      '<td style="font-size:12px">'+(l.acum?'<span class="badge acum">acumulou</span>':'—')+'</td></tr>';
+      '<td>'+vereditoChip(l.veredito)+'</td>'+
+      '<td style="font-size:var(--text-sm);white-space:nowrap;color:'+
+        (l.proxInfo.estado==='vencida'?'var(--status-warning)':(l.proxInfo.estado==='hoje'?'var(--status-good-ink)':'var(--ink-secondary)'))+'">'+
+        (l.proxInfo.estado==='vencida'?'⚠ ':(l.proxInfo.estado==='hoje'?'● ':''))+l.proxInfo.txt+'</td></tr>';
   });
   h+='</table></div>';
   p.innerHTML+=h;
 
-  const pior=linhas[linhas.length-1];
-  const razao=melhor.indice/(pior.indice||1e-9);
-  p.appendChild(el('div',{class:'okbox'},
-    '<b>Leitura de hoje.</b> Pela régua do CRIVO, a <b>'+melhor.label+'</b> está com a melhor relação entre prêmio e dificuldade — índice '+melhor.indice.toFixed(3).replace('.',',')+
-    ', ou seja, o prêmio líquido cobre '+(melhor.indice*100).toFixed(1).replace('.',',')+'% do que precisaria cobrir para a aposta empatar. '+
-    'A pior da lista é a <b>'+pior.label+'</b>, com índice '+pior.indice.toFixed(3).replace('.',',')+' — '+razao.toFixed(1).replace('.',',')+'× pior. '+
-    'Se você vai apostar de qualquer forma, é aqui que o mesmo dinheiro rende mais.'));
+  p.querySelectorAll('.veredito').forEach(c=>{
+    attachTip(c,()=>'<b>'+c.textContent.trim()+'</b><br>'+c.getAttribute('data-porque'));
+  });
 
-  const algumFavoravel = linhas.some(l=>l.indice>=1);
+  const pior=linhas[linhas.length-1];
+  const medidos=linhas.filter(l=>l.medido).length;
+  p.appendChild(el('div',{class:'okbox'},
+    '<b>Leitura de hoje.</b> A <b>'+melhor.label+'</b> lidera com índice '+melhor.indice.toFixed(3).replace('.',',')+
+    ': cada R$ '+melhor.price.toFixed(2).replace('.',',')+' apostados devolvem, na média matemática, <b>R$ '+melhor.ev.toFixed(2).replace('.',',')+
+    '</b>. Para essa modalidade deixar de ser desfavorável, o prêmio precisaria chegar a <b>'+fmtBRL(melhor.gatilho)+'</b> — hoje está em '+fmtBRL(melhor.bruto)+'. '+
+    'A pior é a <b>'+pior.label+'</b>, com índice '+pior.indice.toFixed(3).replace('.',',')+'.'));
+
+  p.appendChild(el('div',{class:'panel',style:'background:var(--surface-sunken);box-shadow:none'},
+    '<h3>Como ler o índice</h3>'+
+    '<table><tr><th>Faixa</th><th>Veredito</th><th>O que significa</th></tr>'+
+    '<tr><td class="tabular"><b>≥ 1,000</b></td><td>'+vereditoChip({txt:'APOSTAR',nivel:'otimo',porque:''})+'</td><td>A aposta deixou de ser desfavorável. Só acontece com acumulação muito alta.</td></tr>'+
+    '<tr><td class="tabular"><b>0,750 – 0,999</b></td><td>'+vereditoChip({txt:'MOMENTO BOM',nivel:'bom',porque:''})+'</td><td>Bem acima do patamar normal do jogo. É o que a regra V procura.</td></tr>'+
+    '<tr><td class="tabular"><b>0,300 – 0,749</b></td><td>'+vereditoChip({txt:'MELHOR OPÇÃO',nivel:'bom',porque:''})+' '+vereditoChip({txt:'BOA ALTERNATIVA',nivel:'bom',porque:''})+'</td><td>Primeiro colocado da rodada, e os que ficam a menos de 20% dele.</td></tr>'+
+    '<tr><td class="tabular"><b>0,200 – 0,299</b></td><td>'+vereditoChip({txt:'SÓ SE FOR JOGAR',nivel:'medio',porque:''})+'</td><td>Aceitável, mas há opção melhor na tabela.</td></tr>'+
+    '<tr><td class="tabular"><b>&lt; 0,200</b></td><td>'+vereditoChip({txt:'NÃO APOSTAR',nivel:'ruim',porque:''})+'</td><td>O mesmo dinheiro rende bem mais em outra modalidade.</td></tr></table>'+
+    '<p style="margin-top:var(--space-5)"><b>Como o índice é calculado.</b> Retorno esperado de uma aposta simples dividido pelo custo dela. O retorno soma duas partes: '+
+    'o que as <b>faixas menores</b> devolvem — medido no histórico real de prêmios pagos, não estimado — mais o prêmio máximo multiplicado pela probabilidade de acerto '+
+    'e pelo <b>fator de partilha</b>, que desconta a chance de você ter de dividir. O prêmio entra líquido dos 30% de IR na fonte.</p>'+
+    '<p>O fator de partilha é o que corrige o erro mais comum nessas contas: em jogos de chance alta, como a Lotofácil, o prêmio quase sempre é dividido entre vários acertadores. '+
+    'Ignorar isso superestima o retorno em várias vezes.</p>'+
+    (medidos<linhas.length ? '<p class="note">'+(linhas.length-medidos)+' modalidade(s) ainda sem histórico de prêmios carregado — nelas o índice conta só o prêmio máximo e fica subestimado. Rode a atualização para completar.</p>' : '')));
+
   p.appendChild(el('div',{class:'warnbox'},
-    (algumFavoravel
-      ? '<b>Atenção — situação rara.</b> Alguma modalidade está com índice ≥ 1,00. Mesmo assim, um valor esperado positivo não faz da loteria um bom investimento: a variância é tão alta que a chance de você especificamente ganhar continua desprezível.'
-      : '<b>Nenhuma modalidade está favorável hoje — e isso é o normal.</b> Todos os índices estão bem abaixo de 1,00, o que significa que qualquer aposta tem retorno esperado negativo. ')+
-    ' Este quadro não diz "aposte na primeira colocada": diz <i>onde o prejuízo esperado é menor</i>, caso você já tenha decidido gastar. '+
-    'E há uma limitação honesta: o índice só considera o prêmio máximo. As faixas menores (quina, quadra, 14 pontos) melhoram um pouco o retorno real de jogos como Lotofácil e Quina, que pagam prêmio com muito mais frequência.'));
+    '<b>O que este quadro não diz.</b> Ele não diz "aposte na primeira colocada". Todos os índices abaixo de 1,00 significam retorno esperado negativo — a decisão financeiramente ótima continua sendo não apostar. '+
+    'O quadro responde a uma pergunta diferente e útil: <i>se você já decidiu gastar um valor em entretenimento, onde ele rende mais.</i> '+
+    'E um alerta que veio da revisão de literatura: prêmio recorde não é o melhor momento. A demanda cresce muito mais com o tamanho do prêmio do que com o preço, então acumulação que vira manchete atrai uma multidão que dilui o rateio — o fator de partilha cai e come parte do ganho.'));
   return p;
 }
 function cardHtml(k,v,sub,vSmall){
@@ -462,8 +1089,8 @@ function renderVolante(m){
     const flat=data.flat().filter(v=>isFinite(v));
     const mx=Math.max(...flat,1), mn=Math.min(...flat);
     // rows = digits, cols = columns 1..7
-    const head=el('div',{class:'grid-volante',style:'grid-template-columns:repeat(7,minmax(34px,1fr));max-width:'+(7*62)+'px;margin-bottom:4px'});
-    for(let c=0;c<7;c++) head.appendChild(el('div',{style:'text-align:center;font-size:11px;color:var(--muted)'},'Col '+(c+1)));
+    const head=el('div',{class:'grid-volante',style:'grid-template-columns:repeat(7,minmax(34px,1fr));max-width:'+(7*62)+'px;margin-bottom:var(--space-2)'});
+    for(let c=0;c<7;c++) head.appendChild(el('div',{style:'text-align:center;font-size:var(--text-xs);color:var(--ink-muted)'},'Col '+(c+1)));
     p.appendChild(head);
     const grid7=el('div',{class:'grid-volante',style:'grid-template-columns:repeat(7,minmax(34px,1fr));max-width:'+(7*62)+'px'});
     for(let v=0;v<=9;v++) for(let c=0;c<7;c++){
@@ -489,11 +1116,20 @@ function renderVolante(m){
   if(cfg.extraName) m.appendChild(renderExtraFreq());
   if(cfg.trevos) m.appendChild(renderTrevos());
 }
+/* O texto da célula tem de contrastar com o SWATCH, não com a superfície da página.
+   No claro a rampa vai de claro para escuro; no escuro ela é invertida — então o
+   lado que precisa de texto branco troca junto com o tema. */
+function temaEscuro(){
+  const t=document.documentElement.getAttribute('data-theme');
+  if(t) return t==='dark';
+  return matchMedia('(prefers-color-scheme: dark)').matches;
+}
 function cellNode(lbl, val, mn, mx, ramp, tipLabel, unit){
   const t = mx>mn ? (val-mn)/(mx-mn) : .5;
   const color = ramp[Math.min(7,Math.max(0,Math.round(t*7)))];
-  const dark = t>0.45;
-  const cell=el('div',{class:'cell',style:'background:'+color+';color:'+(dark?'#fff':'#0b0b0b')});
+  const swatchEscuro = temaEscuro() ? t<0.55 : t>0.45;
+  const cell=el('div',{class:'cell','data-interactive':'1',
+    style:'background:'+color+';color:'+(swatchEscuro?'#ffffff':'#0b0b0b')});
   cell.innerHTML=lbl+'<small>'+(isFinite(val)?fmtInt(val):'—')+'</small>';
   attachTip(cell,()=> '<b>'+tipLabel+'</b><br>'+(isFinite(val)?fmtInt(val)+' '+(unit||''):'nunca saiu'));
   return cell;
@@ -508,7 +1144,7 @@ function renderExtraFreq(){
   const mx=top.length?top[0][1]:1;
   for(const [name,ct] of top){
     const row=el('div',{class:'hbar',style:'grid-template-columns:150px 1fr 52px'});
-    row.innerHTML='<span style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</span><div class="track"><div class="fill" style="width:'+(ct/mx*100)+'%;background:var(--s3)"></div></div><span class="num">'+fmtInt(ct)+'</span>';
+    row.innerHTML='<span style="font-size:var(--text-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</span><div class="track"><div class="fill" style="width:'+(ct/mx*100)+'%;background:var(--series-3)"></div></div><span class="num">'+fmtInt(ct)+'</span>';
     p.appendChild(row);
   }
   return p;
@@ -522,7 +1158,7 @@ function renderTrevos(){
   const mx=Math.max(...Object.values(f),1);
   for(let t=1;t<=6;t++){
     const row=el('div',{class:'hbar'});
-    row.innerHTML='<span class="lbl">🍀'+t+'</span><div class="track"><div class="fill" style="width:'+(f[t]/mx*100)+'%;background:var(--s3)"></div></div><span class="num">'+fmtInt(f[t])+'</span>';
+    row.innerHTML='<span class="lbl">🍀'+t+'</span><div class="track"><div class="fill" style="width:'+(f[t]/mx*100)+'%;background:var(--series-3)"></div></div><span class="num">'+fmtInt(f[t])+'</span>';
     p.appendChild(row);
   }
   return p;
@@ -584,8 +1220,8 @@ function renderRanking(m){
   const setMenos=new Set(asc.slice(0,lim).map(p=>p.n));
 
   const wrap=el('div',{class:'tworow'});
-  wrap.appendChild(rankPanel((state.topN>0?'Top '+lim:'Todas')+' · mais sorteadas', desc.slice(0,lim), 'var(--s1)', total, g));
-  wrap.appendChild(rankPanel((state.topN>0?'Top '+lim:'Todas')+' · menos sorteadas', asc.slice(0,lim), 'var(--s2)', total, g));
+  wrap.appendChild(rankPanel((state.topN>0?'Top '+lim:'Todas')+' · mais sorteadas', desc.slice(0,lim), 'var(--series-1)', total, g));
+  wrap.appendChild(rankPanel((state.topN>0?'Top '+lim:'Todas')+' · menos sorteadas', asc.slice(0,lim), 'var(--series-2)', total, g));
   m.appendChild(wrap);
 
   m.appendChild(dispersaoPanel(g, arr, setMais, setMenos, total, REC));
@@ -597,8 +1233,8 @@ function renderRanking(m){
   const mx=Math.max(...atTop.map(p=>p.atraso),1);
   for(const p of atTop){
     const row=el('div',{class:'hbar',style:'grid-template-columns:34px 1fr 150px'});
-    row.innerHTML='<span class="lbl"><span class="ball mini" style="background:var(--s4)">'+pad(p.n,g)+'</span></span>'+
-      '<div class="track"><div class="fill" style="width:'+(p.atraso/mx*100)+'%;background:var(--s4)"></div></div>'+
+    row.innerHTML='<span class="lbl"><span class="ball mini" style="background:var(--series-4)">'+pad(p.n,g)+'</span></span>'+
+      '<div class="track"><div class="fill" style="width:'+(p.atraso/mx*100)+'%;background:var(--series-4)"></div></div>'+
       '<span class="num">'+fmtInt(p.atraso)+' conc. · '+(p.data||'—')+'</span>';
     pa.appendChild(row);
   }
@@ -609,7 +1245,7 @@ function rankPanel(title, rows, color, total, g){
   p.appendChild(el('h3',null,title));
   p.appendChild(el('p',{class:'note'},'Frequência em '+fmtInt(total)+' concursos da janela. A data é a da última vez que a dezena saiu, no histórico completo.'));
   const mx=Math.max(...rows.map(r=>r.freq),1);
-  const head=el('div',{class:'hbar',style:'grid-template-columns:34px 1fr 46px 92px;color:var(--muted);font-size:11px;border-bottom:1px solid var(--grid);padding-bottom:4px'});
+  const head=el('div',{class:'hbar',style:'grid-template-columns:34px 1fr 46px 92px;color:var(--ink-muted);font-size:var(--text-xs);border-bottom:var(--stroke-hair) solid var(--border-subtle);padding-bottom:4px'});
   head.innerHTML='<span></span><span>frequência</span><span class="num">saiu</span><span class="num">última vez</span>';
   p.appendChild(head);
   for(const r of rows){
@@ -617,7 +1253,7 @@ function rankPanel(title, rows, color, total, g){
     row.innerHTML='<span class="lbl"><span class="ball mini" style="background:'+color+'">'+pad(r.n,g)+'</span></span>'+
       '<div class="track"><div class="fill" style="width:'+(r.freq/mx*100)+'%;background:'+color+'"></div></div>'+
       '<span class="num">'+fmtInt(r.freq)+'</span>'+
-      '<span class="num" style="font-size:11.5px">'+(r.data||'—')+'</span>';
+      '<span class="num" style="font-size:var(--text-xs)">'+(r.data||'—')+'</span>';
     attachTip(row,()=>'<b>Dezena '+pad(r.n,g)+'</b><br>Saiu '+fmtInt(r.freq)+'× na janela'+
       (r.data?'<br>Última vez: '+r.data+' (concurso '+fmtInt(r.ultimaConc)+')':'')+
       (r.atraso!=null?'<br>Atraso: '+fmtInt(r.atraso)+' concursos':''));
@@ -652,35 +1288,35 @@ function dispersaoPanel(g, arr, setMais, setMenos, total, REC){
   let gl='';
   for(let i=0;i<=4;i++){
     const yy=T+i*(H-T-B)/4, val=yB-(yB-yA)*i/4;
-    gl+='<line x1="'+L+'" y1="'+yy.toFixed(1)+'" x2="'+(W-R)+'" y2="'+yy.toFixed(1)+'" stroke="var(--grid)" stroke-width="1"/>'+
+    gl+='<line x1="'+L+'" y1="'+yy.toFixed(1)+'" x2="'+(W-R)+'" y2="'+yy.toFixed(1)+'" stroke="var(--border-subtle)" stroke-width="1"/>'+
         '<text x="'+(L-8)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end">'+Math.round(val)+'</text>';
   }
   const nTicks=Math.min(5, pts.length);
   for(let i=0;i<=nTicks;i++){
     const tv=x0+(x1-x0)*i/nTicks, xx=X(tv);
-    gl+='<line x1="'+xx.toFixed(1)+'" y1="'+T+'" x2="'+xx.toFixed(1)+'" y2="'+(H-B)+'" stroke="var(--grid)" stroke-width="1" opacity=".55"/>'+
+    gl+='<line x1="'+xx.toFixed(1)+'" y1="'+T+'" x2="'+xx.toFixed(1)+'" y2="'+(H-B)+'" stroke="var(--border-subtle)" stroke-width="1" opacity=".55"/>'+
         '<text x="'+xx.toFixed(1)+'" y="'+(H-B+18)+'" text-anchor="middle">'+tsToMesAno(tv)+'</text>';
   }
-  gl+='<text x="'+(L-8)+'" y="'+(T-5)+'" text-anchor="end" style="font-size:10px">vezes</text>';
-  gl+='<text x="'+((L+W-R)/2)+'" y="'+(H-4)+'" text-anchor="middle" style="font-size:10.5px">data da última aparição</text>';
+  gl+='<text x="'+(L-8)+'" y="'+(T-5)+'" text-anchor="end" style="font-size:var(--text-2xs)">vezes</text>';
+  gl+='<text x="'+((L+W-R)/2)+'" y="'+(H-4)+'" text-anchor="middle" style="font-size:var(--text-2xs)">data da última aparição</text>';
 
   // média de frequência como referência
   const media=ys.reduce((a,b)=>a+b,0)/ys.length;
-  gl+='<line x1="'+L+'" y1="'+Y(media).toFixed(1)+'" x2="'+(W-R)+'" y2="'+Y(media).toFixed(1)+'" stroke="var(--axis)" stroke-width="1.5" stroke-dasharray="5 4"/>'+
-      '<text x="'+(W-R-4)+'" y="'+(Y(media)-6).toFixed(1)+'" text-anchor="end" style="font-size:10px">média '+media.toFixed(0)+'</text>';
+  gl+='<line x1="'+L+'" y1="'+Y(media).toFixed(1)+'" x2="'+(W-R)+'" y2="'+Y(media).toFixed(1)+'" stroke="var(--border-default)" stroke-width="1.5" stroke-dasharray="5 4"/>'+
+      '<text x="'+(W-R-4)+'" y="'+(Y(media)-6).toFixed(1)+'" text-anchor="end" style="font-size:var(--text-2xs)">média '+media.toFixed(0)+'</text>';
 
   let marks='';
   const ordered=[...pts].sort((a,b)=>RAD(b.recente)-RAD(a.recente)); // maiores atrás
   for(const d of ordered){
-    const cor = setMais.has(d.n)?'var(--s1)':(setMenos.has(d.n)?'var(--s2)':'var(--muted)');
+    const cor = setMais.has(d.n)?'var(--series-1)':(setMenos.has(d.n)?'var(--series-2)':'var(--ink-muted)');
     const op  = (setMais.has(d.n)||setMenos.has(d.n))?0.85:0.35;
     marks+='<circle data-n="'+d.n+'" cx="'+X(d.ts).toFixed(1)+'" cy="'+Y(d.freq).toFixed(1)+'" r="'+RAD(d.recente).toFixed(1)+
-           '" fill="'+cor+'" fill-opacity="'+op+'" stroke="var(--surface)" stroke-width="2"/>';
+           '" fill="'+cor+'" fill-opacity="'+op+'" stroke="var(--surface-raised)" stroke-width="2"/>';
   }
   // rótulos diretos só nos extremos
   const extremos=[...pts].sort((a,b)=>b.freq-a.freq).slice(0,2).concat([...pts].sort((a,b)=>a.freq-b.freq).slice(0,2));
   for(const d of extremos)
-    marks+='<text x="'+X(d.ts).toFixed(1)+'" y="'+(Y(d.freq)-RAD(d.recente)-5).toFixed(1)+'" text-anchor="middle" style="font-size:10.5px;font-weight:600;fill:var(--ink2)">'+pad(d.n,g)+'</text>';
+    marks+='<text x="'+X(d.ts).toFixed(1)+'" y="'+(Y(d.freq)-RAD(d.recente)-5).toFixed(1)+'" text-anchor="middle" style="font-size:var(--text-2xs);font-weight:var(--weight-semi);fill:var(--ink-secondary)">'+pad(d.n,g)+'</text>';
 
   const box=el('div');
   box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible">'+gl+marks+'</svg>';
@@ -693,9 +1329,9 @@ function dispersaoPanel(g, arr, setMais, setMenos, total, REC){
       'Atraso: '+fmtInt(d.atraso)+' concursos<br>Nos últimos '+REC+' concursos: '+d.recente+'×');
   });
   const lg=el('div',{class:'legend'});
-  lg.innerHTML='<span><span class="sw" style="background:var(--s1)"></span>entre as mais sorteadas</span>'+
-               '<span><span class="sw" style="background:var(--s2)"></span>entre as menos sorteadas</span>'+
-               '<span><span class="sw" style="background:var(--muted)"></span>demais dezenas</span>'+
+  lg.innerHTML='<span><span class="sw" style="background:var(--series-1)"></span>entre as mais sorteadas</span>'+
+               '<span><span class="sw" style="background:var(--series-2)"></span>entre as menos sorteadas</span>'+
+               '<span><span class="sw" style="background:var(--ink-muted)"></span>demais dezenas</span>'+
                '<span>bolha maior = saiu mais nos últimos '+REC+' concursos</span>';
   p.appendChild(lg);
 
@@ -753,7 +1389,7 @@ function renderCombos(m){
       for(const c of sample.slice(0,10)){
         const row=el('div',{class:'combo-row'});
         const b=el('div',{class:'balls'});
-        c.forEach(v=>b.appendChild(el('span',{class:'ball mini',style:'background:var(--s2)'},pad(v,g))));
+        c.forEach(v=>b.appendChild(el('span',{class:'ball mini',style:'background:var(--series-2)'},pad(v,g))));
         row.appendChild(b); row.appendChild(el('span',{class:'ct'},'0×'));
         box.appendChild(row);
       }
@@ -867,7 +1503,7 @@ function renderMeuJogo(m){
     : 'Clique nas dezenas para montar seu jogo. Você pode marcar mais que '+cfg.pick+' (jogo com dezenas extras) — o custo sobe conforme a tabela da Caixa.'));
 
   const info=el('div',{class:'controls'});
-  const counter=el('span',{style:'font-weight:600'});
+  const counter=el('span',{style:'font-weight:var(--weight-semi)'});
   const btnClear=el('button',null,'Limpar');
   const btnRand=el('button',null,'Sortear para mim');
   const btnTop=el('button',null,'Preencher com mais frequentes');
@@ -891,13 +1527,13 @@ function renderMeuJogo(m){
     gridWrap.innerHTML='';
     if(cfg.colunas){
       state.pickCols = state.pickCols || Array(7).fill(null);
-      const head=el('div',{class:'grid-volante',style:'grid-template-columns:repeat(7,minmax(34px,1fr));max-width:'+(7*62)+'px;margin-bottom:4px'});
-      for(let c=0;c<7;c++) head.appendChild(el('div',{style:'text-align:center;font-size:11px;color:var(--muted)'},'Col '+(c+1)));
+      const head=el('div',{class:'grid-volante',style:'grid-template-columns:repeat(7,minmax(34px,1fr));max-width:'+(7*62)+'px;margin-bottom:var(--space-2)'});
+      for(let c=0;c<7;c++) head.appendChild(el('div',{style:'text-align:center;font-size:var(--text-xs);color:var(--ink-muted)'},'Col '+(c+1)));
       gridWrap.appendChild(head);
       const gr=el('div',{class:'grid-volante',style:'grid-template-columns:repeat(7,minmax(34px,1fr));max-width:'+(7*62)+'px'});
       for(let v=0;v<=9;v++) for(let c=0;c<7;c++){
         const on = state.pickCols[c]===v;
-        const cell=el('div',{class:'cell',style:'cursor:pointer;background:'+(on?'var(--s1)':'var(--surface)')+';color:'+(on?'#fff':'var(--ink2)')+';border:1px solid '+(on?'var(--s1)':'var(--grid)')},String(v));
+        const cell=el('div',{class:'cell',style:'cursor:pointer;background:'+(on?'var(--series-1)':'var(--surface-raised)')+';color:'+(on?'var(--ink-inverse)':'var(--ink-secondary)')+';border:var(--stroke-hair) solid '+(on?'var(--series-1)':'var(--border-subtle)')},String(v));
         cell.onclick=()=>{ state.pickCols[c] = on?null:v; draw(); };
         gr.appendChild(cell);
       }
@@ -908,7 +1544,7 @@ function renderMeuJogo(m){
     const gr=el('div',{class:'grid-volante',style:'grid-template-columns:repeat('+cfg.cols+',minmax(34px,1fr));max-width:'+(cfg.cols*62)+'px'});
     for(let i=cfg.min;i<=cfg.max;i++){
       const on = sel.includes(i);
-      const cell=el('div',{class:'cell',style:'cursor:pointer;background:'+(on?'var(--s1)':'var(--surface)')+';color:'+(on?'#fff':'var(--ink2)')+';border:1px solid '+(on?'var(--s1)':'var(--grid)')});
+      const cell=el('div',{class:'cell',style:'cursor:pointer;background:'+(on?'var(--series-1)':'var(--surface-raised)')+';color:'+(on?'var(--ink-inverse)':'var(--ink-secondary)')+';border:var(--stroke-hair) solid '+(on?'var(--series-1)':'var(--border-subtle)')});
       cell.innerHTML=pad(i,g)+'<small>'+fmtInt(freq[i])+'</small>';
       cell.onclick=()=>{ const ix=sel.indexOf(i); if(ix>=0) sel.splice(ix,1); else sel.push(i); draw(); };
       attachTip(cell,()=> '<b>Dezena '+pad(i,g)+'</b><br>'+fmtInt(freq[i])+' sorteios · atraso '+(isFinite(at[i])?at[i]:'—'));
@@ -998,14 +1634,14 @@ function renderMeuJogo(m){
         if(part.mistoDupla) label += ' + '+part.mistoDupla+' '+(part.mistoDupla>1?plural[2]:nomes[2]);
         if(part.avulsas) label += ' + '+part.avulsas+' avulsa'+(part.avulsas>1?'s':'');
         const btn=el('button',{style:'text-align:left;padding:9px 11px;line-height:1.35'},
-          '<b>'+label+'</b><br><span style="font-size:11.5px;color:var(--muted)">'+
+          '<b>'+label+'</b><br><span style="font-size:var(--text-xs);color:var(--ink-muted)">'+
           (dir==='mais'?'blocos com maior co-ocorrência histórica':'blocos que raramente ou nunca saíram juntos')+'</span>');
         btn.onclick=()=>aplicarReceita(part, dir);
         grid.appendChild(btn);
       }
     }
     box.appendChild(grid);
-    const aviso=el('div',{class:'warnbox',style:'margin-top:12px'});
+    const aviso=el('div',{class:'warnbox',style:'margin-top:var(--space-5)'});
     aviso.innerHTML='<b>Leia antes de usar.</b> Nenhuma dessas receitas melhora sua chance de acertar — toda combinação de '+K+' dezenas tem exatamente a mesma probabilidade. '+
       'O que muda de verdade é o <b>rateio</b>: as receitas de "que mais saíram" tendem a coincidir com o que outras pessoas jogam (são as combinações que os sites de palpite divulgam), '+
       'então, se der certo, você divide com mais gente. Pelo nosso método, as receitas de <b>"que menos saíram"</b> são as preferíveis — não porque tenham mais chance, mas porque quase ninguém as joga.';
@@ -1046,7 +1682,7 @@ function renderMeuJogo(m){
     pa.appendChild(b);
     const draws=DB[g].draws;
     let exact=0; for(const d of draws) if(d.sets[0].every((v,i)=>v===jogo[i])) exact++;
-    pa.appendChild(el('p',{class:'note',style:'margin-top:10px'},'Probabilidade de acertar as 7 colunas: 1 em 10.000.000. Essa combinação exata já saiu <b>'+exact+'</b> vez(es) em '+fmtInt(draws.length)+' concursos.'));
+    pa.appendChild(el('p',{class:'note',style:'margin-top:var(--space-5)'},'Probabilidade de acertar as 7 colunas: 1 em 10.000.000. Essa combinação exata já saiu <b>'+exact+'</b> vez(es) em '+fmtInt(draws.length)+' concursos.'));
     analysis.appendChild(pa);
   }
 
@@ -1065,8 +1701,8 @@ function renderMeuJogo(m){
       for(const d of state.ultimaReceita.detalhe){
         const row=el('div',{class:'combo-row'});
         const b=el('div',{class:'balls'});
-        d.nums.forEach(v=>b.appendChild(el('span',{class:'ball mini',style:'background:'+(state.ultimaReceita.dir==='mais'?'var(--s1)':'var(--s2)')},pad(v,g))));
-        row.appendChild(el('span',{style:'font-size:12px;color:var(--muted);width:56px'},nomes[d.k]||(d.k+' dez.')));
+        d.nums.forEach(v=>b.appendChild(el('span',{class:'ball mini',style:'background:'+(state.ultimaReceita.dir==='mais'?'var(--series-1)':'var(--series-2)')},pad(v,g))));
+        row.appendChild(el('span',{style:'font-size:var(--text-sm);color:var(--ink-muted);width:56px'},nomes[d.k]||(d.k+' dez.')));
         row.appendChild(b);
         row.appendChild(el('span',{class:'ct'},fmtInt(d.ct)+'×'));
         pr.appendChild(row);
@@ -1091,7 +1727,7 @@ function renderMeuJogo(m){
       pa.appendChild(tb);
       pa.appendChild(el('p',{class:'note'},'*A Caixa cobra por tabela própria de dezenas extras; use este valor como referência e confira o preço real no volante.'));
     } else {
-      pa.appendChild(el('p',{class:'note',style:'margin-top:10px'},'Faltam '+(cfg.pick-sel.length)+' dezena(s) para fechar um jogo válido.'));
+      pa.appendChild(el('p',{class:'note',style:'margin-top:var(--space-5)'},'Faltam '+(cfg.pick-sel.length)+' dezena(s) para fechar um jogo válido.'));
     }
     analysis.appendChild(pa);
 
@@ -1113,7 +1749,7 @@ function renderMeuJogo(m){
     for(const [h,c] of rows.slice(0,8)) th+='<tr><td>'+h+'</td><td class="num">'+fmtInt(c)+'</td><td class="num">'+(c/draws.length*100).toFixed(2).replace('.',',')+'%</td></tr>';
     th+='</table>';
     ph.innerHTML+=th;
-    ph.appendChild(el('p',{class:'note',style:'margin-top:8px'},
+    ph.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},
       'Melhor desempenho histórico: <b>'+best+' acertos</b> (concursos '+bestConc.join(', ')+').'+
       (sel.length===cfg.pick? ' Esta combinação exata já foi sorteada <b>'+exact+'</b> vez(es).':'')));
     analysis.appendChild(ph);
@@ -1132,7 +1768,7 @@ function renderMeuJogo(m){
     let ht='<table><tr><th>Dezena</th><th class="num">Vezes</th><th class="num">% dos sorteios</th><th class="num">Atraso</th><th>Últimas aparições</th></tr>';
     for(const v of sorted){
       const ult=apar[v].slice(-4).reverse().map(n=>concLabel(g,n)).join(' · ');
-      ht+='<tr><td><span class="ball mini">'+pad(v,g)+'</span></td><td class="num">'+fmtInt(freqFull[v])+'</td><td class="num">'+(freqFull[v]/draws.length*100).toFixed(1).replace('.',',')+'%</td><td class="num">'+(isFinite(atFull[v])?atFull[v]:'—')+'</td><td style="font-size:12px;color:var(--ink2)">'+ult+'</td></tr>';
+      ht+='<tr><td><span class="ball mini">'+pad(v,g)+'</span></td><td class="num">'+fmtInt(freqFull[v])+'</td><td class="num">'+(freqFull[v]/draws.length*100).toFixed(1).replace('.',',')+'%</td><td class="num">'+(isFinite(atFull[v])?atFull[v]:'—')+'</td><td style="font-size:var(--text-sm);color:var(--ink-secondary)">'+ult+'</td></tr>';
     }
     ht+='</table>';
     pn.innerHTML+=ht;
@@ -1158,19 +1794,19 @@ function renderMeuJogo(m){
       for(const r of sorted){
         mh+='<tr><th>'+pad(r,g)+'</th>';
         for(const c of sorted){
-          if(r===c){ mh+='<td class="num" style="color:var(--muted)">—</td>'; continue; }
+          if(r===c){ mh+='<td class="num" style="color:var(--ink-muted)">—</td>'; continue; }
           const k=Math.min(r,c)+'-'+Math.max(r,c);
           const v=parCount[k]||0;
           const t=v/mxPar;
           const bg=SEQ_BLUE[Math.min(7,Math.round(t*7))];
-          mh+='<td class="num" style="background:'+bg+';color:'+(t>0.45?'#fff':'#0b0b0b')+'">'+v+'</td>';
+          mh+='<td class="num" style="background:'+bg+';color:'+(t>0.45?'var(--ink-inverse)':'var(--ink-primary)')+'">'+v+'</td>';
         }
         mh+='</tr>';
       }
       mh+='</table>';
       tbl.innerHTML=mh;
       pco.appendChild(tbl);
-      pco.appendChild(el('p',{class:'note',style:'margin-top:8px'},'Esperado por puro acaso para qualquer par: <b>'+espPar.toFixed(1).replace('.',',')+'</b> vezes. Pares acima disso não são "mais prováveis" — é a variação normal de um sorteio aleatório.'));
+      pco.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},'Esperado por puro acaso para qualquer par: <b>'+espPar.toFixed(1).replace('.',',')+'</b> vezes. Pares acima disso não são "mais prováveis" — é a variação normal de um sorteio aleatório.'));
       // maior subconjunto já sorteado junto
       let bestSub=0, bestConcs=[];
       for(const d of draws) for(const s of d.sets){
@@ -1188,19 +1824,19 @@ function renderMeuJogo(m){
     const pd=el('div',{class:'panel'});
     pd.appendChild(el('h3',null,'Qualidade do conjunto · índice de exclusividade'));
     pd.appendChild(el('p',{class:'note'},'Este índice <b>não</b> mede chance de ganhar — ela é idêntica para qualquer combinação. Ele mede o quanto seu jogo foge dos padrões que milhões de pessoas apostam. Índice alto = se você ganhar, divide com menos gente.'));
-    const barColor = sc.score>=75?'var(--good)':(sc.score>=50?'var(--warning)':'var(--critical)');
+    const barColor = sc.score>=75?'var(--status-good)':(sc.score>=50?'var(--status-warning)':'var(--status-critical)');
     const scoreBox=el('div',{style:'display:flex;align-items:center;gap:14px;margin:6px 0 12px'});
-    scoreBox.innerHTML='<div style="font-size:34px;font-weight:700;line-height:1;color:'+barColor+'">'+sc.score+'<span style="font-size:15px;color:var(--muted);font-weight:400">/100</span></div>'+
-      '<div style="flex:1"><div style="height:10px;background:var(--grid);border-radius:5px;overflow:hidden"><div style="height:100%;width:'+sc.score+'%;background:'+barColor+';border-radius:0 4px 4px 0"></div></div>'+
-      '<div style="font-size:12px;color:var(--ink2);margin-top:5px">'+(sc.score>=75?'Jogo pouco convencional — bom perfil de rateio.':(sc.score>=50?'Perfil intermediário — dá para melhorar.':'Perfil muito popular — alto risco de dividir o prêmio.'))+'</div></div>';
+    scoreBox.innerHTML='<div style="font-size:var(--text-3xl);font-weight:var(--weight-bold);line-height:1;color:'+barColor+'">'+sc.score+'<span style="font-size:var(--text-md);color:var(--ink-muted);font-weight:400">/100</span></div>'+
+      '<div style="flex:1"><div style="height:10px;background:var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden"><div style="height:100%;width:'+sc.score+'%;background:'+barColor+';border-radius:0 var(--radius-xs) var(--radius-xs) 0"></div></div>'+
+      '<div style="font-size:var(--text-sm);color:var(--ink-secondary);margin-top:5px">'+(sc.score>=75?'Jogo pouco convencional — bom perfil de rateio.':(sc.score>=50?'Perfil intermediário — dá para melhorar.':'Perfil muito popular — alto risco de dividir o prêmio.'))+'</div></div>';
     pd.appendChild(scoreBox);
     if(sc.pen.length){
       const tb=el('table');
       let h='<tr><th>O que pesou no índice</th><th class="num">Efeito</th><th class="num">Detalhe</th></tr>';
-      for(const [txt,val,det] of sc.pen) h+='<tr><td>'+txt+'</td><td class="num" style="color:'+(val<0?'var(--critical)':'var(--good-text)')+'">'+(val>0?'+':'')+val+'</td><td class="num">'+(det||'—')+'</td></tr>';
+      for(const [txt,val,det] of sc.pen) h+='<tr><td>'+txt+'</td><td class="num" style="color:'+(val<0?'var(--status-critical)':'var(--status-good-ink)')+'">'+(val>0?'+':'')+val+'</td><td class="num">'+(det||'—')+'</td></tr>';
       tb.innerHTML=h; pd.appendChild(tb);
     } else pd.appendChild(el('p',{class:'note'},'Nenhum padrão popular detectado.'));
-    const stats=el('table',{style:'margin-top:10px'});
+    const stats=el('table',{style:'margin-top:var(--space-5)'});
     stats.innerHTML='<tr><th>Métrica</th><th class="num">Seu jogo</th><th class="num">Média histórica</th></tr>'+
       '<tr><td>Soma das dezenas</td><td class="num">'+sc.soma+'</td><td class="num">'+mediaSoma.toFixed(0)+'</td></tr>'+
       '<tr><td>Pares / ímpares</td><td class="num">'+sc.pares+' / '+(sorted.length-sc.pares)+'</td><td class="num">—</td></tr>'+
@@ -1220,18 +1856,18 @@ function renderMeuJogo(m){
         let acumulado=[...sorted];
         sug.passos.forEach((p2,i)=>{
           acumulado=[...p2.cand];
-          const row=el('div',{style:'padding:9px 0;border-bottom:1px solid var(--grid)'});
+          const row=el('div',{style:'padding:9px 0;border-bottom:var(--stroke-hair) solid var(--border-subtle)'});
           const head=el('div',{style:'display:flex;align-items:center;gap:8px;flex-wrap:wrap'});
-          head.innerHTML='<b style="font-size:13px">Troca '+(i+1)+'</b>'+
-            '<span class="ball mini" style="background:var(--critical)">'+pad(p2.out,g)+'</span>'+
-            '<span style="color:var(--muted)">→</span>'+
-            '<span class="ball mini" style="background:var(--good)">'+pad(p2.in,g)+'</span>'+
-            '<span style="color:var(--ink2);font-size:12.5px">índice '+(i===0?sug.base:sug.passos[i-1].sc)+' → <b style="color:var(--good-text)">'+p2.sc+'</b></span>';
+          head.innerHTML='<b style="font-size:var(--text-sm)">Troca '+(i+1)+'</b>'+
+            '<span class="ball mini" style="background:var(--status-critical)">'+pad(p2.out,g)+'</span>'+
+            '<span style="color:var(--ink-muted)">→</span>'+
+            '<span class="ball mini" style="background:var(--status-good)">'+pad(p2.in,g)+'</span>'+
+            '<span style="color:var(--ink-secondary);font-size:var(--text-sm)">índice '+(i===0?sug.base:sug.passos[i-1].sc)+' → <b style="color:var(--status-good-ink)">'+p2.sc+'</b></span>';
           row.appendChild(head);
-          const bb=el('div',{class:'balls',style:'margin-top:6px'});
-          [...p2.cand].sort((a,b)=>a-b).forEach(v=>bb.appendChild(el('span',{class:'ball mini',style:(v===p2.in?'background:var(--good)':'')},pad(v,g))));
+          const bb=el('div',{class:'balls',style:'margin-top:var(--space-3)'});
+          [...p2.cand].sort((a,b)=>a-b).forEach(v=>bb.appendChild(el('span',{class:'ball mini',style:(v===p2.in?'background:var(--status-good)':'')},pad(v,g))));
           row.appendChild(bb);
-          const btn=el('button',{style:'margin-top:7px;font-size:12px;padding:4px 10px'},'Aplicar até esta troca');
+          const btn=el('button',{style:'margin-top:var(--space-3);font-size:var(--text-sm);padding:var(--space-2) var(--space-5)'},'Aplicar até esta troca');
           const snapshot=[...p2.cand];
           btn.onclick=()=>{ sel.length=0; snapshot.forEach(v=>sel.push(v)); draw(); };
           row.appendChild(btn);
@@ -1253,11 +1889,11 @@ function renderMeuJogo(m){
         const nc=C(k,cfg.pick);
         const custo=nc*cfg.price;
         const mult=(nc/atual);
-        h+='<tr'+(k===sel.length?' style="font-weight:600"':'')+'><td>'+k+(k===sel.length?' (seu jogo)':'')+'</td><td class="num">'+fmtInt(nc)+'</td><td class="num">R$ '+custo.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</td><td class="num">1 em '+fmtInt(Math.round(odds/nc))+'</td><td class="num">'+(mult===1?'—':(mult).toFixed(1).replace('.',',')+'× chance por '+(custo/(atual*cfg.price)).toFixed(1).replace('.',',')+'× custo')+'</td></tr>';
+        h+='<tr'+(k===sel.length?' style="font-weight:var(--weight-semi)"':'')+'><td>'+k+(k===sel.length?' (seu jogo)':'')+'</td><td class="num">'+fmtInt(nc)+'</td><td class="num">R$ '+custo.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</td><td class="num">1 em '+fmtInt(Math.round(odds/nc))+'</td><td class="num">'+(mult===1?'—':(mult).toFixed(1).replace('.',',')+'× chance por '+(custo/(atual*cfg.price)).toFixed(1).replace('.',',')+'× custo')+'</td></tr>';
       }
       h+='</table>';
       pAdd.innerHTML+=h;
-      pAdd.appendChild(el('p',{class:'note',style:'margin-top:8px'},'Observação matemática: chance e custo crescem na <b>mesma</b> proporção (cada aposta simples embutida custa o mesmo). Ou seja, adicionar dezenas não melhora o retorno esperado — só concentra mais dinheiro no mesmo bilhete. A Caixa cobra por tabela própria; confira o preço real no volante.'));
+      pAdd.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},'Observação matemática: chance e custo crescem na <b>mesma</b> proporção (cada aposta simples embutida custa o mesmo). Ou seja, adicionar dezenas não melhora o retorno esperado — só concentra mais dinheiro no mesmo bilhete. A Caixa cobra por tabela própria; confira o preço real no volante.'));
       analysis.appendChild(pAdd);
     }
   }
@@ -1344,7 +1980,7 @@ function renderFavoritos(){
       for(const r of rows){
         h+='<tr><td>'+r.c.map(v=>'<span class="ball mini">'+pad(v,g)+'</span>').join(' ')+'</td>'+
            '<td class="num">'+fmtInt(r.premiados)+'×</td><td class="num">'+r.best+'</td>'+
-           '<td class="num" style="color:'+(r.score>=75?'var(--good-text)':(r.score>=50?'var(--ink2)':'var(--critical)'))+'">'+r.score+'</td></tr>';
+           '<td class="num" style="color:'+(r.score>=75?'var(--status-good-ink)':(r.score>=50?'var(--ink-secondary)':'var(--status-critical)'))+'">'+r.score+'</td></tr>';
       }
       h+='</table>';
       pp.innerHTML+=h;
@@ -1369,7 +2005,7 @@ function renderFavoritos(){
     const mx=cons.length?cons[0][1]:1;
     for(const [v,c] of cons){
       const row=el('div',{class:'hbar'});
-      row.innerHTML='<span class="lbl"><span class="ball mini">'+pad(v,g)+'</span></span><div class="track"><div class="fill" style="width:'+(c/mx*100)+'%;background:var(--s1)"></div></div><span class="num">'+c+'/20</span>';
+      row.innerHTML='<span class="lbl"><span class="ball mini">'+pad(v,g)+'</span></span><div class="track"><div class="fill" style="width:'+(c/mx*100)+'%;background:var(--series-1)"></div></div><span class="num">'+c+'/20</span>';
       pc.appendChild(row);
     }
     out.appendChild(pc);
@@ -1428,7 +2064,7 @@ function renderCobertura(){
     let h='<table><tr><th>Estratégia</th><th class="num">Bilhetes</th><th class="num">Custo</th><th class="num">Combinações cobertas</th><th class="num">% do seu conjunto</th><th class="num">Chance do prêmio máximo</th></tr>';
     for(const r of rows){
       const dentro = r.custo<=orc;
-      h+='<tr'+(dentro?'':' style="opacity:.5"')+'><td>'+r.nome+(dentro?'':' <span style="color:var(--critical);font-size:11px">acima do orçamento</span>')+'</td>'+
+      h+='<tr'+(dentro?'':' style="opacity:.5"')+'><td>'+r.nome+(dentro?'':' <span style="color:var(--status-critical);font-size:var(--text-xs)">acima do orçamento</span>')+'</td>'+
          '<td class="num">'+fmtInt(r.bilhetes)+'</td>'+
          '<td class="num">R$ '+r.custo.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</td>'+
          '<td class="num">'+fmtInt(r.combos)+' de '+fmtInt(totalCombos)+'</td>'+
@@ -1462,19 +2098,19 @@ function renderCobertura(){
         if(!over) escolhidos.push(x);
       }
       for(const x of cand){ if(escolhidos.length>=melhor.bilhetes) break; if(!escolhidos.includes(x)) escolhidos.push(x); }
-      const pe=el('div',{class:'panel',style:'margin-top:12px'});
+      const pe=el('div',{class:'panel',style:'margin-top:var(--space-5)'});
       pe.appendChild(el('h3',null,'Sugestão de volante · '+escolhidos.length+' jogo(s)'));
       pe.appendChild(el('p',{class:'note'},'Montados com as suas dezenas, priorizando índice de exclusividade alto e o mínimo de repetição entre os bilhetes (para espalhar a cobertura em vez de concentrá-la).'));
       escolhidos.forEach((x,i)=>{
         const row=el('div',{class:'gen-game'});
-        row.appendChild(el('span',{style:'color:var(--muted);font-size:12px;width:52px'},'Jogo '+(i+1)));
+        row.appendChild(el('span',{style:'color:var(--ink-muted);font-size:var(--text-sm);width:52px'},'Jogo '+(i+1)));
         const bb=el('div',{class:'balls'});
         x.c.forEach(v=>bb.appendChild(el('span',{class:'ball mini'},pad(v,g))));
         row.appendChild(bb);
-        row.appendChild(el('span',{style:'margin-left:auto;font-size:12px;color:var(--ink2)'},'índice '+x.s));
+        row.appendChild(el('span',{style:'margin-left:auto;font-size:var(--text-sm);color:var(--ink-secondary)'},'índice '+x.s));
         pe.appendChild(row);
       });
-      pe.appendChild(el('p',{class:'note',style:'margin-top:8px'},'Custo total: <b>R$ '+(escolhidos.length*cfg.price).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</b>'));
+      pe.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},'Custo total: <b>R$ '+(escolhidos.length*cfg.price).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</b>'));
       out.appendChild(pe);
     }
   };
@@ -1494,7 +2130,7 @@ function renderQuandoJogar(){
   if(st.proxEstimativa){
     const razao=st.proxEstimativa/breakeven;
     h+='<tr><td>Prêmio estimado do próximo concurso</td><td class="num">'+fmtBRL(st.proxEstimativa)+'</td></tr>';
-    h+='<tr><td>Prêmio atual ÷ prêmio de equilíbrio</td><td class="num" style="color:'+(razao>=1?'var(--good-text)':'var(--ink2)')+'">'+razao.toFixed(2).replace('.',',')+'×</td></tr>';
+    h+='<tr><td>Prêmio atual ÷ prêmio de equilíbrio</td><td class="num" style="color:'+(razao>=1?'var(--status-good-ink)':'var(--ink-secondary)')+'">'+razao.toFixed(2).replace('.',',')+'×</td></tr>';
   }
   h+='</table>';
   p.innerHTML+=h;
@@ -1535,7 +2171,7 @@ function renderGerador(m){
   }
   p.appendChild(opts);
   const out=el('div'); p.appendChild(out);
-  const cost=el('p',{class:'note',style:'margin-top:10px'}); p.appendChild(cost);
+  const cost=el('p',{class:'note',style:'margin-top:var(--space-5)'}); p.appendChild(cost);
   btn.onclick=()=>{
     const n=Math.min(50,Math.max(1,+qty.value||1));
     const games=[];
@@ -1561,7 +2197,7 @@ function renderGerador(m){
     out.innerHTML='';
     games.forEach((game,i)=>{
       const row=el('div',{class:'gen-game'});
-      row.appendChild(el('span',{style:'color:var(--muted);font-size:12px;width:34px'},'Jogo '+(i+1)));
+      row.appendChild(el('span',{style:'color:var(--ink-muted);font-size:var(--text-sm);width:34px'},'Jogo '+(i+1)));
       const b=el('div',{class:'balls'});
       if(cfg.colunas) game.forEach((v,c)=>b.appendChild(el('span',{class:'ball mini',title:'coluna '+(c+1)},String(v))));
       else game.forEach(v=>b.appendChild(el('span',{class:'ball mini'},pad(v,g))));
@@ -1639,10 +2275,10 @@ function lineChart(serie,title){
   const X=v=>L+(v-x0)/(x1-x0||1)*(W-L-R), Y=v=>T+(1-v/(y1||1))*(H-T-B);
   let path=''; serie.forEach((d,i)=>{ path+=(i?'L':'M')+X(d[0]).toFixed(1)+' '+Y(d[1]).toFixed(1)+' '; });
   let gl='';
-  for(let i=0;i<=4;i++){ const yy=T+i*(H-T-B)/4; const val=y1*(1-i/4); gl+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="var(--grid)" stroke-width="1"/><text x="'+(L-6)+'" y="'+(yy+3)+'" text-anchor="end">'+(val>=1e6?(val/1e6).toFixed(0)+'M':(val/1e3).toFixed(0)+'k')+'</text>'; }
+  for(let i=0;i<=4;i++){ const yy=T+i*(H-T-B)/4; const val=y1*(1-i/4); gl+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="var(--border-subtle)" stroke-width="1"/><text x="'+(L-6)+'" y="'+(yy+3)+'" text-anchor="end">'+(val>=1e6?(val/1e6).toFixed(0)+'M':(val/1e3).toFixed(0)+'k')+'</text>'; }
   gl+='<text x="'+L+'" y="'+(H-6)+'">'+x0+'</text><text x="'+(W-R)+'" y="'+(H-6)+'" text-anchor="end">'+x1+'</text>';
   const svg=el('div');
-  svg.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+gl+'<path d="'+path+'" fill="none" stroke="var(--s1)" stroke-width="2"/></svg>';
+  svg.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+gl+'<path d="'+path+'" fill="none" stroke="var(--series-1)" stroke-width="2"/></svg>';
   p.appendChild(svg);
   return p;
 }
@@ -1651,25 +2287,25 @@ function renderMetodo(m){
   const g=state.game,cfg=GAMES[g];
   m.appendChild(el('div',{class:'panel'},
     '<h3>Método CRIVO · a ideia central</h3>'+
-    '<p style="font-size:15px;line-height:1.6"><b>Não modele a bola. Modele a multidão.</b></p>'+
+    '<p style="font-size:var(--text-md);line-height:1.6"><b>Não modele a bola. Modele a multidão.</b></p>'+
     '<p>Todo método vendido no mercado tenta prever qual dezena vai sair. Isso é matematicamente impossível: o sorteio não tem memória. '+
     'Mas existe uma segunda variável na sua conta bancária que <i>não</i> é aleatória e que quase ninguém explora — <b>quantas pessoas escolheram a mesma combinação que você</b>. '+
     'Essa variável é gerada por seres humanos, tem padrão estável, é previsível, e determina se o seu prêmio é inteiro ou dividido por sete.</p>'+
     '<p>O método CRIVO abandona a previsão do sorteio e ataca as três únicas alavancas que existem de verdade: <b>quando</b> apostar, <b>o que</b> apostar e <b>quanto</b> apostar.</p>'));
 
   const letras=[
-    ['C','Custo-teto','Orçamento fixo definido <i>antes</i> de olhar o prêmio. Nunca aumenta porque "acumulou". É a única variável que você controla 100% e a única que determina seu prejuízo máximo.','var(--s1)'],
-    ['R','Rateio','Escolher combinações que a multidão evita. Não muda sua chance de ganhar — muda quanto você leva se ganhar. É a única alavanca com efeito comprovado sobre o retorno (Baker &amp; McHale 2009).','var(--s3)'],
-    ['I','Independência','Nenhuma dezena é escolhida por frequência, atraso, ciclo ou "padrão". O painel mostra esses números para você <i>ver que não funcionam</i> — não para usá-los. Testado na aba Evidências.','var(--s4)'],
-    ['V','Valor esperado','Só apostar quando prêmio ÷ (probabilidade × custo) passa do gatilho. Na prática: acumulações grandes. Isso não torna o jogo lucrativo, mas reduz a perda esperada por real.','var(--s2)'],
-    ['O','Observação auditável','Registrar toda aposta e todo resultado, e comparar contra um baseline aleatório. Se o método não bate o acaso ao longo de centenas de concursos, ele não existe. Nenhum vendedor faz isso.','var(--s5)']
+    ['C','Custo-teto','Orçamento fixo definido <i>antes</i> de olhar o prêmio. Nunca aumenta porque "acumulou". É a única variável que você controla 100% e a única que determina seu prejuízo máximo.','var(--series-1)'],
+    ['R','Rateio','Escolher combinações que a multidão evita. Não muda sua chance de ganhar — muda quanto você leva se ganhar. É a única alavanca com efeito comprovado sobre o retorno (Baker &amp; McHale 2009).','var(--series-3)'],
+    ['I','Independência','Nenhuma dezena é escolhida por frequência, atraso, ciclo ou "padrão". O painel mostra esses números para você <i>ver que não funcionam</i> — não para usá-los. Testado na aba Evidências.','var(--series-4)'],
+    ['V','Valor esperado','Só apostar quando prêmio ÷ (probabilidade × custo) passa do gatilho. Na prática: acumulações grandes. Isso não torna o jogo lucrativo, mas reduz a perda esperada por real.','var(--series-2)'],
+    ['O','Observação auditável','Registrar toda aposta e todo resultado, e comparar contra um baseline aleatório. Se o método não bate o acaso ao longo de centenas de concursos, ele não existe. Nenhum vendedor faz isso.','var(--series-5)']
   ];
   const pl=el('div',{class:'panel'});
   pl.appendChild(el('h3',null,'As cinco regras'));
   for(const [L,nome,txt,cor] of letras){
-    const row=el('div',{style:'display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--grid)'});
-    row.innerHTML='<div style="flex:0 0 34px;height:34px;border-radius:9px;background:'+cor+';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px">'+L+'</div>'+
-      '<div><b>'+nome+'</b><br><span style="color:var(--ink2)">'+txt+'</span></div>';
+    const row=el('div',{style:'display:flex;gap:12px;padding:10px 0;border-bottom:var(--stroke-hair) solid var(--border-subtle)'});
+    row.innerHTML='<div style="flex:0 0 34px;height:34px;border-radius:var(--radius-md);background:'+cor+';color:var(--ink-inverse);display:flex;align-items:center;justify-content:center;font-weight:var(--weight-bold);font-size:var(--text-lg)">'+L+'</div>'+
+      '<div><b>'+nome+'</b><br><span style="color:var(--ink-secondary)">'+txt+'</span></div>';
     pl.appendChild(row);
   }
   m.appendChild(pl);
@@ -1692,12 +2328,12 @@ function renderMetodo(m){
   ];
   let ht='<div style="overflow-x:auto"><table style="min-width:900px"><tr><th>Modelo</th><th>O que promete</th><th>Prevê o sorteio?</th><th>O que a evidência diz</th><th>O que aproveitamos</th></tr>';
   for(const [nome,promessa,prev,evid,uso,lvl] of linhas){
-    const cor = lvl==='good'?'var(--good-text)':(lvl==='warning'?'var(--warning)':'var(--critical)');
+    const cor = lvl==='good'?'var(--status-good-ink)':(lvl==='warning'?'var(--status-warning)':'var(--status-critical)');
     const ultima = nome.indexOf('CRIVO')>=0;
-    ht+='<tr'+(ultima?' style="background:color-mix(in srgb,var(--s1) 8%,transparent);font-weight:600"':'')+'>'+
-        '<td>'+nome+'</td><td style="color:var(--ink2)">'+promessa+'</td>'+
-        '<td style="color:'+cor+';font-weight:600;white-space:nowrap">'+prev+'</td>'+
-        '<td style="color:var(--ink2);font-size:12.5px">'+evid+'</td><td style="font-size:12.5px">'+uso+'</td></tr>';
+    ht+='<tr'+(ultima?' style="background:color-mix(in srgb,var(--series-1) 8%,transparent);font-weight:var(--weight-semi)"':'')+'>'+
+        '<td>'+nome+'</td><td style="color:var(--ink-secondary)">'+promessa+'</td>'+
+        '<td style="color:'+cor+';font-weight:var(--weight-semi);white-space:nowrap">'+prev+'</td>'+
+        '<td style="color:var(--ink-secondary);font-size:var(--text-sm)">'+evid+'</td><td style="font-size:var(--text-sm)">'+uso+'</td></tr>';
   }
   ht+='</table></div>';
   pt.innerHTML+=ht;
@@ -1711,21 +2347,21 @@ function renderMetodo(m){
     '<p><b>2. Ataca a variável certa.</b> Todos os outros disputam uma variável aleatória (a bola). O CRIVO disputa uma variável humana (a escolha dos outros apostadores), que tem padrão estável e mensurável.</p>'+
     '<p><b>3. Tem efeito econômico demonstrável.</b> Reduzir rateio aumenta o valor esperado <i>condicional</i> a ganhar. É pequeno, mas é real e é o único que sobrevive à matemática.</p>'+
     '<p><b>4. Limita o dano.</b> A regra do custo-teto garante que o pior caso é conhecido antes de você jogar. Isso não é um detalhe — é a única coisa que separa entretenimento de prejuízo.</p>'+
-    '<div class="warnbox" style="margin-top:12px"><b>O que o CRIVO não faz:</b> não aumenta sua probabilidade de acertar, não torna a loteria lucrativa na média, e não substitui a decisão de simplesmente não jogar — que continua sendo, matematicamente, a melhor decisão financeira disponível.</div>'));
+    '<div class="warnbox" style="margin-top:var(--space-5)"><b>O que o CRIVO não faz:</b> não aumenta sua probabilidade de acertar, não torna a loteria lucrativa na média, e não substitui a decisão de simplesmente não jogar — que continua sendo, matematicamente, a melhor decisão financeira disponível.</div>'));
 
   // Analogias: cartas e mercado
   m.appendChild(el('div',{class:'panel'},
     '<h3>O que cartas e mercado financeiro ensinam · a fronteira da previsibilidade</h3>'+
     '<p>Vale entender <i>por que</i> contagem de cartas funciona no blackjack e não funciona na loteria. A diferença é exatamente uma palavra: <b>reposição</b>.</p>'+
     '<div style="overflow-x:auto"><table style="min-width:760px"><tr><th>Sistema</th><th>Tem memória?</th><th>O que é previsível</th><th>Por quê</th><th>Vale a pena?</th></tr>'+
-    '<tr><td><b>Blackjack (contagem)</b></td><td style="color:var(--good-text)">Sim</td><td>A composição do baralho restante</td><td>Cartas saem <b>sem reposição</b>. Cada carta vista muda a probabilidade da próxima. A informação se acumula.</td><td style="color:var(--good-text)">Sim — vantagem de ~0,5% a 1,5%, historicamente comprovada</td></tr>'+
-    '<tr><td><b>Pôquer</b></td><td style="color:var(--good-text)">Sim</td><td>O comportamento dos adversários</td><td>Você joga contra pessoas, não contra o acaso. O sinal está no oponente.</td><td style="color:var(--good-text)">Sim — é jogo de habilidade</td></tr>'+
-    '<tr><td><b>Roleta</b></td><td style="color:var(--critical)">Não</td><td>Nada (salvo viés físico da roda)</td><td>Cada giro é independente. Só houve ganho documentado em rodas fisicamente desbalanceadas.</td><td style="color:var(--critical)">Não, em roda moderna</td></tr>'+
-    '<tr><td><b>Mercado financeiro</b></td><td style="color:var(--warning)">Parcial</td><td>Volatilidade (forte), retorno (muito fraco)</td><td>Preços são gerados por agentes com feedback. Há estrutura — mas ela é competida por milhares de profissionais até quase sumir.</td><td style="color:var(--warning)">Marginalmente, e só com custo baixo e horizonte longo</td></tr>'+
-    '<tr><td><b>Loteria — o sorteio</b></td><td style="color:var(--critical)">Não</td><td>Nada</td><td>Bolas voltam ao globo a cada concurso. Reposição total ⇒ independência total ⇒ informação zero.</td><td style="color:var(--critical)">Não</td></tr>'+
-    '<tr style="background:color-mix(in srgb,var(--s1) 8%,transparent);font-weight:600"><td><b>Loteria — o rateio</b></td><td style="color:var(--good-text)">Sim</td><td>Quantas pessoas escolhem cada combinação</td><td>Gerado por humanos com vieses estáveis (datas, sequências, o número 7, bordas do volante). É o análogo do "oponente" no pôquer.</td><td style="color:var(--good-text)">Sim — é aqui que o CRIVO joga</td></tr>'+
+    '<tr><td><b>Blackjack (contagem)</b></td><td style="color:var(--status-good-ink)">Sim</td><td>A composição do baralho restante</td><td>Cartas saem <b>sem reposição</b>. Cada carta vista muda a probabilidade da próxima. A informação se acumula.</td><td style="color:var(--status-good-ink)">Sim — vantagem de ~0,5% a 1,5%, historicamente comprovada</td></tr>'+
+    '<tr><td><b>Pôquer</b></td><td style="color:var(--status-good-ink)">Sim</td><td>O comportamento dos adversários</td><td>Você joga contra pessoas, não contra o acaso. O sinal está no oponente.</td><td style="color:var(--status-good-ink)">Sim — é jogo de habilidade</td></tr>'+
+    '<tr><td><b>Roleta</b></td><td style="color:var(--status-critical)">Não</td><td>Nada (salvo viés físico da roda)</td><td>Cada giro é independente. Só houve ganho documentado em rodas fisicamente desbalanceadas.</td><td style="color:var(--status-critical)">Não, em roda moderna</td></tr>'+
+    '<tr><td><b>Mercado financeiro</b></td><td style="color:var(--status-warning)">Parcial</td><td>Volatilidade (forte), retorno (muito fraco)</td><td>Preços são gerados por agentes com feedback. Há estrutura — mas ela é competida por milhares de profissionais até quase sumir.</td><td style="color:var(--status-warning)">Marginalmente, e só com custo baixo e horizonte longo</td></tr>'+
+    '<tr><td><b>Loteria — o sorteio</b></td><td style="color:var(--status-critical)">Não</td><td>Nada</td><td>Bolas voltam ao globo a cada concurso. Reposição total ⇒ independência total ⇒ informação zero.</td><td style="color:var(--status-critical)">Não</td></tr>'+
+    '<tr style="background:color-mix(in srgb,var(--series-1) 8%,transparent);font-weight:var(--weight-semi)"><td><b>Loteria — o rateio</b></td><td style="color:var(--status-good-ink)">Sim</td><td>Quantas pessoas escolhem cada combinação</td><td>Gerado por humanos com vieses estáveis (datas, sequências, o número 7, bordas do volante). É o análogo do "oponente" no pôquer.</td><td style="color:var(--status-good-ink)">Sim — é aqui que o CRIVO joga</td></tr>'+
     '</table></div>'+
-    '<p style="margin-top:12px"><b>A transposição que fizemos.</b> No mercado, a lição mais robusta dos últimos 50 anos é que <i>o retorno é quase imprevisível, mas a estrutura de risco é bem previsível</i> — por isso a gestão profissional foca em risco e custo, não em adivinhar preço. '+
+    '<p style="margin-top:var(--space-5)"><b>A transposição que fizemos.</b> No mercado, a lição mais robusta dos últimos 50 anos é que <i>o retorno é quase imprevisível, mas a estrutura de risco é bem previsível</i> — por isso a gestão profissional foca em risco e custo, não em adivinhar preço. '+
     'Aplicado aqui: o sorteio é o "retorno" (imprevisível, esqueça) e o rateio é a "estrutura de risco" (previsível, trabalhe nela). '+
     'Do blackjack tiramos a disciplina do <i>bankroll</i>: valor fixo, apostado por regra, nunca por emoção. Do pôquer tiramos o hábito de modelar o outro jogador em vez do baralho.</p>'));
   return;
@@ -1895,16 +2531,16 @@ function renderEvidencia(m){
   p1.appendChild(el('h3',null,'Teste 1 · "Dezenas quentes" e "dezenas atrasadas" batem o acaso?'));
   p1.appendChild(el('p',{class:'note'},'Em cada um dos '+fmtInt(bt.n)+' concursos testados, montamos quatro jogos de '+cfg.pick+' dezenas e contamos os acertos. Média de acertos por concurso:'));
   const linhas=[
-    ['Mais frequentes até ali', bt.acc.freq, 'var(--s2)'],
-    ['Mais atrasadas até ali', bt.acc.atraso, 'var(--s4)'],
-    ['Jogo aleatório', bt.acc.aleatorio, 'var(--s1)'],
-    ['Um jogo fixo, escolhido antes de tudo', bt.acc.fixo, 'var(--s3)']
+    ['Mais frequentes até ali', bt.acc.freq, 'var(--series-2)'],
+    ['Mais atrasadas até ali', bt.acc.atraso, 'var(--series-4)'],
+    ['Jogo aleatório', bt.acc.aleatorio, 'var(--series-1)'],
+    ['Um jogo fixo, escolhido antes de tudo', bt.acc.fixo, 'var(--series-3)']
   ];
   const mxm=Math.max(...linhas.map(l=>l[1]/bt.n), bt.esperado)*1.15;
   for(const [nome,soma,cor] of linhas){
     const med=soma/bt.n;
     const row=el('div',{class:'hbar',style:'grid-template-columns:250px 1fr 90px'});
-    row.innerHTML='<span style="font-size:12.5px">'+nome+'</span><div class="track"><div class="fill" style="width:'+(med/mxm*100)+'%;background:'+cor+'"></div></div><span class="num">'+med.toFixed(4).replace('.',',')+'</span>';
+    row.innerHTML='<span style="font-size:var(--text-sm)">'+nome+'</span><div class="track"><div class="fill" style="width:'+(med/mxm*100)+'%;background:'+cor+'"></div></div><span class="num">'+med.toFixed(4).replace('.',',')+'</span>';
     p1.appendChild(row);
   }
   p1.appendChild(el('div',{class:'okbox'},
@@ -1941,12 +2577,12 @@ function renderEvidencia(m){
     'Então dividimos o histórico em três eras e perguntamos: <b>são as mesmas dezenas que desviam, no mesmo sentido, nas três?</b> Se a correlação entre eras for ~0, o desvio é ruído não-estacionário e não dá para apostar nele.'));
   let hb='<table><tr><th>Era</th><th class="num">Concursos</th><th class="num">Qui-quadrado corrigido</th><th class="num">Esperado</th></tr>';
   est.zs.forEach((z,i)=>{ hb+='<tr><td>'+(i+1)+'ª era</td><td class="num">'+fmtInt(z.T)+'</td><td class="num">'+z.chi.toFixed(2).replace('.',',')+'</td><td class="num">'+un.gl+'</td></tr>'; });
-  hb+='</table><table style="margin-top:10px"><tr><th>Correlação entre eras</th><th class="num">r</th><th>Leitura</th></tr>';
+  hb+='</table><table style="margin-top:var(--space-5)"><tr><th>Correlação entre eras</th><th class="num">r</th><th>Leitura</th></tr>';
   for(const [lbl,v] of [['1ª × 2ª',est.c12],['1ª × 3ª',est.c13],['2ª × 3ª',est.c23]]){
     const forte=Math.abs(v)>0.4;
-    hb+='<tr><td>'+lbl+'</td><td class="num" style="color:'+(forte?'var(--warning)':'var(--ink2)')+'">'+(v>=0?'+':'')+v.toFixed(3).replace('.',',')+'</td><td style="font-size:12.5px;color:var(--ink2)">'+(forte?'padrão persistente neste par':'sem persistência')+'</td></tr>';
+    hb+='<tr><td>'+lbl+'</td><td class="num" style="color:'+(forte?'var(--status-warning)':'var(--ink-secondary)')+'">'+(v>=0?'+':'')+v.toFixed(3).replace('.',',')+'</td><td style="font-size:var(--text-sm);color:var(--ink-secondary)">'+(forte?'padrão persistente neste par':'sem persistência')+'</td></tr>';
   }
-  hb+='<tr style="font-weight:600"><td>Média das três</td><td class="num">'+(est.media>=0?'+':'')+est.media.toFixed(3).replace('.',',')+'</td><td></td></tr></table>';
+  hb+='<tr style="font-weight:var(--weight-semi)"><td>Média das três</td><td class="num">'+(est.media>=0?'+':'')+est.media.toFixed(3).replace('.',',')+'</td><td></td></tr></table>';
   p3b.innerHTML+=hb;
   const estavel = est.media>0.4 && est.c12>0.2 && est.c13>0.2 && est.c23>0.2;
   p3b.appendChild(el('div',{class:estavel?'warnbox':'okbox'},
@@ -1980,7 +2616,7 @@ function renderEvidencia(m){
     for(const r of sc.res){
       const bar=Math.round(r.mean/mxMean*100);
       h4+='<tr><td>'+r.baixas+' de '+cfg.pick+'</td><td class="num">'+fmtInt(r.n)+'</td>'+
-          '<td class="num"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><div style="width:70px;height:9px;background:var(--grid);border-radius:5px;overflow:hidden"><div style="height:100%;width:'+bar+'%;background:var(--s2);border-radius:0 4px 4px 0"></div></div><b>'+r.mean.toFixed(1).replace('.',',')+'</b></div></td>'+
+          '<td class="num"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><div style="width:70px;height:9px;background:var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden"><div style="height:100%;width:'+bar+'%;background:var(--series-2);border-radius:0 var(--radius-xs) var(--radius-xs) 0"></div></div><b>'+r.mean.toFixed(1).replace('.',',')+'</b></div></td>'+
           '<td class="num">'+r.med.toFixed(1).replace('.',',')+'</td>'+
           '<td class="num">'+(r.premioMedio!=null?'R$ '+r.premioMedio.toLocaleString('pt-BR',{maximumFractionDigits:0}):'—')+'</td></tr>';
     }
@@ -2019,7 +2655,7 @@ function renderEvidencia(m){
     '<p><b>Teste 1 → regra I.</b> Frequência e atraso não batem o acaso. Por isso o volante e o ranking existem no painel como <i>diagnóstico</i>, e o gerador nunca usa esses números como critério de escolha.</p>'+
     '<p><b>Teste 2 → confiança na base.</b> Sem viés detectável nas bolas, qualquer estratégia que dependa de "a bola X é mais provável" está morta na origem.</p>'+
     '<p><b>Teste 3 → regra R, calibrada com dado brasileiro.</b> É o único teste que pode dar positivo — e se der, ele quantifica o tamanho do prêmio por fugir das datas.</p>'+
-    '<div class="warnbox" style="margin-top:10px"><b>Cuidado com o próprio viés.</b> Rodamos poucos testes, escolhidos antes de ver os resultados, e reportamos todos — inclusive os que dão contra a nossa tese. Se você rodar cem variações e publicar só a que deu certo, você reinventou exatamente o que os vendedores fazem.</div>'));
+    '<div class="warnbox" style="margin-top:var(--space-5)"><b>Cuidado com o próprio viés.</b> Rodamos poucos testes, escolhidos antes de ver os resultados, e reportamos todos — inclusive os que dão contra a nossa tese. Se você rodar cem variações e publicar só a que deu certo, você reinventou exatamente o que os vendedores fazem.</div>'));
 }
 /* ================= RENDER: EVOLUÇÃO DO MÉTODO ================= */
 const GATILHOS = {
@@ -2071,21 +2707,21 @@ function renderEvolucao(m){
     'Portanto <b>a regra R (rateio) é a única exposta a envelhecimento</b>. As regras C, I e V só mudam se a regra do jogo mudar.</p>'));
 
   const grupos=[
-    ['recalibrar','Recalibrar','Ajustar parâmetros, manter o método','var(--s1)'],
-    ['aperfeicoar','Aperfeiçoar','O método está certo, mas incompleto','var(--s4)'],
-    ['abandonar','Abandonar ou substituir','O método deixou de valer','var(--critical)']
+    ['recalibrar','Recalibrar','Ajustar parâmetros, manter o método','var(--series-1)'],
+    ['aperfeicoar','Aperfeiçoar','O método está certo, mas incompleto','var(--series-4)'],
+    ['abandonar','Abandonar ou substituir','O método deixou de valer','var(--status-critical)']
   ];
   for(const [k,titulo,sub,cor] of grupos){
     const p=el('div',{class:'panel'});
-    p.appendChild(el('h3',null,'<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+cor+';margin-right:7px"></span>'+titulo));
+    p.appendChild(el('h3',null,'<span style="display:inline-block;width:10px;height:10px;border-radius:var(--radius-xs);background:'+cor+';margin-right:7px"></span>'+titulo));
     p.appendChild(el('p',{class:'note'},sub));
     for(const [id,nome,limiar,motivo] of GATILHOS[k]){
-      const row=el('div',{style:'padding:11px 0;border-bottom:1px solid var(--grid)'});
+      const row=el('div',{style:'padding:11px 0;border-bottom:var(--stroke-hair) solid var(--border-subtle)'});
       row.innerHTML='<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">'+
-        '<span style="flex:0 0 34px;font-weight:700;color:'+cor+'">'+id+'</span>'+
-        '<span style="font-weight:600;flex:1;min-width:190px">'+nome+'</span></div>'+
-        '<div style="margin-left:44px;margin-top:3px;font-size:12.5px"><span style="color:var(--muted)">Dispara quando:</span> '+limiar+'</div>'+
-        '<div style="margin-left:44px;margin-top:4px;font-size:12.5px;color:var(--ink2)">'+motivo+'</div>';
+        '<span style="flex:0 0 34px;font-weight:var(--weight-bold);color:'+cor+'">'+id+'</span>'+
+        '<span style="font-weight:var(--weight-semi);flex:1;min-width:190px">'+nome+'</span></div>'+
+        '<div style="margin-left:44px;margin-top:3px;font-size:var(--text-sm)"><span style="color:var(--ink-muted)">Dispara quando:</span> '+limiar+'</div>'+
+        '<div style="margin-left:44px;margin-top:4px;font-size:var(--text-sm);color:var(--ink-secondary)">'+motivo+'</div>';
       p.appendChild(row);
     }
     m.appendChild(p);
@@ -2108,7 +2744,7 @@ function renderEvolucao(m){
     '<p><b>Refinado — e isso muda a prática.</b> O prêmio máximo <i>não</i> é o melhor momento para apostar. Como a demanda cresce muito mais com o tamanho do prêmio (elasticidade ~1,7) do que com o preço (~0,5), acumulações recordes atraem uma multidão que dilui o rateio. O ponto ótimo é uma acumulação boa <i>antes</i> de virar manchete nacional.</p>'+
     '<p><b>Refinado.</b> O viés de datas é heterogêneo: mais forte em quem preenche um único bilhete, e some a partir do segundo jogo na mesma sessão. Isso significa que fugir de datas rende mais justamente nos concursos de pico, cheios de apostadores ocasionais.</p>'+
     '<p><b>Reforçado com urgência.</b> A regra C precisa virar limite fisicamente vinculante — dinheiro separado antes, não valor anotado. Entender de estatística não protege ninguém: a literatura mostra que campanhas educativas são ineficazes, e há indício de que quem entende melhor a matemática pode até apostar mais.</p>'+
-    '<div class="warnbox" style="margin-top:10px"><b>Nada foi refutado.</b> Nenhum achado de 2024 a 2026 contradiz qualquer das cinco regras. Mas três lacunas honestas seguem abertas: ninguém mediu o efeito da surpresinha, ninguém encontrou viés físico novo, e ninguém publicou refutação metodológica formal de ML em loteria.</div>'));
+    '<div class="warnbox" style="margin-top:var(--space-5)"><b>Nada foi refutado.</b> Nenhum achado de 2024 a 2026 contradiz qualquer das cinco regras. Mas três lacunas honestas seguem abertas: ninguém mediu o efeito da surpresinha, ninguém encontrou viés físico novo, e ninguém publicou refutação metodológica formal de ML em loteria.</div>'));
 }
 /* ================= RENDER: RISCO ================= */
 function renderRisco(m){
@@ -2193,7 +2829,7 @@ async function atualizarEstatisticas(){
   btn.disabled=true;
   const box=el('div',{class:'panel',style:'position:fixed;left:50%;top:60px;transform:translateX(-50%);z-index:60;min-width:320px;max-width:520px;box-shadow:0 12px 40px rgba(0,0,0,.22)'});
   box.innerHTML='<h3>Atualizando estatísticas</h3><p class="note">Consultando a API oficial da Caixa…</p>';
-  const lista=el('div',{style:'font-size:13px;max-height:46vh;overflow:auto'});
+  const lista=el('div',{style:'font-size:var(--text-sm);max-height:46vh;overflow:auto'});
   box.appendChild(lista);
   document.body.appendChild(box);
   const LIMITE=400;
@@ -2201,12 +2837,12 @@ async function atualizarEstatisticas(){
   const resumo=[];
   for(const g in GAMES){
     const cfg=GAMES[g];
-    const linha=el('div',{style:'padding:4px 0;border-bottom:1px solid var(--grid)'},'<b>'+cfg.label+'</b> — consultando…');
+    const linha=el('div',{style:'padding:4px 0;border-bottom:var(--stroke-hair) solid var(--border-subtle)'},'<b>'+cfg.label+'</b> — consultando…');
     lista.appendChild(linha); lista.scrollTop=lista.scrollHeight;
     try{
       await loadGame(g);
       const atual=await fetchJson('https://servicebus2.caixa.gov.br/portaldeloterias/api/'+g);
-      if(!atual||!atual.numero){ linha.innerHTML='<b>'+cfg.label+'</b> — <span style="color:var(--critical)">não respondeu</span>'; falhas++; continue; }
+      if(!atual||!atual.numero){ linha.innerHTML='<b>'+cfg.label+'</b> — <span style="color:var(--status-critical)">não respondeu</span>'; falhas++; continue; }
       STATUS[g]={ultimo:atual.numero,data:atual.dataApuracao,acumulado:atual.acumulado,proxData:atual.dataProximoConcurso,
                  proxEstimativa:atual.valorEstimadoProximoConcurso,acumuladoValor:atual.valorAcumuladoProximoConcurso};
       const ultimoLocal=DB[g].last.n;
@@ -2232,7 +2868,7 @@ async function atualizarEstatisticas(){
         }
         add++; totalNovos++;
       }
-      linha.innerHTML='<b>'+cfg.label+'</b> — <span style="color:var(--good-text)">+'+add+' concurso'+(add===1?'':'s')+'</span> (até '+fmtInt(ultimoLocal+add)+')';
+      linha.innerHTML='<b>'+cfg.label+'</b> — <span style="color:var(--status-good-ink)">+'+add+' concurso'+(add===1?'':'s')+'</span> (até '+fmtInt(ultimoLocal+add)+')';
       resumo.push(cfg.label+': +'+add);
       jogosOk++;
       // invalida TUDO que deriva desse jogo, para nenhuma aba usar número velho
@@ -2240,21 +2876,21 @@ async function atualizarEstatisticas(){
       for(const k in cacheCombos) if(k.indexOf(g+'|')===0) delete cacheCombos[k];
       state.ultimaReceita=null;
     }catch(e){
-      linha.innerHTML='<b>'+cfg.label+'</b> — <span style="color:var(--critical)">erro: '+e.message+'</span>';
+      linha.innerHTML='<b>'+cfg.label+'</b> — <span style="color:var(--status-critical)">erro: '+e.message+'</span>';
       falhas++;
     }
   }
   // --- recarrega tudo e verifica integridade, para nenhuma aba ficar defasada ---
-  const linhaV=el('div',{style:'padding:6px 0;margin-top:6px;border-top:1px solid var(--grid)'},'<b>Verificando integridade…</b>');
+  const linhaV=el('div',{style:'padding:6px 0;margin-top:var(--space-3);border-top:var(--stroke-hair) solid var(--border-subtle)'},'<b>Verificando integridade…</b>');
   lista.appendChild(linhaV);
   const diag=await verificarIntegridade();
   const problemas=diag.filter(d=>d.erros.length);
   linhaV.innerHTML='<b>Verificação:</b> '+diag.length+' jogos conferidos · '+
-    (problemas.length? '<span style="color:var(--warning)">'+problemas.length+' com ressalva</span>' : '<span style="color:var(--good-text)">todos consistentes</span>');
+    (problemas.length? '<span style="color:var(--status-warning)">'+problemas.length+' com ressalva</span>' : '<span style="color:var(--status-good-ink)">todos consistentes</span>');
   for(const d of diag){
-    const l=el('div',{style:'padding:3px 0;font-size:12.5px;color:var(--ink2)'});
+    const l=el('div',{style:'padding:3px 0;font-size:var(--text-sm);color:var(--ink-secondary)'});
     l.innerHTML='· '+d.label+': '+fmtInt(d.total)+' concursos até '+fmtInt(d.ultimo)+
-      (d.erros.length? ' — <span style="color:var(--warning)">'+d.erros.join('; ')+'</span>' : ' <span style="color:var(--good-text)">ok</span>');
+      (d.erros.length? ' — <span style="color:var(--status-warning)">'+d.erros.join('; ')+'</span>' : ' <span style="color:var(--status-good-ink)">ok</span>');
     lista.appendChild(l);
   }
   lista.scrollTop=lista.scrollHeight;
@@ -2265,22 +2901,24 @@ async function atualizarEstatisticas(){
   const salvou = salvouA&&salvouB&&salvouC;
   box.querySelector('.note').innerHTML = totalNovos>0
     ? '<b>'+totalNovos+' concurso'+(totalNovos===1?'':'s')+' novo'+(totalNovos===1?'':'s')+'</b> incorporado'+(totalNovos===1?'':'s')+' às estatísticas.'+
-      (salvou?' Fica salvo no navegador — ao reabrir, continua atualizado.':' <span style="color:var(--warning)">Não consegui salvar no navegador; vale só nesta sessão.</span>')
+      (salvou?' Fica salvo no navegador — ao reabrir, continua atualizado.':' <span style="color:var(--status-warning)">Não consegui salvar no navegador; vale só nesta sessão.</span>')
     : (falhas? 'Nenhum concurso novo. Algumas consultas falharam — tente de novo em instantes.' : 'Tudo já estava em dia. Nenhum concurso novo desde a última atualização.');
-  const fechar=el('button',{class:'primary',style:'margin-top:10px'},'Fechar e recalcular');
+  const fechar=el('button',{class:'primary',style:'margin-top:var(--space-5)'},'Fechar e recalcular');
   fechar.onclick=()=>{ box.remove(); carimboAtualizacao(); refresh(); };
   box.appendChild(fechar);
-  if(falhas) box.appendChild(el('p',{class:'note',style:'margin-top:8px'},falhas+' consulta(s) falharam. Isso costuma ser instabilidade da API da Caixa — clicar de novo normalmente resolve.'));
+  if(falhas) box.appendChild(el('p',{class:'note',style:'margin-top:var(--space-4)'},falhas+' consulta(s) falharam. Isso costuma ser instabilidade da API da Caixa — clicar de novo normalmente resolve.'));
   btn.disabled=false;
   carimboAtualizacao();
 }
 
 /* ================= BOOT ================= */
 $('#btnTheme').onclick=()=>{
-  const cur=document.documentElement.getAttribute('data-theme');
-  document.documentElement.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  const escuro = temaEscuro();
+  document.documentElement.setAttribute('data-theme', escuro?'light':'dark');
+  try{ localStorage.setItem('lot_tema', escuro?'light':'dark'); }catch(e){}
+  refresh();   // rampas e contraste de célula dependem do tema
 };
-if(matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme','dark');
+try{ const t=localStorage.getItem('lot_tema'); if(t) document.documentElement.setAttribute('data-theme',t); }catch(e){}
 $('#btnUpdate').onclick=atualizarEstatisticas;
 window.LOT = {state, DB, refresh, GAMES, verificarIntegridade, atualizarEstatisticas, indiceCrivo,
               get STATUS(){return STATUS;}, get DELTA(){return DELTA;}};

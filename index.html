@@ -2985,6 +2985,237 @@ function testeSelecaoConsciente(g){
           ganhBaixo:md(grpBaixo), ganhAlto:md(grpAlto), nBaixo:grpBaixo.length, nAlto:grpAlto.length,
           premBaixo:md(prBaixo), premAlto:md(prAlto)};
 }
+
+/* ===== TESTE 4: BACKTEST DO PRÓPRIO MÉTODO =====
+   O teste que pode nos refutar. Para cada um dos N últimos concursos, geramos
+   jogos pelo método CRIVO usando SÓ o que se sabia até o concurso anterior, e
+   comparamos com jogos aleatórios. Depois calculamos o retorno em dinheiro real,
+   usando o rateio efetivamente pago naquele concurso.
+
+   Cuidados contra auto-engano:
+   · walk-forward — o filtro de "já premiado" só enxerga concursos anteriores;
+   · semente fixa — o resultado é reprodutível, não escolhemos a rodada boa;
+   · o baseline aleatório compra a MESMA quantidade de jogos, com o mesmo custo;
+   · reportamos o resultado seja ele qual for. */
+function backtestMetodo(g, nConcursos, jogosPorConcurso, semente){
+  const cfg=GAMES[g];
+  if(cfg.colunas) return null;
+  const draws=DB[g].draws, prem=PREMIOS[g]||{};
+  const N=cfg.max-cfg.min+1;
+  const total=draws.length;
+  const ini=Math.max(1, total-nConcursos);
+  const rand=rng(semente||20260726);
+  const randCtrl=rng((semente||20260726)+991);
+
+  const premiados=new Set();
+  for(let i=0;i<ini;i++) for(const s of draws[i].sets) premiados.add([...s].sort((a,b)=>a-b).join(','));
+
+  const acc={crivo:{gasto:0,ganho:0,jogos:0,acertos:{},premios:0},
+             aleat:{gasto:0,ganho:0,jogos:0,acertos:{},premios:0}};
+  const detalhes=[];
+  const espDatas = cfg.pick*Math.min(31,cfg.max)/N;
+  // A densidade mudaseg o que é "sequência incomum". Na Lotofácil (15 de 25) três
+  // dezenas seguidas são inevitáveis; exigir o contrário tornaria o filtro impossível.
+  const densidade = cfg.pick/N;
+  const maxRun = densidade>=0.5 ? 5 : (densidade>=0.3 ? 3 : 2);
+  const minLinhas = Math.min(Math.ceil(N/cfg.cols), Math.max(2, Math.ceil(cfg.pick/3)));
+  let falhas=0;
+
+  for(let t=ini;t<total;t++){
+    const sorteio=draws[t].sets[0];
+    const p=prem[String(draws[t].n)];
+    const faixas=p&&p.f?p.f:null;
+    const valorFaixa=(hits)=>{
+      if(!faixas) return null;
+      let idx=cfg.pick-hits;
+      if(g==='lotomania' && hits===0) idx=faixas.length-1;
+      if(idx<0||idx>=faixas.length) return 0;
+      return faixas[idx][1]||0;
+    };
+    const gerar=(metodo, r)=>{
+      let tent=0, ultimo=null;
+      while(tent<400){
+        tent++;
+        const pool=Array.from({length:N},(_,i)=>i+cfg.min);
+        const pick=[];
+        while(pick.length<cfg.pick) pick.push(pool.splice(Math.floor(r()*pool.length),1)[0]);
+        pick.sort((a,b)=>a-b);
+        ultimo=pick;
+        if(metodo){
+          if(maxRun<cfg.pick){
+            let run=1,bad=false;
+            for(let i=1;i<pick.length;i++){ run=pick[i]===pick[i-1]+1?run+1:1; if(run>maxRun){bad=true;break;} }
+            if(bad) continue;
+          }
+          if(cfg.max>31 && pick.filter(v=>v<=31).length > espDatas+1) continue;
+          if(premiados.has(pick.join(','))) continue;
+          const ls=new Set(pick.map(v=>Math.floor((v-cfg.min)/cfg.cols)));
+          if(ls.size < minLinhas) continue;
+        }
+        return pick;
+      }
+      falhas++;
+      return ultimo;   // nunca deixa a carteira menor que a do controle — senão a comparação seria inválida
+    };
+    const linha={n:draws[t].n, datasSorteio:sorteio.filter(v=>v<=31).length, crivo:[], aleat:[]};
+    for(const [nome,metodo,r] of [['crivo',true,rand],['aleat',false,randCtrl]]){
+      for(let k=0;k<jogosPorConcurso;k++){
+        const jogo=gerar(metodo,r);
+        if(!jogo) continue;
+        const hits=jogo.filter(v=>sorteio.includes(v)).length;
+        const val=valorFaixa(hits);
+        acc[nome].gasto+=cfg.price; acc[nome].jogos++;
+        acc[nome].acertos[hits]=(acc[nome].acertos[hits]||0)+1;
+        if(val>0){ acc[nome].ganho+=val; acc[nome].premios++; }
+        if(k===0) linha[nome]={jogo, hits, val};
+      }
+    }
+    detalhes.push(linha);
+    for(const s of draws[t].sets) premiados.add([...s].sort((a,b)=>a-b).join(','));
+  }
+  const comRateio=detalhes.filter(d=>prem[String(d.n)]&&prem[String(d.n)].f).length;
+  return {acc, detalhes, concursos:detalhes.length, comRateio, falhas, maxRun, minLinhas,
+          de:draws[ini].n, ate:draws[total-1].n, jogosPorConcurso};
+}
+function renderBacktest(g, m){
+  const cfg=GAMES[g];
+  const p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Teste 4 · O nosso próprio método, posto à prova'));
+  if(cfg.colunas){ p.appendChild(el('div',{class:'warnbox'},'Ainda não adaptado ao Super Sete.')); m.appendChild(p); return; }
+  p.appendChild(el('p',{class:'note'},'Aqui o método é o réu. Para cada concurso do período, geramos jogos pelo CRIVO usando <b>apenas o que se sabia até o concurso anterior</b>, '+
+    'e comparamos com jogos aleatórios comprando a mesma quantidade. Depois somamos o que cada carteira teria ganhado, usando o <b>rateio realmente pago</b> em cada concurso.'));
+
+  const ctr=el('div',{class:'controls'});
+  ctr.appendChild(el('label',null,'Concursos:'));
+  const selC=el('select');
+  for(const v of [50,100,200,500]) selC.appendChild(el('option',{value:v},'últimos '+v));
+  selC.value=100;
+  ctr.appendChild(selC);
+  ctr.appendChild(el('label',null,'Jogos por concurso:'));
+  const selJ=el('select');
+  for(const v of [1,5,10,20]) selJ.appendChild(el('option',{value:v},v));
+  selJ.value=10;
+  ctr.appendChild(selJ);
+  const btn=el('button',{class:'primary'},'Rodar o teste');
+  ctr.appendChild(btn);
+  p.appendChild(ctr);
+  const res=el('div'); p.appendChild(res);
+  m.appendChild(p);
+
+  btn.onclick=()=>{
+    res.innerHTML='<div class="state-loading">Simulando…</div>';
+    setTimeout(()=>{
+      const bt=backtestMetodo(g, +selC.value, +selJ.value);
+      if(!bt){ res.innerHTML='<div class="warnbox">Não foi possível rodar.</div>'; return; }
+      res.innerHTML='';
+      const A=bt.acc.crivo, B=bt.acc.aleat;
+      const retA=A.gasto? A.ganho/A.gasto : 0, retB=B.gasto? B.ganho/B.gasto : 0;
+      const cards=el('div',{class:'cards'});
+      cards.appendChild(cardHtml('Concursos testados', fmtInt(bt.concursos), 'do '+fmtInt(bt.de)+' ao '+fmtInt(bt.ate)));
+      cards.appendChild(cardHtml('Jogos comprados', fmtInt(A.jogos), 'em cada carteira'));
+      cards.appendChild(cardHtml('Gasto de cada carteira', fmtBRL(A.gasto), fmtInt(bt.jogosPorConcurso)+' jogos por concurso'));
+      cards.appendChild(cardHtml('Prêmios recebidos', fmtInt(A.premios)+' vs '+fmtInt(B.premios), 'CRIVO vs aleatório'));
+      res.appendChild(cards);
+
+      let ht='<div style="overflow-x:auto"><table style="min-width:620px"><tr><th>Carteira</th>'+
+        '<th class="num">Gasto</th><th class="num">Ganho</th><th class="num">Saldo</th><th class="num">Retorno</th><th class="num">Prêmios</th></tr>';
+      for(const [nome,X,ret] of [['Método CRIVO',A,retA],['Aleatório (controle)',B,retB]]){
+        const saldo=X.ganho-X.gasto;
+        ht+='<tr><td><b>'+nome+'</b></td>'+
+          '<td class="num">'+fmtBRL(X.gasto)+'</td><td class="num">'+fmtBRL(X.ganho)+'</td>'+
+          '<td class="num" style="color:'+(saldo>=0?'var(--status-good-ink)':'var(--status-critical)')+'"><b>'+fmtBRL(saldo)+'</b></td>'+
+          '<td class="num"><b>'+(ret*100).toFixed(1).replace('.',',')+'%</b></td>'+
+          '<td class="num">'+fmtInt(X.premios)+'</td></tr>';
+      }
+      ht+='</table></div>';
+      res.innerHTML+=ht;
+
+      // distribuição de acertos
+      const faixas=[...new Set([...Object.keys(A.acertos),...Object.keys(B.acertos)])].map(Number).sort((a,b)=>b-a);
+      let ha='<div style="overflow-x:auto"><table style="min-width:520px;margin-top:var(--space-5)"><tr><th>Acertos</th>'+
+        '<th class="num">CRIVO</th><th class="num">Aleatório</th><th class="num">Esperado pela teoria</th></tr>';
+      const NN=cfg.max-cfg.min+1;
+      for(const k of faixas){
+        if(k<Math.max(0,cfg.pick-4)) continue;
+        const pk=C(cfg.pick,k)*C(NN-cfg.pick,cfg.pick-k)/C(NN,cfg.pick);
+        ha+='<tr><td>'+k+' de '+cfg.pick+'</td><td class="num">'+fmtInt(A.acertos[k]||0)+'</td>'+
+            '<td class="num">'+fmtInt(B.acertos[k]||0)+'</td>'+
+            '<td class="num" style="color:var(--ink-muted)">'+(pk*A.jogos).toFixed(1).replace('.',',')+'</td></tr>';
+      }
+      ha+='</table></div>';
+      res.innerHTML+=ha;
+
+      const dif=Math.abs(retA-retB), maior=retA>retB?'o CRIVO':'o aleatório';
+      // De onde vem a diferença? Quase sempre de um punhado de prêmios das faixas altas.
+      const faixaAlta=Math.max(...faixas.filter(k=>k>=cfg.pick-2), cfg.pick-2);
+      let difPremios=0, valorDif=0;
+      for(const k of faixas){ if(k>=cfg.pick-2) difPremios+=Math.abs((A.acertos[k]||0)-(B.acertos[k]||0)); }
+      const impactoUm = A.gasto? (Math.abs(A.ganho-B.ganho)/Math.max(1,difPremios))/A.gasto*100 : 0;
+      const empate = dif<0.005;
+      res.appendChild(el('div',{class:'warnbox'},
+        '<b>Como ler isto — e é aqui que a maioria se engana.</b> '+
+        (empate
+          ? 'As duas carteiras terminaram praticamente empatadas. '
+          : 'Neste recorte '+maior+' saiu na frente por '+(dif*100).toFixed(1).replace('.',',')+' pontos percentuais. Antes de tirar conclusão, veja de onde vem essa diferença: '+
+            (difPremios>0
+              ? 'foram <b>'+difPremios+' prêmio(s) de diferença</b> nas faixas mais altas. Cada acerto desses sozinho move o retorno em cerca de '+
+                impactoUm.toFixed(1).replace('.',',')+' pontos — ou seja, <b>a diferença inteira cabe na sorte de um ou dois bilhetes</b>. '
+              : 'ela vem apenas das faixas baixas, onde a variação é puro acaso. ')
+        )+
+        'Repare que a coluna "esperado pela teoria" prevê bem as duas carteiras. '+
+        'Um teste assim não tem poder estatístico para separar duas estratégias de escolha — e não deveria ter, porque <b>não existe diferença a separar</b>. '+
+        'Os sorteios são independentes; nenhum critério de escolha muda a probabilidade de acertar. '+
+        '<b>Se este teste mostrasse o CRIVO ganhando de forma consistente, a conclusão certa seria que há um erro no teste</b>, não que descobrimos algo.'));
+      res.appendChild(el('div',{class:'okbox'},
+        '<b>Então para que serve o método?</b> Não para acertar mais — para <b>dividir menos</b>. '+
+        'Este backtest mede acerto, que é onde o CRIVO explicitamente não promete nada. O que ele promete está no Teste 3: '+
+        'sorteios que fogem do padrão de datas pagaram prêmio médio muito maior, porque menos gente tinha aquelas dezenas. '+
+        'Essa vantagem <b>não aparece aqui</b>, porque a Caixa não publica quantas pessoas jogaram cada combinação — '+
+        'só o número de ganhadores do sorteio real, não o de um jogo hipotético nosso.'));
+      const mt=metricasJogo(g);
+      res.appendChild(el('div',{class:'okbox'},
+        '<b>Por que o retorno observado fica bem abaixo do teórico.</b> O retorno de longo prazo deste jogo, medido no histórico oficial, é de cerca de <b>'+
+        (mt? (mt.rtpTotal*100).toFixed(1).replace('.',',') : '40')+'%</b> do apostado. Aqui saiu bem menos — e isso não é erro. '+
+        'A maior parte daquele percentual está concentrada em faixas <b>raríssimas</b>, que uma carteira de '+fmtInt(A.jogos)+' jogos praticamente nunca alcança. '+
+        'O que sobra para amostras pequenas são as faixas baixas, que pagam pouco. '+
+        '<b>Essa é a lição financeira mais importante do painel:</b> a "média" do jogo é uma miragem que só se materializa em uma quantidade astronômica de apostas. '+
+        'Na escala de um apostador real, o retorno é sistematicamente pior que a média anunciada.'));
+      res.appendChild(el('p',{class:'note'},
+        'Rateio de '+fmtInt(bt.comRateio)+' dos '+fmtInt(bt.concursos)+' concursos veio de dado oficial; nos demais o prêmio entra como zero e puxa o retorno para baixo. '+
+        (bt.falhas? 'Em '+fmtInt(bt.falhas)+' geração(ões) os filtros não encontraram combinação válida em 400 tentativas e o jogo entrou sem filtro, para as duas carteiras terem exatamente o mesmo tamanho. ':'')+
+        'Filtros ativos neste jogo: no máximo '+bt.maxRun+' dezenas consecutivas e pelo menos '+bt.minLinhas+' linhas do volante — '+
+        'os limites se ajustam à densidade da aposta, porque exigir "sem 3 seguidas" na Lotófácil, onde se marca 15 de 25, seria impossível.'));
+
+      // exemplos de escolha
+      const ex=el('div',{class:'panel',style:'background:var(--surface-sunken);box-shadow:none'});
+      ex.appendChild(el('h3',null,'Como as escolhas foram feitas'));
+      ex.appendChild(el('p',{class:'note'},'Cinco concursos do período, com o primeiro jogo de cada carteira e o que saiu de verdade.'));
+      const amostra=bt.detalhes.filter(d=>d.crivo&&d.aleat).slice(-5);
+      for(const d of amostra){
+        const bloco=el('div',{style:'padding:var(--space-4) 0;border-bottom:var(--stroke-hair) solid var(--border-subtle)'});
+        const linha=(rot,o,cor)=>{
+          const b=o.jogo.map(v=>'<span class="ball mini" style="background:'+cor+'">'+pad(v,g)+'</span>').join('');
+          return '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3);margin-top:var(--space-2)">'+
+            '<span class="t-label" style="width:74px">'+rot+'</span><span class="balls">'+b+'</span>'+
+            '<span class="t-note">'+o.hits+' acerto(s)'+(o.val>0?' · '+fmtBRL(o.val):'')+'</span></div>';
+        };
+        const sorteio=DB[g].draws.find(x=>x.n===d.n).sets[0];
+        bloco.innerHTML='<div class="t-eyebrow">Concurso '+fmtInt(d.n)+' · '+d.datasSorteio+' dezenas ≤ 31 no sorteio</div>'+
+          '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3);margin-top:var(--space-3)">'+
+          '<span class="t-label" style="width:74px">sorteado</span><span class="balls">'+
+          [...sorteio].sort((a,b)=>a-b).map(v=>'<span class="ball mini" style="background:var(--ink-secondary)">'+pad(v,g)+'</span>').join('')+'</span></div>'+
+          linha('CRIVO', d.crivo, 'var(--series-1)')+
+          linha('aleatório', d.aleat, 'var(--series-2)');
+        ex.appendChild(bloco);
+      }
+      ex.appendChild(el('p',{class:'note'},'Os jogos do CRIVO passaram por filtros aplicados <b>só com informação anterior ao concurso</b>: '+
+        'no máximo '+bt.maxRun+' dezenas consecutivas, '+(cfg.max>31?'sem excesso de dezenas ≤ 31, ':'')+
+        'sem repetir combinação já premiada até ali, e espalhados por pelo menos '+bt.minLinhas+' linhas do volante.'));
+      res.appendChild(ex);
+    }, 40);
+  };
+}
+
 function renderEvidencia(m){
   const g=state.game,cfg=GAMES[g];
   m.appendChild(el('div',{class:'panel'},
@@ -3118,6 +3349,8 @@ function renderEvidencia(m){
     p4.appendChild(el('p',{class:'note'},'Limitação declarada: a Caixa não publica a distribuição de apostas por combinação. Inferimos a popularidade pelo número de ganhadores — proxy indireto, porém direto o bastante para o efeito ser inequívoco neste tamanho de amostra. Também usamos apenas os concursos em que a arrecadação foi publicada pela API, o que concentra a amostra em concursos mais recentes.'));
   }
   m.appendChild(p4);
+
+  renderBacktest(g, m);
 
   // Como isso realimenta o método
   m.appendChild(el('div',{class:'panel'},

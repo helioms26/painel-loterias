@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **17.0**, publicada em 27/07/2026.
+Última versão: **18.0**, publicada em 27/07/2026.
 
 ---
 
@@ -179,6 +179,18 @@ A regra que não pode ser quebrada nessa tela: **os quatro indicadores são medi
 O índice também foi decomposto em troco das faixas menores e prêmio principal, e a decomposição muda o ranking: a Lotofácil lidera o total e cai para terceira no eixo do prêmio grande, atrás da Quina. Não existe "melhor" aqui — existe o que a pessoa quer.
 
 Toda tabela grande virou ordenável por clique (`tabelaOrdenavel`), com terceiro clique voltando à ordem original.
+
+## O que a v18 corrigiu — duas armadilhas que valem memorizar
+
+**Nunca use `elemento.innerHTML += html` num painel que tenha algo clicável.** Isso reserializa o conteúdo inteiro e descarta silenciosamente todos os listeners já ligados nos filhos, sem erro no console. Foi o que matou os botões de perfil da matriz de decisão. Use `htmlBloco(html)`, que devolve o HTML num contêiner próprio.
+
+**O limite de tamanho dos conjuntos agora é calculado, não escrito à mão** (`comboMaxViavel`). O custo tem duas pernas: operações e chaves distintas no mapa — e é a segunda que decide. A Lotomania com k=4 gera 3,9 milhões de chaves e leva 17 segundos; a Timemania com k=6 gera 17 mil e leva 18ms. Se for mexer no orçamento, meça antes.
+
+## Teste o que o usuário faz, não o que é fácil testar
+
+Três bugs desta rodada de versões tiveram a mesma raiz. O script de regressão apontou para o arquivo errado por seis versões porque eu nunca conferi o alvo. Os botões de perfil ficaram mortos porque eu trocava o perfil por `state.perfilAposta = ...` em vez de clicar. O limite de conjuntos ficou apertado porque eu supus o custo em vez de medir.
+
+Os testes agora fazem as três coisas: imprimem qual arquivo estão abrindo, clicam em todo botão de toda aba verificando se tem `onclick` ligado, e medem tempo em vez de estimar. Mantenha assim.
 
 ---
 

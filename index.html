@@ -908,6 +908,39 @@ function forEachCombo(arr,k,cb){
     for(let j=i+1;j<k;j++) idx[j]=idx[j-1]+1;
   }
 }
+/* ===== ATÉ QUE TAMANHO DE CONJUNTO DÁ PARA IR =====
+   O limite era uma constante escrita à mão por modalidade, e estava errado nos
+   dois sentidos: apertado demais na Lotofácil (parava em 3, quando 5 roda em
+   3 segundos) e frouxo demais em lugar nenhum, mas deixando de fora a Timemania
+   e o Dia de Sorte, onde k=6 custa menos de 100ms porque só 7 dezenas são
+   sorteadas.
+
+   O custo real tem duas pernas, e as duas foram medidas no navegador:
+   · operações = C(dezenas sorteadas, k) × número de sorteios
+   · chaves distintas no mapa = min(C(universo, k), operações)
+
+   A segunda é a que mata: a Lotomania com k=4 gera 3,9 milhões de chaves e leva
+   17 segundos, enquanto k=3 gera 162 mil e leva 1,2 segundo. Medições em
+   27/07/2026: Lotofácil k=4 1,0s · k=5 3,0s · k=6 6,4s; Timemania k=6 18ms. */
+const ORC_OPS=15e6, ORC_CHAVES=1.5e6;
+function comboMaxViavel(g){
+  const cfg=GAMES[g];
+  if(!cfg.comboMax) return 0;                      // Super Sete não tem conjunto de dezenas
+  const nD=(DB[g]?DB[g].draws.length:1000)*(cfg.dupla?2:1);
+  const N=cfg.max-cfg.min+1;
+  let melhor=2;
+  for(let k=2;k<=cfg.pick && k<=6;k++){
+    const ops=C(cfg.pick,k)*nD;
+    const chaves=Math.min(C(N,k), ops);
+    if(ops<=ORC_OPS && chaves<=ORC_CHAVES) melhor=k; else break;
+  }
+  return melhor;
+}
+function custoComboMs(g,k){        // estimativa grosseira, só para avisar na tela
+  const cfg=GAMES[g];
+  const nD=(DB[g]?DB[g].draws.length:1000)*(cfg.dupla?2:1);
+  return Math.round(C(cfg.pick,k)*nD/3800);
+}
 function universeSize(g,k){ const cfg=GAMES[g]; return C(cfg.max-cfg.min+1,k); }
 function neverDrawn(g,k,map,limit){ // enumerate only when feasible
   const cfg=GAMES[g]; const n=cfg.max-cfg.min+1;
@@ -947,7 +980,7 @@ function renderTabs(){
   if(state.tab==='comparar'){ c.style.display='none'; return; }
   c.style.display='';
   for(const [id,label] of TABS){
-    if(id==='combos' && GAMES[state.game].comboMax===0) continue;
+  if(id==='combos' && GAMES[state.game].comboMax===0) continue;
     const b=el('button',{class:'tab'+(state.tab===id?' on':'')},label);
     b.onclick=()=>{ state.tab=id; refresh(); };
     c.appendChild(b);
@@ -1192,11 +1225,12 @@ function matrizDecisao(){
       '<td>'+vereditoChip(d.l.veredito)+'</td></tr>';
   }
   ht+='</tbody></table></div>';
-  p.innerHTML+=ht;
-  p.querySelectorAll('tbody tr[data-g]').forEach(tr=>{
+  const bloco=htmlBloco(ht);
+  p.appendChild(bloco);
+  bloco.querySelectorAll('tbody tr[data-g]').forEach(tr=>{
     tr.onclick=()=>{ state.game=tr.dataset.g; state.dezenas=[]; state.celulas=[]; state.tab='visao'; refresh(); };
   });
-  tabelaOrdenavel(p.querySelector('table'));
+  tabelaOrdenavel(bloco.querySelector('table'));
 
   const top=dados[0];
   p.appendChild(el('div',{class:'okbox'},
@@ -1843,6 +1877,20 @@ function numDaCelula(td){
   if(!m) return null;
   const v=parseFloat(m[0].replace(/\./g,'').replace(',','.'));
   return isFinite(v)? v : null;
+}
+/* ===== POR QUE NÃO USAR innerHTML += =====
+   Somar em innerHTML reserializa e reconstrói TODO o conteúdo do elemento, o
+   que descarta silenciosamente qualquer listener já ligado nos filhos. Foi
+   exatamente assim que os botões de perfil da matriz de decisão pararam de
+   responder: eles eram criados com onclick, e a tabela montada depois com
+   innerHTML += apagava o clique deles sem erro nenhum no console.
+   htmlBloco devolve o HTML dentro de um contêiner próprio, então o resto do
+   painel não é tocado. Use isto, nunca innerHTML +=, em painel que tenha
+   qualquer coisa clicável. */
+function htmlBloco(html, attrs){
+  const d=el('div', attrs||null);
+  d.innerHTML=html;
+  return d;
 }
 function tabelaOrdenavel(tab){
   if(!tab) return tab;
@@ -2922,13 +2970,17 @@ function renderCombos(m){
   const g=state.game,cfg=GAMES[g];
   const ctr=windowSelector();
   ctr.appendChild(el('label',null,'Tamanho do conjunto:'));
+  const kMax=comboMaxViavel(g);
   const sel=el('select');
-  for(let k=2;k<=cfg.comboMax;k++) sel.appendChild(el('option',{value:k},k+' dezenas'));
-  sel.value=Math.min(state.comboK,cfg.comboMax);
+  for(let k2=2;k2<=kMax;k2++){
+    const ms=custoComboMs(g,k2);
+    sel.appendChild(el('option',{value:k2}, k2+' dezenas'+(ms>800? ' · leva ~'+Math.round(ms/1000)+'s':'')));
+  }
+  sel.value=Math.min(state.comboK,kMax);
   sel.onchange=()=>{ state.comboK=+sel.value; refresh(); };
   ctr.appendChild(sel);
   m.appendChild(ctr);
-  const k=Math.min(state.comboK,cfg.comboMax);
+  const k=Math.min(state.comboK,kMax);
   const {map,meta,totalDraws,ultimoConc}=combos(g,k);
   const uni=universeSize(g,k);
   const distinct=map.size;

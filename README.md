@@ -143,3 +143,7 @@ Auditoria da metodologia encontrou uma falha estrutural: o índice usava o prêm
 ## Novidades da v17
 
 A aba Onde apostar abre com uma **matriz de decisão**: nove modalidades, quatro indicadores medidos (negócio, prêmio grande, frequência, raridade) e um índice final ponderado. Os pesos são escolhidos por você entre quatro perfis e aparecem na tela — trocar de perfil troca o primeiro colocado, e isso é intencional. A decomposição mostra algo que o índice único escondia: a Lotofácil lidera no total mas cai para terceira quando se olha só o prêmio grande, onde a Quina passa na frente. Tabelas ordenáveis por clique. Seção 22 de `METODOLOGIA.md`.
+
+## Correções da v18
+
+Os botões de perfil da matriz não respondiam: `innerHTML +=` reconstrói o conteúdo e descarta os listeners já ligados. Corrigido, e agora existe um teste que clica em todo botão de toda aba e verifica se algum está morto. E o limite de tamanho dos conjuntos, que era constante chutada, passou a ser calculado pelo custo real medido — a Lotofácil foi de 3 para 5 dezenas, a Timemania e o Dia de Sorte de 3 e 4 para 6. Seção 23 de `METODOLOGIA.md`.

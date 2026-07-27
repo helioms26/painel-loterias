@@ -713,3 +713,52 @@ E nenhum perfil torna a aposta favorável: mesmo o primeiro colocado tem retorno
 ### Tabelas ordenáveis
 
 Toda tabela grande do painel passou a ordenar por clique no cabeçalho — um clique crescente, dois decrescente, três devolve à ordem original, que costuma ser o ranking escolhido de propósito. O leitor de valores entende "R$", "1 em", "%" e "×", além da pontuação brasileira.
+
+## 23. Dois bugs que os meus testes não pegavam (v18)
+
+### O primeiro: botões vivos que não respondiam
+
+Os botões de perfil da matriz de decisão apareciam na tela, tinham aparência de botão, e não faziam nada. Nenhum erro no console.
+
+A causa é uma armadilha clássica do DOM: `elemento.innerHTML += html` **reserializa e reconstrói todo o conteúdo do elemento**, o que descarta silenciosamente qualquer listener já ligado nos filhos. Na matriz de decisão os botões eram criados com `onclick` e a tabela era montada depois com `innerHTML +=` — apagando o clique deles sem deixar rastro.
+
+A correção foi introduzir `htmlBloco(html)`, que devolve o HTML dentro de um contêiner próprio em vez de somar no pai. O comentário acima da função explica o motivo, porque este é o tipo de bug que volta.
+
+**Mas o mais grave foi por que meus testes não pegaram.** Eu vinha testando a troca de perfil assim: `state.perfilAposta = 'premio'; await refresh()`. Isso exercita a lógica e nunca toca no botão. Testei o cálculo, não a interface.
+
+Agora existe um teste que varre **todo botão de toda aba de todas as modalidades** e verifica se ele ainda tem um `onclick` ligado, mais um teste funcional que clica de verdade nos quatro perfis e confere que o primeiro colocado muda. Foi assim que a correção ficou provada: com "quero o prêmio grande" a Quina assume a primeira posição, exatamente como a decomposição previa.
+
+### O segundo: o limite de conjuntos estava chutado
+
+Na Lotofácil, a aba Conjuntos parava em 3 dezenas. O limite era uma constante escrita à mão por modalidade, e estava errado nos dois sentidos.
+
+Medi o custo real no navegador:
+
+| Modalidade | k=3 | k=4 | k=5 | k=6 |
+|---|---|---|---|---|
+| Lotofácil | 272ms | 1,0s | 3,0s | 6,4s |
+| Lotomania | 1,2s | 17s | inviável | inviável |
+| Timemania | 56ms | 79ms | 45ms | 18ms |
+| Dia de Sorte | 9ms | 14ms | 9ms | 4ms |
+
+O custo tem duas pernas, e é a segunda que decide: número de operações, que é C(dezenas sorteadas, k) × sorteios; e número de chaves distintas no mapa. A Lotomania com k=4 gera 3,9 milhões de chaves e por isso leva 17 segundos, enquanto k=3 gera 162 mil e leva 1,2 segundo. Já a Timemania sorteia só 7 dezenas, então k=6 custa 18 milissegundos — e estava travada em 3 sem motivo.
+
+O limite passou a ser calculado, com orçamento de 15 milhões de operações e 1,5 milhão de chaves:
+
+| Modalidade | Limite antes | Limite agora |
+|---|---|---|
+| Lotofácil | 3 | **5** |
+| Lotomania | 2 | **3** |
+| Timemania | 3 | **6** |
+| Dia de Sorte | 4 | **6** |
+| Dupla-Sena | 4 | **6** |
+| +Milionária | 4 | **6** |
+| Mega-Sena | 6 | 6 |
+
+E o seletor avisa quando a opção é lenta: "5 dezenas · leva ~3s". Melhor informar do que travar sem explicação.
+
+### A lição de processo
+
+Os dois bugs têm a mesma raiz: eu testei o que era fácil testar. A lógica, por chamada direta; o desempenho, por suposição. Nenhum dos dois foi testado como o usuário encontra — clicando e esperando.
+
+O terceiro caso da mesma família apareceu na v13, quando o script de regressão passou seis versões apontando para o arquivo errado. Três ocorrências é padrão, não azar.

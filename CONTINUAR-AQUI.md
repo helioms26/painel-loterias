@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **9.0**, publicada em 26/07/2026 (noite de Brasília).
+Última versão: **10.0**, publicada em 27/07/2026.
 
 ---
 
@@ -92,6 +92,16 @@ Esse último trouxe junto a correção de um erro nosso, e vale saber dela: o es
 
 Com a correção, a conclusão é limpa: **não há nenhuma dupla de dezenas com co-ocorrência anômala em nenhuma das nove modalidades.** O painel diz isso em voz alta, porque esse é o resultado.
 
+## O que a v10 mudou
+
+Super Sete e Dupla-Sena saíram da segunda classe. O primeiro ganhou análise por coluna, seleção cruzada por (coluna, dígito) e a aba Evidências inteira; a segunda ganhou os dois sorteios separáveis.
+
+Fechar essas lacunas expôs dois erros sérios que já estavam lá. O índice da faixa de prêmio era calculado como `marcadas − acertos`, o que atropela as faixas extras: na Dupla-Sena 2 acertos caíam na sena do segundo sorteio e o backtest chegava a mostrar 507.958% de retorno; na Timemania 2 acertos viravam Time do Coração; no Dia de Sorte 3 acertos viravam Mês da Sorte; na Lotomania 14 acertos caíam na faixa de zero acertos. Agora existe um mapa explícito por modalidade, conferido contra as contagens de ganhadores. E o backtest gerava apostas do tamanho do sorteio em vez do tamanho da aposta real — 20 dezenas na Lotomania, que marca 50; 7 na Timemania, que marca 10.
+
+Se você for mexer no cálculo de prêmio, o mapa se chama FAIXAS e o comentário acima dele explica cada caso. Não volte para a aritmética.
+
+A Dupla-Sena virou o melhor teste do nosso próprio método: pares dentro de um sorteio estão sob restrição sem reposição, pares entre os dois sorteios são independentes. A calibração devolve 0,8504 no primeiro caso (teórico 0,8503) e 0,9994 no segundo. No Super Sete, entre colunas, dá 1,0000.
+
 ---
 
 ## Antes de publicar qualquer versão
@@ -110,7 +120,11 @@ O backup só depois que tudo isso passa.
 
 ## Lacunas conhecidas
 
-O Super Sete fica de fora do ranking por dezena, do gerador e do backtest — ele sorteia um dígito por coluna, então frequência por dezena não significa nada ali. A Dupla-Sena tem os dois sorteios tratados em conjunto em algumas visões, o que não é errado mas também não é o ideal. E as telas 2 a 5 da v9 existem só no protótipo em HTML e no código, não no Figma, por causa da cota.
+A +Milionária fica de fora do backtest do método: as dez faixas dela combinam acertos de dezenas com acertos de trevos e não conseguimos confirmar a ordem conferindo contagens de ganhadores contra probabilidades. Sem essa confirmação, qualquer retorno seria número inventado com cara de medição.
+
+Os critérios anti-popularidade do Super Sete são raciocínio por analogia com escolha humana de dígitos, não medição — a Caixa não publica a distribuição das apostas dessa modalidade. O efeito aniversário da Mega-Sena, esse sim, foi medido no rateio real. A diferença está escrita na tela.
+
+As telas 2 a 5 do redesenho existem no código e no protótipo em HTML, não no Figma, por causa da cota mensal.
 
 ---
 

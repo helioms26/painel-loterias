@@ -323,3 +323,45 @@ Em vez de assumir a fórmula fechada — que muda na Dupla-Sena, com dois sortei
 Com a escala corrigida, o desvio médio passa a ser praticamente zero em todas as modalidades e os extremos ficam entre −2,2σ e +2,8σ. Testando 59 a 79 pares, o maior |z| que o acaso puro produz já fica perto de 2,9σ. **Ou seja: não há nenhuma dupla de dezenas com co-ocorrência anômala em nenhuma das nove modalidades.** O painel diz isso em voz alta, porque esse é o resultado.
 
 **O gerador passou a otimizar, não só relatar.** Antes ele aceitava o primeiro sorteio que passasse nos filtros. Agora junta até 25 candidatos válidos e fica com o de menor co-ocorrência média. Todos têm exatamente a mesma probabilidade de sair — o critério só separa o que é menos trilhado por outros apostadores. Medido sobre 200 rodadas na Mega-Sena, o z médio dos pares cai de −0,85 para −1,23 (na escala não calibrada usada no teste). É ganho de rateio, nunca de chance.
+
+## 15. As demais modalidades — e um erro grave que elas revelaram (v10)
+
+A versão 10 nasceu de um pedido simples: fazer para as outras modalidades o que já estava feito para a Mega-Sena e a Lotofácil. Fechar essas lacunas expôs um defeito no cálculo de prêmio que estava lá desde o começo.
+
+### O erro
+
+O arquivo de prêmios traz, por concurso, um array de faixas. O código encontrava a faixa certa fazendo `índice = dezenas marcadas − acertos`. Isso só funciona quando a modalidade tem faixas puramente por número de acertos — e cinco das nove não têm.
+
+A Dupla-Sena tem oito faixas: as quatro do primeiro sorteio seguidas das quatro do segundo. Pela regra antiga, **2 acertos caíam no índice 4, que é a sena do segundo sorteio**. O backtest chegava a exibir 507.958% de retorno. A Timemania tem o Time do Coração como sexta faixa, então 2 acertos viravam Time do Coração. O Dia de Sorte tem o Mês da Sorte como quinta, então 3 acertos viravam Mês. A Lotomania guarda a faixa de zero acertos no fim do array, e 14 acertos caíam nela.
+
+A correção foi trocar a aritmética por um mapa explícito de faixas por modalidade, conferido contra as contagens de ganhadores. O Dia de Sorte serve de exemplo do método de verificação: no concurso 1255, os 36.273 ganhadores da última faixa divididos por 1/12 dão cerca de 435 mil apostas; a quarta faixa prevê 435 mil × P(4 de 7) = 11.720 ganhadores, contra 11.781 observados.
+
+A +Milionária ficou de fora. As dez faixas dela combinam acertos de dezenas com acertos de trevos, e não conseguimos confirmar a ordem conferindo contagens contra probabilidades. Preferimos a lacuna declarada a um número inventado com cara de medição.
+
+### O segundo erro
+
+O backtest gerava jogos do tamanho do **sorteio**, não do tamanho da **aposta**. Na Lotomania sorteiam-se 20 dezenas mas a aposta marca 50; na Timemania sorteiam-se 7 e a aposta marca 10. O simulador comprava apostas que não existem e cobrava por elas o preço da aposta real. Agora o tamanho vem da tabela oficial de apostas, e a distribuição de acertos bate com a hipergeométrica de cada jogo: Lotomania com moda em 10 acertos, Lotofácil em 9, Dia de Sorte em 2, Mega-Sena em 0.
+
+### Uma rodada só engana
+
+Corrigidos os dois erros, ficou visível o que já se suspeitava: o resultado de uma carteira de mil jogos é dominado por um punhado de prêmios de faixa alta, e trocar a semente muda tudo. Na Timemania o retorno do CRIVO variou de 3,8% a 58,4% entre oito sementes dos mesmos concursos. Mostrar um número só seria vender sorte como método.
+
+O backtest agora roda oito sementes independentes e mostra média, faixa de variação e desvio das duas carteiras, além de comparar a diferença entre elas com o ruído da própria comparação. Na quase totalidade das modalidades a diferença cabe dentro do ruído — as duas carteiras são indistinguíveis, que é exatamente o previsto: o critério do CRIVO age no rateio, não na chance de acertar.
+
+### Super Sete
+
+Deixou de ser a modalidade excluída. Cada uma das sete colunas é um sorteio independente de um dígito de 0 a 9, então a unidade de análise mudou: a seleção do filtro cruzado passa a ser a célula (coluna, dígito), o qui-quadrado é calculado por coluna com 9 graus de liberdade, e a estratégia de "dígito quente" é medida em colunas certas por concurso, contra o esperado de 0,7.
+
+Resultado sobre 877 concursos: qui-quadrado somado de 49,72 com 63 graus de liberdade, contra um valor crítico de 82,53 e um valor esperado por acaso de 63. Nenhuma coluna passa do limite individual de 16,92. Não há evidência de viés em nenhuma das sete.
+
+O gerador do Super Sete traz um aviso que vale repetir: diferente do efeito aniversário na Mega-Sena, que **medimos** no rateio real, os critérios anti-popularidade do Super Sete são raciocínio por analogia com escolha humana de dígitos. A Caixa não publica a distribuição das apostas dessa modalidade. Está escrito na tela, ao lado de cada jogo gerado.
+
+### Dupla-Sena, e o melhor teste que temos do nosso próprio método
+
+Os dois sorteios agora podem ser vistos separados ou somados, e a escolha entra na barra de seleção como qualquer outro filtro. Os dois passam no qui-quadrado: 55,79 e 32,47, contra um crítico de 66,34 com 49 graus de liberdade.
+
+Mas o valor real da Dupla-Sena é outro. Ela oferece um experimento natural que nenhuma outra modalidade oferece: pares de dezenas **dentro** do mesmo sorteio estão sob restrição sem reposição, enquanto pares **entre** os dois sorteios do mesmo concurso são independentes, porque são duas extrações separadas. A calibração descrita na seção 14 tem de devolver coisas diferentes nos dois casos.
+
+Devolve. Dentro do mesmo sorteio: 0,8504, contra o teórico 250/294 = 0,8503. Entre os dois sorteios: 0,9994, contra o teórico 1,0000. E no Super Sete, onde as sete colunas são sorteios independentes, a escala entre colunas dá exatamente 1,0000.
+
+É o resultado que valida a correção: a calibração está capturando a estrutura do sorteio, e não inventando um ajuste conveniente para fazer os números caírem onde a gente gostaria.

@@ -111,3 +111,7 @@ Loteria não é investimento. O retorno esperado é negativo por lei (43,79% da 
 ## Novidades da v9
 
 Seleção única e compartilhada entre todas as abas, com desfazer e refazer; régua do gatilho abrindo a aba Onde apostar; painel de co-ocorrência que mostra quem sai junto com quem — e, principalmente, uma **correção no nosso próprio cálculo**: o esperado sob independência ignorava que o sorteio é sem reposição, o que empurrava todos os pares para o lado negativo. Corrigido por calibração empírica, o resultado é que nenhuma dupla de dezenas tem co-ocorrência anômala em nenhuma das nove modalidades. Detalhes na seção 14 de `METODOLOGIA.md`.
+
+## Novidades da v10
+
+Super Sete e Dupla-Sena deixaram de ser modalidades de segunda classe — o primeiro ganhou análise por coluna, filtro cruzado por (coluna, dígito) e a aba Evidências completa; a segunda ganhou os dois sorteios separados. Fechar essas lacunas expôs **dois erros graves no cálculo de prêmio** que afetavam cinco modalidades: o índice de faixa era calculado por aritmética e atropelava as faixas extras (o backtest da Dupla-Sena chegava a mostrar 507.958% de retorno), e o simulador gerava apostas do tamanho do sorteio em vez do tamanho da aposta real. Os dois estão corrigidos e documentados na seção 15 de `METODOLOGIA.md`. O backtest agora roda oito sementes e mostra a dispersão, porque uma rodada só engana.

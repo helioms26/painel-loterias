@@ -654,7 +654,8 @@ const GAMES = {
 const SEQ_BLUE = ['var(--seq-1)','var(--seq-2)','var(--seq-3)','var(--seq-4)','var(--seq-5)','var(--seq-6)','var(--seq-7)','var(--seq-8)'];
 const SEQ_ORANGE = ['var(--seq2-1)','var(--seq2-2)','var(--seq2-3)','var(--seq2-4)','var(--seq2-5)','var(--seq2-6)','var(--seq2-7)','var(--seq2-8)'];
 /* ================= STATE ================= */
-const state = { game:'megasena', tab:'visao', windowN:0, metric:'freq', comboK:2, comboDir:'top', topN:10, dezenas:[] };
+const state = { game:'megasena', tab:'visao', windowN:0, metric:'freq', comboK:2, comboDir:'top', topN:10,
+                dezenas:[], celulas:[], sorteioDS:0 };
 
 /* ===== FILTRO CRUZADO =====
    Uma seleção só, compartilhada por todas as abas: modalidade, janela e dezenas.
@@ -663,7 +664,8 @@ const state = { game:'megasena', tab:'visao', windowN:0, metric:'freq', comboK:2
    cada botão do painel. */
 const PILHA_SEL=[]; let PI_SEL=-1, navegandoSel=false;
 function _instantanea(){ return JSON.stringify({game:state.game,tab:state.tab,windowN:state.windowN,
-  metric:state.metric,comboK:state.comboK,comboDir:state.comboDir,topN:state.topN,dezenas:state.dezenas}); }
+  metric:state.metric,comboK:state.comboK,comboDir:state.comboDir,topN:state.topN,
+  dezenas:state.dezenas,celulas:state.celulas,sorteioDS:state.sorteioDS}); }
 function gravarSel(){
   const s=_instantanea();
   if(PI_SEL>=0 && PILHA_SEL[PI_SEL]===s) return;
@@ -677,7 +679,16 @@ function alternarDezena(n){
   state.dezenas = state.dezenas.includes(n) ? state.dezenas.filter(x=>x!==n) : [...state.dezenas, n];
   refresh();
 }
-function limparSel(){ state.dezenas=[]; state.windowN=0; refresh(); }
+/* Super Sete não tem dezenas: tem 7 colunas com um dígito de 0 a 9 cada.
+   A unidade de seleção ali é a célula (coluna, dígito), codificada como c*10+d. */
+function codCel(c,d){ return c*10+d; }
+function decCel(k){ return {c:Math.floor(k/10), d:k%10}; }
+function alternarCelula(c,d){
+  const k=codCel(c,d);
+  state.celulas = state.celulas.includes(k) ? state.celulas.filter(x=>x!==k) : [...state.celulas, k];
+  refresh();
+}
+function limparSel(){ state.dezenas=[]; state.celulas=[]; state.windowN=0; refresh(); }
 function renderSelbar(){
   const b=$('#selbar'); if(!b) return; b.innerHTML='';
   b.appendChild(el('span',{class:'eyebrow'},'Seleção'));
@@ -690,14 +701,29 @@ function renderSelbar(){
     c.onclick=()=>{ state.windowN=0; refresh(); };
     b.appendChild(c);
   }
-  const dz=[...state.dezenas].sort((a,b2)=>a-b2);
+  const colunas=GAMES[state.game].colunas;
+  const dz = colunas ? [] : [...state.dezenas].sort((a,b2)=>a-b2);
   for(const d of dz){
     const c=el('button',{class:'selchip'},'dezena '+pad(d,state.game)+' <span aria-hidden="true">✕</span>');
     c.onclick=()=>alternarDezena(d);
     b.appendChild(c);
   }
-  if(!dz.length && !state.windowN)
-    b.appendChild(el('span',{class:'nada'},'clique em qualquer dezena do volante ou da dispersão para cruzar as abas'));
+  const cels = colunas ? [...state.celulas].sort((a,b2)=>a-b2) : [];
+  for(const k of cels){
+    const {c:cc,d:dd}=decCel(k);
+    const c=el('button',{class:'selchip'},'col '+(cc+1)+' · dígito '+dd+' <span aria-hidden="true">✕</span>');
+    c.onclick=()=>alternarCelula(cc,dd);
+    b.appendChild(c);
+  }
+  if(state.game==='duplasena' && state.sorteioDS){
+    const c=el('button',{class:'selchip'},(state.sorteioDS===1?'1º':'2º')+' sorteio <span aria-hidden="true">✕</span>');
+    c.onclick=()=>{ state.sorteioDS=0; refresh(); };
+    b.appendChild(c);
+  }
+  if(!dz.length && !cels.length && !state.windowN && !state.sorteioDS)
+    b.appendChild(el('span',{class:'nada'}, colunas
+      ? 'clique em qualquer célula do volante para cruzar as abas'
+      : 'clique em qualquer dezena do volante ou da dispersão para cruzar as abas'));
   const h=el('div',{class:'hist'});
   const bv=el('button',{class:'selchip fantasma',title:'Desfazer'},'↩ desfazer');
   bv.disabled = PI_SEL<=0; bv.onclick=voltarSel;
@@ -780,6 +806,13 @@ function windowDraws(g){
   return state.windowN>0 ? d.slice(-state.windowN) : d;
 }
 /* ================= ANALYSIS ================= */
+/* Dupla-Sena tem dois sorteios por concurso. Por padrão as visões somam os dois;
+   com o seletor ligado, passam a falar de um só. É a mesma barra de seleção do
+   resto do painel — só que a unidade aqui é o sorteio, não a dezena. */
+function setsAtivos(d){
+  if(state.game==='duplasena' && state.sorteioDS && d.sets.length>1) return [d.sets[state.sorteioDS-1]];
+  return d.sets;
+}
 function frequency(g){
   const cfg=GAMES[g]; const draws=windowDraws(g);
   if(cfg.colunas){ // supersete: freq per column x digit
@@ -789,7 +822,7 @@ function frequency(g){
   }
   const f = {};
   for(let i=cfg.min;i<=cfg.max;i++) f[i]=0;
-  for(const d of draws) for(const s of d.sets) for(const v of s) if(f[v]!=null) f[v]++;
+  for(const d of draws) for(const s of setsAtivos(d)) for(const v of s) if(f[v]!=null) f[v]++;
   return {freq:f, total:draws.length};
 }
 function delays(g){ // atraso: concursos desde a última aparição (histórico completo)
@@ -802,7 +835,7 @@ function delays(g){ // atraso: concursos desde a última aparição (histórico 
     return {matrix:res};
   }
   for(let i=cfg.min;i<=cfg.max;i++) lastSeen[i]=null;
-  draws.forEach((d,idx)=>{ for(const s of d.sets) for(const v of s) lastSeen[v]=idx; });
+  draws.forEach((d,idx)=>{ for(const s of setsAtivos(d)) for(const v of s) lastSeen[v]=idx; });
   const res={};
   for(let i=cfg.min;i<=cfg.max;i++) res[i]= lastSeen[i]==null? Infinity : draws.length-1-lastSeen[i];
   return {atraso:res};
@@ -862,7 +895,8 @@ function renderChips(){
   for(const g in GAMES){
     const ativo = state.game===g && state.tab!=='comparar';
     const b=el('button',{class:'chip'+(ativo?' on':'')},GAMES[g].label);
-    b.onclick=()=>{ state.game=g; state.dezenas=[]; if(state.tab==='comparar') state.tab='visao'; refresh(); };
+    b.onclick=()=>{ state.game=g; state.dezenas=[]; state.celulas=[]; state.sorteioDS=0;
+                    if(state.tab==='comparar') state.tab='visao'; refresh(); };
     c.appendChild(b);
   }
 }
@@ -1567,7 +1601,8 @@ function renderVolante(m){
     const grid7=el('div',{class:'grid-volante',style:'grid-template-columns:repeat(7,minmax(34px,1fr));max-width:'+(7*62)+'px'});
     for(let v=0;v<=9;v++) for(let c=0;c<7;c++){
       const val=data[c][v];
-      grid7.appendChild(cellNode(String(v), val, mn, mx, ramp, 'Coluna '+(c+1)+' · dígito '+v));
+      grid7.appendChild(cellNode(String(v), val, mn, mx, ramp, 'Coluna '+(c+1)+' · dígito '+v,
+        state.metric==='freq'?'sorteios':'concursos de atraso', {c, d:v}));
     }
     p.appendChild(grid7);
   } else {
@@ -1596,18 +1631,21 @@ function temaEscuro(){
   if(t) return t==='dark';
   return matchMedia('(prefers-color-scheme: dark)').matches;
 }
-function cellNode(lbl, val, mn, mx, ramp, tipLabel, unit, dezena){
+/* alvo: número = dezena · objeto {c,d} = célula do Super Sete · null = não clicável */
+function cellNode(lbl, val, mn, mx, ramp, tipLabel, unit, alvo){
   const t = mx>mn ? (val-mn)/(mx-mn) : .5;
   const color = ramp[Math.min(7,Math.max(0,Math.round(t*7)))];
   const swatchEscuro = temaEscuro() ? t<0.55 : t>0.45;
-  const marcada = dezena!=null && state.dezenas.includes(dezena);
-  const cell=el(dezena!=null?'button':'div',{class:'cell'+(marcada?' sel':''),'data-interactive':'1',
+  const ehCel = alvo!=null && typeof alvo==='object';
+  const marcada = alvo==null ? false
+    : ehCel ? state.celulas.includes(codCel(alvo.c,alvo.d)) : state.dezenas.includes(alvo);
+  const cell=el(alvo!=null?'button':'div',{class:'cell'+(marcada?' sel':''),'data-interactive':'1',
     style:'background:'+color+';color:'+(swatchEscuro?'#ffffff':'#0b0b0b')+
-      (dezena!=null?';border:0;font-family:inherit;cursor:pointer':'')});
+      (alvo!=null?';border:0;font-family:inherit;cursor:pointer':'')});
   cell.innerHTML=lbl+'<small>'+(isFinite(val)?fmtInt(val):'—')+'</small>';
   attachTip(cell,()=> '<b>'+tipLabel+'</b><br>'+(isFinite(val)?fmtInt(val)+' '+(unit||''):'nunca saiu')+
-    (dezena!=null?'<br><span style="opacity:.75">clique para '+(state.dezenas.includes(dezena)?'tirar da':'somar à')+' seleção</span>':''));
-  if(dezena!=null) cell.onclick=()=>alternarDezena(dezena);
+    (alvo!=null?'<br><span style="opacity:.75">clique para '+(marcada?'tirar da':'somar à')+' seleção</span>':''));
+  if(alvo!=null) cell.onclick=()=> ehCel ? alternarCelula(alvo.c,alvo.d) : alternarDezena(alvo);
   return cell;
 }
 function renderExtraFreq(){
@@ -1646,6 +1684,230 @@ function renderTrevos(){
    de concursos em que i e j aparecem juntas seria freq(i)·freq(j)/total. O desvio
    é medido em sigmas de Poisson. É o teste honesto — e quase sempre dá ruído, que
    é exatamente o que o método afirma. */
+/* ==================== SUPER SETE: MAIS & MENOS ====================
+   Cada uma das 7 colunas é um sorteio próprio de um dígito de 0 a 9. Isso muda
+   tudo: não existe "dezena atrasada" nem conjunto de dezenas — existe distribuição
+   de dígito por coluna, e a pergunta certa é se alguma coluna foge do uniforme.
+   Bônus metodológico: como as colunas são sorteios independentes, a co-ocorrência
+   entre elas NÃO tem correção sem reposição. Serve de controle para a calibração
+   que usamos nas outras oito modalidades. */
+function statsColunas(g){
+  const draws=windowDraws(g), n=draws.length;
+  const freq=Array.from({length:7},()=>Array(10).fill(0));
+  for(const d of draws){ const s=d.sets[0];
+    for(let c=0;c<7;c++){ const v=s[c]; if(v>=0&&v<=9) freq[c][v]++; } }
+  const esp=n/10;
+  const colunas=[];
+  for(let c=0;c<7;c++){
+    let x2=0; for(let v=0;v<10;v++) x2+=Math.pow(freq[c][v]-esp,2)/(esp||1);
+    const digitos=[];
+    for(let v=0;v<10;v++) digitos.push({d:v, f:freq[c][v], z:esp? (freq[c][v]-esp)/Math.sqrt(esp*0.9) : 0});
+    digitos.sort((a,b)=>b.f-a.f);
+    colunas.push({c, x2, esp, digitos, mais:digitos[0], menos:digitos[digitos.length-1]});
+  }
+  return {colunas, n, esp, freq, x2total:colunas.reduce((a,b)=>a+b.x2,0)};
+}
+function coColunas(g){
+  const draws=windowDraws(g), n=draws.length;
+  const freq=Array.from({length:7},()=>Array(10).fill(0));
+  const co={};
+  for(const d of draws){ const s=d.sets[0];
+    for(let c=0;c<7;c++) if(s[c]>=0&&s[c]<=9) freq[c][s[c]]++;
+    for(let a=0;a<7;a++) for(let b=0;b<7;b++){
+      if(a===b) continue;
+      const k=a+'|'+s[a]+'|'+b+'|'+s[b];
+      co[k]=(co[k]||0)+1;
+    }
+  }
+  let obs=0, espT=0;
+  for(let a=0;a<7;a++) for(let b=a+1;b<7;b++)
+    for(let x=0;x<10;x++) for(let y=0;y<10;y++){
+      obs += co[a+'|'+x+'|'+b+'|'+y]||0;
+      espT += freq[a][x]*freq[b][y]/(n||1);
+    }
+  return {co, freq, n, escala: espT? obs/espT : 1};
+}
+function renderRankingColunas(m){
+  const g=state.game;
+  m.appendChild(windowSelector());
+  const S=statsColunas(g);
+  if(!S.n){ m.appendChild(el('div',{class:'warnbox'},'Sem concursos nesta janela.')); return; }
+
+  const p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Cada coluna é um sorteio separado'));
+  p.appendChild(el('p',{class:'note'},'No Super Sete não existe dezena mais sorteada: existem 7 sorteios independentes de um dígito de 0 a 9. '+
+    'A pergunta certa não é "qual dígito está quente", e sim <b>se alguma coluna foge do uniforme</b>. Base: '+fmtInt(S.n)+
+    ' concursos, o que dá '+S.esp.toLocaleString('pt-BR',{maximumFractionDigits:1})+' aparições esperadas por dígito em cada coluna.'));
+  let ht='<div class="rolagem"><table><thead><tr><th>Coluna</th><th class="num">Qui-quadrado (9 gl)</th>'+
+    '<th>Dígito mais sorteado</th><th>Dígito menos sorteado</th><th class="num">Amplitude</th><th>Veredito</th></tr></thead><tbody>';
+  for(const c of S.colunas){
+    const passa = c.x2 < 16.92;
+    ht+='<tr><td><b>Coluna '+(c.c+1)+'</b></td>'+
+      '<td class="num tabular">'+c.x2.toFixed(2).replace('.',',')+'</td>'+
+      '<td><span class="ball mini">'+c.mais.d+'</span> <span class="tabular">'+fmtInt(c.mais.f)+'×</span></td>'+
+      '<td><span class="ball mini">'+c.menos.d+'</span> <span class="tabular">'+fmtInt(c.menos.f)+'×</span></td>'+
+      '<td class="num tabular">'+fmtInt(c.mais.f-c.menos.f)+'</td>'+
+      '<td><span class="selo '+(passa?'bom':'medio')+'">'+(passa?'UNIFORME':'OLHAR DE PERTO')+'</span></td></tr>';
+  }
+  ht+='</tbody></table></div>';
+  p.innerHTML+=ht;
+  const crit=16.92, critTot=82.53;
+  const todasOk = S.colunas.every(c=>c.x2<crit);
+  p.appendChild(el('div',{class:todasOk?'okbox':'warnbox'},
+    '<b>Qui-quadrado somado: '+S.x2total.toFixed(2).replace('.',',')+' com 63 graus de liberdade.</b> '+
+    'O valor crítico a 5% é '+critTot.toFixed(2).replace('.',',')+', e o valor esperado por puro acaso é 63. '+
+    (todasOk
+      ? 'Nenhuma coluna passa do limite individual de '+crit.toFixed(2).replace('.',',')+'. As sete são compatíveis com sorteio uniforme — a diferença entre o dígito mais e o menos sorteado é o tamanho normal do ruído, não sinal.'
+      : 'Alguma coluna passou do limite individual. Antes de concluir qualquer coisa, aplique o teste de estabilidade temporal: se o desvio não reaparecer nas três eras, é ruído.')));
+  m.appendChild(p);
+
+  const q=el('div',{class:'panel'});
+  q.appendChild(el('h3',null,'Distribuição dígito a dígito'));
+  q.appendChild(el('p',{class:'note'},'Cada linha é uma coluna do volante. A marca cinza é o esperado. Clique num dígito para cruzar as abas com ele.'));
+  const maxF=Math.max(...S.freq.flat(),1);
+  for(const c of S.colunas){
+    const linha=el('div',{style:'display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap'});
+    linha.appendChild(el('span',{style:'width:74px;font-size:var(--text-xs);color:var(--ink-muted);flex:0 0 74px'},'Coluna '+(c.c+1)));
+    const barras=el('div',{style:'display:flex;gap:var(--space-2);flex:1;min-width:260px;align-items:flex-end;height:70px'});
+    for(let v=0;v<10;v++){
+      const f=S.freq[c.c][v], marcada=state.celulas.includes(codCel(c.c,v));
+      const b=el('button',{title:'Coluna '+(c.c+1)+' · dígito '+v+' · '+fmtInt(f)+' vezes (esperado '+S.esp.toFixed(1)+')',
+        style:'flex:1;min-width:20px;border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;height:100%;font-family:inherit'});
+      b.innerHTML='<span style="display:block;height:'+Math.max(3,f/maxF*52)+'px;border-radius:var(--radius-xs) var(--radius-xs) 0 0;'+
+        'background:'+(marcada?'var(--accent)':'var(--series-1)')+';opacity:'+(marcada?1:.55)+'"></span>'+
+        '<span style="font-size:var(--text-2xs);color:'+(marcada?'var(--accent-ink)':'var(--ink-muted)')+';font-weight:'+(marcada?'var(--weight-semi)':'var(--weight-regular)')+'">'+v+'</span>';
+      b.onclick=()=>alternarCelula(c.c,v);
+      barras.appendChild(b);
+    }
+    linha.appendChild(barras);
+    q.appendChild(linha);
+  }
+  m.appendChild(q);
+
+  if(state.celulas.length) m.appendChild(painelCoColunas(g));
+  else m.appendChild(el('div',{class:'okbox'},
+    '<b>Clique num dígito acima.</b> Aparece aqui com quais dígitos das outras colunas ele sai junto, mais e menos do que o esperado — '+
+    'e, de quebra, o teste que valida a calibração usada nas outras oito modalidades.'));
+}
+function painelCoColunas(g){
+  const alvo=decCel(state.celulas[state.celulas.length-1]);
+  const M=coColunas(g);
+  const p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Quem sai junto com o dígito '+alvo.d+' da coluna '+(alvo.c+1)));
+  const linhas=[];
+  for(let b=0;b<7;b++){
+    if(b===alvo.c) continue;
+    for(let y=0;y<10;y++){
+      const obs = (alvo.c<b ? M.co[alvo.c+'|'+alvo.d+'|'+b+'|'+y] : M.co[b+'|'+y+'|'+alvo.c+'|'+alvo.d]) || 0;
+      const esp = M.freq[alvo.c][alvo.d]*M.freq[b][y]/(M.n||1);
+      if(esp<5) continue;
+      linhas.push({col:b, d:y, obs, esp, z:(obs-esp)/Math.sqrt(esp)});
+    }
+  }
+  if(!linhas.length){ p.appendChild(el('p',{class:'note'},'Base pequena demais nesta janela.')); return p; }
+  linhas.sort((a,b)=>b.z-a.z);
+  const zmax=Math.max(...linhas.map(l=>Math.abs(l.z)));
+  const bloco=(titulo,arr,cor)=>{
+    const d=el('div');
+    d.appendChild(el('div',{class:'t-label',style:'margin-bottom:var(--space-4)'},titulo));
+    let ht='<table><tbody>';
+    for(const l of arr) ht+='<tr data-c="'+l.col+'" data-d="'+l.d+'" style="cursor:pointer">'+
+      '<td style="white-space:nowrap">col '+(l.col+1)+' <span class="ball mini">'+l.d+'</span></td>'+
+      '<td class="num">'+fmtInt(l.obs)+'</td><td class="num" style="color:var(--ink-muted)">esp. '+l.esp.toFixed(0)+'</td>'+
+      '<td class="num" style="color:'+cor+';font-weight:var(--weight-semi)">'+(l.z>0?'+':'')+l.z.toFixed(1).replace('.',',')+'σ</td></tr>';
+    d.innerHTML+=ht+'</tbody></table>';
+    d.querySelectorAll('tr[data-c]').forEach(tr=>{ tr.onclick=()=>alternarCelula(+tr.dataset.c,+tr.dataset.d); });
+    return d;
+  };
+  const w=el('div',{class:'tworow'});
+  w.appendChild(bloco('Saíram junto MAIS que o esperado', linhas.slice(0,8), 'var(--series-1)'));
+  w.appendChild(bloco('Saíram junto MENOS que o esperado', linhas.slice(-8).reverse(), 'var(--series-2)'));
+  p.appendChild(w);
+  const ruido=Math.sqrt(2*Math.log(Math.max(2,linhas.length)));
+  p.appendChild(el('div',{class: zmax>ruido+1 ? 'warnbox':'okbox'},
+    '<b>O maior desvio aqui é de '+zmax.toFixed(1).replace('.',',')+'σ.</b> Com '+fmtInt(linhas.length)+
+    ' pares testados, o maior |z| que o puro acaso produz já fica perto de '+ruido.toFixed(1).replace('.',',')+'σ. '+
+    (zmax>ruido+1 ? 'Passou dessa marca — vale o teste de estabilidade temporal antes de qualquer conclusão.'
+                  : 'Está dentro do que o acaso gera sozinho.')));
+  p.appendChild(el('div',{class:'okbox'},
+    '<b>Este painel também é um controle do nosso método.</b> Nas outras oito modalidades precisamos corrigir a escala do esperado, '+
+    'porque o sorteio é sem reposição e o cálculo ingênuo empurraria todos os pares para o lado negativo. '+
+    'Aqui não: cada coluna do Super Sete é um sorteio próprio, então os pares entre colunas são de fato independentes e a correção deveria ser exatamente 1. '+
+    'Medida nesta janela: <b>'+M.escala.toFixed(4).replace('.',',')+'</b>. '+
+    'É a prova de que a calibração está capturando a estrutura do sorteio, e não inventando um ajuste conveniente.'));
+  return p;
+}
+
+/* ==================== DUPLA-SENA: OS DOIS SORTEIOS ====================
+   O concurso tem dois sorteios de 6 dezenas em 50, e isso cria um experimento
+   natural que nenhuma outra modalidade oferece: pares DENTRO de um sorteio estão
+   sob restrição sem reposição; pares ENTRE os dois sorteios são independentes.
+   A mesma calibração aplicada aos dois casos tem de devolver a correção
+   hipergeométrica no primeiro e exatamente 1 no segundo. Se não devolver, a
+   calibração está errada — e nós ficamos sabendo. */
+function statsDupla(g){
+  const cfg=GAMES[g], draws=windowDraws(g).filter(d=>d.sets.length>1), n=draws.length;
+  const f1={}, f2={};
+  for(let i=cfg.min;i<=cfg.max;i++){ f1[i]=0; f2[i]=0; }
+  const dentroObs={}, entreObs={};
+  for(const d of draws){
+    const a=[...new Set(d.sets[0])], b=[...new Set(d.sets[1])];
+    for(const v of a) if(f1[v]!=null) f1[v]++;
+    for(const v of b) if(f2[v]!=null) f2[v]++;
+    for(const conj of [a,b]) for(let i=0;i<conj.length;i++) for(let j=i+1;j<conj.length;j++){
+      const k=Math.min(conj[i],conj[j])+'|'+Math.max(conj[i],conj[j]);
+      dentroObs[k]=(dentroObs[k]||0)+1;
+    }
+    for(const x of a) for(const y of b){ const k=x+'|'+y; entreObs[k]=(entreObs[k]||0)+1; }
+  }
+  const fD={}; for(let i=cfg.min;i<=cfg.max;i++) fD[i]=f1[i]+f2[i];
+  let oD=0,eD=0,oE=0,eE=0;
+  for(let i=cfg.min;i<=cfg.max;i++) for(let j=cfg.min;j<=cfg.max;j++){
+    if(i<j){ oD+=dentroObs[i+'|'+j]||0; eD+=fD[i]*fD[j]/(2*n||1); }
+    if(i!==j){ oE+=entreObs[i+'|'+j]||0; eE+=f1[i]*f2[j]/(n||1); }
+  }
+  const esp=n*6/(cfg.max-cfg.min+1);
+  const x2=(f)=>{ let x=0; for(let i=cfg.min;i<=cfg.max;i++) x+=Math.pow(f[i]-esp,2)/(esp||1); return x; };
+  return {n, f1, f2, esp, x2_1:x2(f1), x2_2:x2(f2),
+          escalaDentro: eD? oD/eD : 1, escalaEntre: eE? oE/eE : 1,
+          teoricaDentro: 50*5/(6*49)};
+}
+function painelDuplaSena(g){
+  const cfg=GAMES[g], S=statsDupla(g), p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Os dois sorteios, separados'));
+  if(!S.n){ p.appendChild(el('p',{class:'note'},'Sem concursos com os dois sorteios nesta janela.')); return p; }
+  p.appendChild(el('p',{class:'note'},'Cada concurso da Dupla-Sena tem dois sorteios de 6 dezenas em 50. '+
+    'Somá-los esconde uma pergunta simples: eles se comportam igual? Base de '+fmtInt(S.n)+
+    ' concursos, com '+S.esp.toLocaleString('pt-BR',{maximumFractionDigits:1})+' aparições esperadas por dezena em cada sorteio.'));
+  const crit=66.34;
+  let ht='<div class="rolagem"><table><thead><tr><th>Sorteio</th><th class="num">Qui-quadrado (49 gl)</th>'+
+    '<th class="num">Dezena mais sorteada</th><th class="num">Menos sorteada</th><th>Veredito</th></tr></thead><tbody>';
+  for(const [rot,f,x2] of [['1º sorteio',S.f1,S.x2_1],['2º sorteio',S.f2,S.x2_2]]){
+    const arr=Object.entries(f).map(([k,v])=>({n:+k,f:v})).sort((a,b)=>b.f-a.f);
+    ht+='<tr><td><b>'+rot+'</b></td><td class="num tabular">'+x2.toFixed(2).replace('.',',')+'</td>'+
+      '<td class="num"><span class="ball mini">'+pad(arr[0].n,g)+'</span> <span class="tabular">'+fmtInt(arr[0].f)+'×</span></td>'+
+      '<td class="num"><span class="ball mini">'+pad(arr[arr.length-1].n,g)+'</span> <span class="tabular">'+fmtInt(arr[arr.length-1].f)+'×</span></td>'+
+      '<td><span class="selo '+(x2<crit?'bom':'medio')+'">'+(x2<crit?'UNIFORME':'OLHAR DE PERTO')+'</span></td></tr>';
+  }
+  ht+='</tbody></table></div>';
+  p.innerHTML+=ht;
+  p.appendChild(el('p',{class:'note'},'Valor crítico a 5% com 49 graus de liberdade: '+crit.toFixed(2).replace('.',',')+
+    '. O valor esperado por puro acaso é 49.'));
+
+  const dif=Math.abs(S.escalaEntre-1);
+  p.appendChild(el('div',{class: dif<0.02 ? 'okbox' : 'warnbox'},
+    '<b>A Dupla-Sena é o melhor teste que temos da nossa própria correção.</b> '+
+    'Pares de dezenas <b>dentro</b> do mesmo sorteio estão sob restrição sem reposição; pares <b>entre</b> os dois sorteios do mesmo concurso são independentes, '+
+    'porque são duas extrações separadas. A mesma calibração aplicada aos dois casos tem de devolver coisas diferentes — e devolve.'+
+    '<br><br>Dentro do mesmo sorteio: <b>'+S.escalaDentro.toFixed(4).replace('.',',')+'</b>, contra o teórico 250/294 = '+
+    S.teoricaDentro.toFixed(4).replace('.',',')+'.'+
+    '<br>Entre os dois sorteios: <b>'+S.escalaEntre.toFixed(4).replace('.',',')+'</b>, contra o teórico 1,0000.'+
+    '<br><br>'+ (dif<0.02
+      ? 'É o resultado que valida o método: a calibração está capturando a estrutura do sorteio, não inventando um ajuste conveniente para fazer os números caírem onde queremos.'
+      : 'A escala entre sorteios fugiu de 1 nesta janela — vale investigar antes de confiar na correção aqui.')));
+  return p;
+}
+
 const _cacheCo={};
 function matrizCo(g){
   const key=g+'|'+state.windowN;
@@ -1655,7 +1917,7 @@ function matrizCo(g){
   const co=Array.from({length:N},()=>new Array(N).fill(0));
   for(const d of draws){
     const s=[]; const vis=new Set();
-    for(const st of d.sets) for(const v of st)
+    for(const st of setsAtivos(d)) for(const v of st)
       if(v>=cfg.min&&v<=cfg.max&&!vis.has(v)){ vis.add(v); s.push(v); }
     for(const v of s) freq[v-cfg.min]++;
     for(let a=0;a<s.length;a++) for(let b=a+1;b<s.length;b++){
@@ -1751,7 +2013,7 @@ function perfilDezenas(g){
   for(let i=cfg.min;i<=cfg.max;i++) P[i]={n:i, freq:freq[i]||0, ultimaIdx:null, ultimaConc:null, primeiraConc:null, recente:0};
   const REC=Math.min(100, draws.length);
   draws.forEach((d,idx)=>{
-    for(const s of d.sets) for(const v of s){
+    for(const s of setsAtivos(d)) for(const v of s){
       const p=P[v]; if(!p) continue;
       p.ultimaIdx=idx; p.ultimaConc=d.n;
       if(p.primeiraConc==null) p.primeiraConc=d.n;
@@ -1775,11 +2037,17 @@ function tsToMesAno(ts){ const d=new Date(ts);
 
 function renderRanking(m){
   const g=state.game,cfg=GAMES[g];
-  if(cfg.colunas){
-    m.appendChild(el('div',{class:'okbox'},'No Super Sete cada coluna é um sorteio de 0–9 independente — o ranking por dezena não se aplica; use o mapa por coluna na aba Volante.'));
-    return;
-  }
+  if(cfg.colunas){ return renderRankingColunas(m); }
   const ctr=windowSelector();
+  if(cfg.dupla){
+    ctr.appendChild(el('label',null,'Sorteio:'));
+    const selS=el('select');
+    for(const [v,l] of [[0,'Os dois somados'],[1,'Só o 1º sorteio'],[2,'Só o 2º sorteio']])
+      selS.appendChild(el('option',{value:v},l));
+    selS.value=state.sorteioDS;
+    selS.onchange=()=>{ state.sorteioDS=+selS.value; refresh(); };
+    ctr.appendChild(selS);
+  }
   ctr.appendChild(el('label',null,'Mostrar:'));
   const N=cfg.max-cfg.min+1;
   const sel=el('select');
@@ -1804,6 +2072,8 @@ function renderRanking(m){
   m.appendChild(wrap);
 
   m.appendChild(dispersaoPanel(g, arr, setMais, setMenos, total, REC));
+
+  if(cfg.dupla) m.appendChild(painelDuplaSena(g));
 
   if(state.dezenas.length) m.appendChild(painelCompanheiras(g));
   else m.appendChild(el('div',{class:'okbox'},
@@ -2799,6 +3069,10 @@ function renderGerador(m){
     if(cfg.max>31) opts.appendChild(mkChk('fBday','evitar excesso de dezenas ≤ 31'));
     opts.appendChild(mkChk('fWin','evitar combinações já premiadas'));
     opts.appendChild(mkChk('fLinha','espalhar pelo volante'));
+  } else {
+    opts.appendChild(mkChk('fSeq','evitar padrões de dígito que gente costuma jogar'));
+    opts.appendChild(el('span',{class:'note',style:'flex:1;min-width:240px'},
+      'Aqui o filtro é raciocínio por analogia, não medição: a Caixa não publica a distribuição das apostas do Super Sete.'));
   }
   p.insertBefore(opts, plano);
   const btn=el('button',{class:'primary',style:'margin-top:var(--space-4)'},'Gerar jogos');
@@ -2890,7 +3164,26 @@ function renderGerador(m){
         while(candidatos.length<25 && tentativas<900){
           tentativas++;
           let pick;
-          if(cfg.colunas){ pick=Array.from({length:7},()=>Math.floor(Math.random()*10)); }
+          if(cfg.colunas){
+            pick=Array.from({length:7},()=>Math.floor(Math.random()*10));
+            /* Anti-popularidade no Super Sete. Aviso importante sobre o status
+               disto: o efeito aniversário na Mega-Sena nós MEDIMOS no rateio real.
+               Aqui não temos essa medição — a Caixa não publica a distribuição das
+               apostas do Super Sete. Os filtros abaixo são raciocínio por analogia
+               com o que se sabe de escolha humana de dígitos, não fato medido, e
+               estão marcados como tal na explicação de cada jogo. */
+            if($('#fSeq') && $('#fSeq').checked){
+              let run=1, bad=false;
+              for(let i=1;i<7;i++){
+                run = (pick[i]===pick[i-1]+1 || pick[i]===pick[i-1]-1) ? run+1 : 1;
+                if(run>=3){ bad=true; break; }
+              }
+              if(bad) continue;
+              if(new Set(pick).size<=2) continue;              // 7 dígitos em 2 valores: padrão muito jogado
+              if(pick.every(v=>v<=6)) continue;                // gente evita 7, 8, 9 e principalmente 0
+              if(!pick.includes(0) && Math.random()<0.5) continue; // puxa o 0 para dentro sem torná-lo obrigatório
+            }
+          }
           else {
             const pool=Array.from({length:N},(_,i)=>i+cfg.min);
             pick=[];
@@ -2942,6 +3235,24 @@ function renderGerador(m){
           '<div style="margin-top:var(--space-2)">'+pf.alertas.map(a=>
             '<span style="color:'+(a.nivel==='bom'?'var(--status-good-ink)':'var(--status-warning)')+'">'+
             (a.nivel==='bom'?'✓ ':'▲ ')+'</span>'+a.txt).join('<br>')+'</div>';
+        bloco.appendChild(exp);
+      } else {
+        const nums=jg.nums, distintos=new Set(nums).size;
+        let maiorRun=1, run=1;
+        for(let i=1;i<7;i++){ run=(nums[i]===nums[i-1]+1||nums[i]===nums[i-1]-1)?run+1:1; maiorRun=Math.max(maiorRun,run); }
+        const altos=nums.filter(v=>v>=7).length, temZero=nums.includes(0);
+        const linhas=[];
+        linhas.push(['bom', distintos+' dígitos distintos nas 7 colunas. Repetir muito o mesmo dígito é padrão visual e costuma ser jogado.']);
+        linhas.push([maiorRun<3?'bom':'ruim','Maior sequência de dígitos vizinhos: '+maiorRun+
+          (maiorRun<3?'. Abaixo de 3, que é o limite usado aqui.':'. Sequências longas chamam atenção e são muito jogadas.')]);
+        linhas.push([temZero||altos>=2?'bom':'ruim','Dígitos 7, 8 ou 9: '+altos+(temZero?'; inclui o 0.':'; sem o 0.')+
+          ' As pontas da escala, e o 0 em especial, são as menos escolhidas quando alguém preenche à mão.']);
+        const exp=el('div',{style:'margin-top:var(--space-3);font-size:var(--text-xs);color:var(--ink-secondary);line-height:1.55'});
+        exp.innerHTML='<span class="tabular">chance de acertar as 7 colunas: 1 em 10.000.000</span>'+
+          '<div style="margin-top:var(--space-2)">'+linhas.map(([n,t])=>
+            '<span style="color:'+(n==='bom'?'var(--status-good-ink)':'var(--status-warning)')+'">'+(n==='bom'?'✓ ':'▲ ')+'</span>'+t).join('<br>')+
+          '</div><div style="margin-top:var(--space-2);color:var(--ink-muted)">Aviso: diferente do efeito aniversário na Mega-Sena, que medimos no rateio real, '+
+          'estes critérios do Super Sete são raciocínio por analogia com escolha humana de dígitos. Não temos dado da Caixa sobre a distribuição das apostas aqui.</div>';
         bloco.appendChild(exp);
       }
       row.appendChild(bloco);
@@ -3130,8 +3441,45 @@ function pickRandom(cfg,rand){
   return out;
 }
 /* Teste 1 e 2: estratégia baseada em histórico vs baseline aleatório, walk-forward */
+/* Versão por colunas do Teste 1. A pergunta é a mesma — "dígito quente" ou
+   "dígito atrasado" batem o acaso? — mas a unidade é a coluna: escolhe-se um
+   dígito para cada uma das 7, e conta-se quantas colunas acertaram. O esperado
+   por acaso é 0,7 coluna por concurso. */
+function backtestEstrategiasColunas(g, minHist){
+  const draws=DB[g].draws, start=Math.max(minHist,100), rand=rng(20260726);
+  const acc={freq:0,atraso:0,aleatorio:0,fixo:0,n:0};
+  const dist={freq:{},atraso:{},aleatorio:{},fixo:{}};
+  const freq=Array.from({length:7},()=>Array(10).fill(0));
+  const last=Array.from({length:7},()=>Array(10).fill(-1));
+  const registra=(t)=>{ const s=draws[t].sets[0];
+    for(let c=0;c<7;c++){ const v=s[c]; if(v>=0&&v<=9){ freq[c][v]++; last[c][v]=t; } } };
+  for(let t=0;t<start;t++) registra(t);
+  const rf=rng(7);
+  const fixo=Array.from({length:7},()=>Math.floor(rf()*10));
+  for(let t=start;t<draws.length;t++){
+    const jFreq=[], jAtraso=[], jAleat=[];
+    for(let c=0;c<7;c++){
+      let bf=0, ba=0;
+      for(let v=1;v<10;v++){
+        if(freq[c][v]>freq[c][bf]) bf=v;
+        const av=last[c][v]<0?1e9:t-1-last[c][v], ab=last[c][ba]<0?1e9:t-1-last[c][ba];
+        if(av>ab) ba=v;
+      }
+      jFreq.push(bf); jAtraso.push(ba); jAleat.push(Math.floor(rand()*10));
+    }
+    const s=draws[t].sets[0];
+    const h=j=>j.filter((v,i)=>v===s[i]).length;
+    const hf=h(jFreq), ha=h(jAtraso), hr=h(jAleat), hx=h(fixo);
+    acc.freq+=hf; acc.atraso+=ha; acc.aleatorio+=hr; acc.fixo+=hx; acc.n++;
+    dist.freq[hf]=(dist.freq[hf]||0)+1; dist.atraso[ha]=(dist.atraso[ha]||0)+1;
+    dist.aleatorio[hr]=(dist.aleatorio[hr]||0)+1; dist.fixo[hx]=(dist.fixo[hx]||0)+1;
+    registra(t);
+  }
+  return {acc, dist, esperado:0.7, n:acc.n, start};
+}
 function backtestEstrategias(g, minHist){
   const cfg=GAMES[g], draws=DB[g].draws;
+  if(cfg.colunas) return backtestEstrategiasColunas(g, minHist);
   const start=Math.max(minHist, 100);
   const rand=rng(20260726);
   const acc={freq:0, atraso:0, aleatorio:0, fixo:0, n:0};
@@ -3275,36 +3623,43 @@ function testeSelecaoConsciente(g){
    · reportamos o resultado seja ele qual for. */
 function backtestMetodo(g, nConcursos, jogosPorConcurso, semente){
   const cfg=GAMES[g];
-  if(cfg.colunas) return null;
   const draws=DB[g].draws, prem=PREMIOS[g]||{};
   const N=cfg.max-cfg.min+1;
+  /* Quantas dezenas a aposta MARCA — não é o mesmo que quantas o sorteio TIRA.
+     Na Lotomania marcam-se 50 e sorteiam-se 20; na Timemania marcam-se 10 e
+     sorteiam-se 7. O backtest antigo gerava jogos do tamanho do sorteio, ou
+     seja, apostas que não existem, e cobrava por elas o preço da aposta real. */
+  const nMarcar = cfg.colunas ? 7 : ((APOSTAS[g] && APOSTAS[g].minN) || cfg.pick);
+  const nSorteado = cfg.pick;
   const total=draws.length;
   const ini=Math.max(1, total-nConcursos);
   const rand=rng(semente||20260726);
   const randCtrl=rng((semente||20260726)+991);
 
+  /* No Super Sete a ordem das colunas importa: 1234567 e 7654321 são jogos
+     diferentes. Nas outras modalidades o conjunto é que identifica a aposta. */
+  const chaveJogo = j => cfg.colunas ? j.join(',') : [...j].sort((a,b)=>a-b).join(',');
   const premiados=new Set();
-  for(let i=0;i<ini;i++) for(const s of draws[i].sets) premiados.add([...s].sort((a,b)=>a-b).join(','));
+  for(let i=0;i<ini;i++) for(const s of draws[i].sets) premiados.add(chaveJogo(s));
 
   const acc={crivo:{gasto:0,ganho:0,jogos:0,acertos:{},premios:0},
              aleat:{gasto:0,ganho:0,jogos:0,acertos:{},premios:0}};
   const detalhes=[];
-  const espDatas = cfg.pick*Math.min(31,cfg.max)/N;
+  const espDatas = nMarcar*Math.min(31,cfg.max)/N;
   // A densidade mudaseg o que é "sequência incomum". Na Lotofácil (15 de 25) três
   // dezenas seguidas são inevitáveis; exigir o contrário tornaria o filtro impossível.
-  const densidade = cfg.pick/N;
+  const densidade = nMarcar/N;
   const maxRun = densidade>=0.5 ? 5 : (densidade>=0.3 ? 3 : 2);
-  const minLinhas = Math.min(Math.ceil(N/cfg.cols), Math.max(2, Math.ceil(cfg.pick/3)));
+  const minLinhas = Math.min(Math.ceil(N/cfg.cols), Math.max(2, Math.ceil(nMarcar/3)));
   let falhas=0;
 
   for(let t=ini;t<total;t++){
     const sorteio=draws[t].sets[0];
     const p=prem[String(draws[t].n)];
     const faixas=p&&p.f?p.f:null;
-    const valorFaixa=(hits)=>{
-      if(!faixas) return null;
-      let idx=cfg.pick-hits;
-      if(g==='lotomania' && hits===0) idx=faixas.length-1;
+    const valorFaixa=(hits, sorteio)=>{
+      if(!faixas || !faixaMapeada(g)) return null;
+      const idx=idxFaixa(g,hits,sorteio);
       if(idx<0||idx>=faixas.length) return 0;
       return faixas[idx][1]||0;
     };
@@ -3312,19 +3667,33 @@ function backtestMetodo(g, nConcursos, jogosPorConcurso, semente){
       let tent=0, ultimo=null;
       while(tent<400){
         tent++;
+        let pick;
+        if(cfg.colunas){
+          pick=Array.from({length:7},()=>Math.floor(r()*10));
+          ultimo=pick;
+          if(metodo){
+            let run=1,bad=false;
+            for(let i=1;i<7;i++){ run=(pick[i]===pick[i-1]+1||pick[i]===pick[i-1]-1)?run+1:1; if(run>=3){bad=true;break;} }
+            if(bad) continue;
+            if(new Set(pick).size<=2) continue;
+            if(pick.every(v=>v<=6)) continue;
+            if(premiados.has(chaveJogo(pick))) continue;
+          }
+          return pick;
+        }
         const pool=Array.from({length:N},(_,i)=>i+cfg.min);
-        const pick=[];
-        while(pick.length<cfg.pick) pick.push(pool.splice(Math.floor(r()*pool.length),1)[0]);
+        pick=[];
+        while(pick.length<nMarcar) pick.push(pool.splice(Math.floor(r()*pool.length),1)[0]);
         pick.sort((a,b)=>a-b);
         ultimo=pick;
         if(metodo){
-          if(maxRun<cfg.pick){
+          if(maxRun<nMarcar){
             let run=1,bad=false;
             for(let i=1;i<pick.length;i++){ run=pick[i]===pick[i-1]+1?run+1:1; if(run>maxRun){bad=true;break;} }
             if(bad) continue;
           }
           if(cfg.max>31 && pick.filter(v=>v<=31).length > espDatas+1) continue;
-          if(premiados.has(pick.join(','))) continue;
+          if(premiados.has(chaveJogo(pick))) continue;
           const ls=new Set(pick.map(v=>Math.floor((v-cfg.min)/cfg.cols)));
           if(ls.size < minLinhas) continue;
         }
@@ -3333,13 +3702,24 @@ function backtestMetodo(g, nConcursos, jogosPorConcurso, semente){
       falhas++;
       return ultimo;   // nunca deixa a carteira menor que a do controle — senão a comparação seria inválida
     };
-    const linha={n:draws[t].n, datasSorteio:sorteio.filter(v=>v<=31).length, crivo:[], aleat:[]};
+    const linha={n:draws[t].n, datasSorteio: cfg.colunas? null : sorteio.filter(v=>v<=31).length, crivo:[], aleat:[]};
     for(const [nome,metodo,r] of [['crivo',true,rand],['aleat',false,randCtrl]]){
       for(let k=0;k<jogosPorConcurso;k++){
         const jogo=gerar(metodo,r);
         if(!jogo) continue;
-        const hits=jogo.filter(v=>sorteio.includes(v)).length;
-        const val=valorFaixa(hits);
+        let hits, val;
+        if(cfg.colunas){
+          hits=jogo.filter((v,i)=>v===sorteio[i]).length;
+          val=valorFaixa(hits);
+        } else if(cfg.dupla && draws[t].sets.length>1){
+          const h1=jogo.filter(v=>draws[t].sets[0].includes(v)).length;
+          const h2=jogo.filter(v=>draws[t].sets[1].includes(v)).length;
+          hits=Math.max(h1,h2);
+          val=(valorFaixa(h1,1)||0)+(valorFaixa(h2,2)||0);
+        } else {
+          hits=jogo.filter(v=>sorteio.includes(v)).length;
+          val=valorFaixa(hits);
+        }
         acc[nome].gasto+=cfg.price; acc[nome].jogos++;
         acc[nome].acertos[hits]=(acc[nome].acertos[hits]||0)+1;
         if(val>0){ acc[nome].ganho+=val; acc[nome].premios++; }
@@ -3347,17 +3727,28 @@ function backtestMetodo(g, nConcursos, jogosPorConcurso, semente){
       }
     }
     detalhes.push(linha);
-    for(const s of draws[t].sets) premiados.add([...s].sort((a,b)=>a-b).join(','));
+    for(const s of draws[t].sets) premiados.add(chaveJogo(s));
   }
   const comRateio=detalhes.filter(d=>prem[String(d.n)]&&prem[String(d.n)].f).length;
   return {acc, detalhes, concursos:detalhes.length, comRateio, falhas, maxRun, minLinhas,
+          nMarcar, nSorteado,
           de:draws[ini].n, ate:draws[total-1].n, jogosPorConcurso};
 }
 function renderBacktest(g, m){
   const cfg=GAMES[g];
   const p=el('div',{class:'panel'});
   p.appendChild(el('h3',null,'Teste 4 · O nosso próprio método, posto à prova'));
-  if(cfg.colunas){ p.appendChild(el('div',{class:'warnbox'},'Ainda não adaptado ao Super Sete.')); m.appendChild(p); return; }
+  if(!faixaMapeada(g)){
+    p.appendChild(el('div',{class:'warnbox'},
+      '<b>A +Milionária fica de fora deste teste, e o motivo importa.</b> As 10 faixas dela combinam acertos de dezenas com acertos de trevos, '+
+      'e não conseguimos confirmar a ordem das faixas conferindo as contagens de ganhadores contra as probabilidades. '+
+      'Sem essa confirmação, qualquer retorno que eu mostrasse aqui seria um número inventado com cara de medição. '+
+      'Prefiro a lacuna declarada. As demais oito modalidades estão no teste.'));
+    m.appendChild(p); return;
+  }
+  if(cfg.colunas) p.appendChild(el('div',{class:'okbox'},
+    'No Super Sete o método tem muito menos onde se apoiar: cada coluna é um sorteio independente de um dígito, e não temos medição da popularidade das apostas — '+
+    'só raciocínio por analogia. A previsão honesta para este teste é <b>empate</b>. Se der outra coisa, desconfie do teste antes de comemorar.'));
   p.appendChild(el('p',{class:'note'},'Aqui o método é o réu. Para cada concurso do período, geramos jogos pelo CRIVO usando <b>apenas o que se sabia até o concurso anterior</b>, '+
     'e comparamos com jogos aleatórios comprando a mesma quantidade. Depois somamos o que cada carteira teria ganhado, usando o <b>rateio realmente pago</b> em cada concurso.'));
 
@@ -3384,6 +3775,38 @@ function renderBacktest(g, m){
       const bt=backtestMetodo(g, +selC.value, +selJ.value);
       if(!bt){ res.innerHTML='<div class="warnbox">Não foi possível rodar.</div>'; return; }
       res.innerHTML='';
+
+      /* ===== Uma rodada só engana. =====
+         O resultado destas carteiras é dominado por um punhado de prêmios de
+         faixa alta, então trocar a semente muda tudo. Rodar oito sementes e
+         mostrar a dispersão é o mínimo para não vender sorte como método. */
+      const SEMENTES=[11,22,33,44,55,66,77,88];
+      const rc=[], ra=[];
+      for(const sm of SEMENTES){
+        const x=backtestMetodo(g, +selC.value, +selJ.value, sm);
+        if(!x) continue;
+        rc.push(100*x.acc.crivo.ganho/x.acc.crivo.gasto);
+        ra.push(100*x.acc.aleat.ganho/x.acc.aleat.gasto);
+      }
+      if(rc.length){
+        const med=a=>a.reduce((x,y)=>x+y,0)/a.length;
+        const dp=a=>{const m=med(a);return Math.sqrt(med(a.map(v=>(v-m)*(v-m))));};
+        const mc=med(rc), ma=med(ra), sc=dp(rc), sa=dp(ra);
+        const dif=Math.abs(mc-ma), ruido=Math.sqrt(sc*sc+sa*sa)/Math.sqrt(rc.length);
+        const decide = dif > 2*ruido;
+        const pn=v=>v.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+        const cx=el('div',{class:decide?'warnbox':'okbox'});
+        cx.innerHTML='<b>Antes do número: a mesma carteira, com outra semente, dá outro resultado.</b> '+
+          'Rodei '+SEMENTES.length+' sementes independentes dos mesmos '+fmtInt(bt.concursos)+' concursos.<br><br>'+
+          '<span class="tabular">CRIVO: média '+pn(mc)+', variando de '+pn(Math.min(...rc))+' a '+pn(Math.max(...rc))+' (desvio '+pn(sc)+')<br>'+
+          'Aleatório: média '+pn(ma)+', variando de '+pn(Math.min(...ra))+' a '+pn(Math.max(...ra))+' (desvio '+pn(sa)+')</span><br><br>'+
+          'A diferença entre as médias é de '+pn(dif)+' e o ruído estatístico dessa comparação é de '+pn(ruido)+'. '+
+          (decide
+            ? 'A diferença passa de dois ruídos — o que <b>não</b> prova que o método funciona: o mais provável é que uma das carteiras tenha pego um prêmio de faixa alta. Aumente o número de concursos e veja se sobrevive.'
+            : 'A diferença cabe dentro do ruído. <b>As duas carteiras são indistinguíveis</b>, que é exatamente o previsto: o critério do CRIVO age no rateio, não na chance de acertar. O número único abaixo é uma dessas oito rodadas, mostrado só para você ver o detalhe.');
+        res.appendChild(cx);
+      }
+
       const A=bt.acc.crivo, B=bt.acc.aleat;
       const retA=A.gasto? A.ganho/A.gasto : 0, retB=B.gasto? B.ganho/B.gasto : 0;
       const cards=el('div',{class:'cards'});
@@ -3412,9 +3835,12 @@ function renderBacktest(g, m){
         '<th class="num">CRIVO</th><th class="num">Aleatório</th><th class="num">Esperado pela teoria</th></tr>';
       const NN=cfg.max-cfg.min+1;
       for(const k of faixas){
-        if(k<Math.max(0,cfg.pick-4)) continue;
-        const pk=C(cfg.pick,k)*C(NN-cfg.pick,cfg.pick-k)/C(NN,cfg.pick);
-        ha+='<tr><td>'+k+' de '+cfg.pick+'</td><td class="num">'+fmtInt(A.acertos[k]||0)+'</td>'+
+        if(k<Math.max(0,bt.nSorteado-4) && !(g==='lotomania'&&k===0)) continue;
+        /* hipergeométrica correta: marcar m de N, sortear d, acertar k */
+        const pk = cfg.colunas
+          ? C(7,k)*Math.pow(0.1,k)*Math.pow(0.9,7-k)
+          : C(bt.nSorteado,k)*C(NN-bt.nSorteado, bt.nMarcar-k)/C(NN, bt.nMarcar);
+        ha+='<tr><td>'+k+' de '+bt.nSorteado+(bt.nMarcar!==bt.nSorteado?' (marcando '+bt.nMarcar+')':'')+'</td><td class="num">'+fmtInt(A.acertos[k]||0)+'</td>'+
             '<td class="num">'+fmtInt(B.acertos[k]||0)+'</td>'+
             '<td class="num" style="color:var(--ink-muted)">'+(pk*A.jogos).toFixed(1).replace('.',',')+'</td></tr>';
       }
@@ -3423,9 +3849,9 @@ function renderBacktest(g, m){
 
       const dif=Math.abs(retA-retB), maior=retA>retB?'o CRIVO':'o aleatório';
       // De onde vem a diferença? Quase sempre de um punhado de prêmios das faixas altas.
-      const faixaAlta=Math.max(...faixas.filter(k=>k>=cfg.pick-2), cfg.pick-2);
+      const faixaAlta=Math.max(...faixas.filter(k=>k>=bt.nSorteado-2), bt.nSorteado-2);
       let difPremios=0, valorDif=0;
-      for(const k of faixas){ if(k>=cfg.pick-2) difPremios+=Math.abs((A.acertos[k]||0)-(B.acertos[k]||0)); }
+      for(const k of faixas){ if(k>=bt.nSorteado-2) difPremios+=Math.abs((A.acertos[k]||0)-(B.acertos[k]||0)); }
       const impactoUm = A.gasto? (Math.abs(A.ganho-B.ganho)/Math.max(1,difPremios))/A.gasto*100 : 0;
       const empate = dif<0.005;
       res.appendChild(el('div',{class:'warnbox'},
@@ -3500,13 +3926,18 @@ function renderEvidencia(m){
     'Isso elimina o viés que faz qualquer método parecer genial quando testado olhando o passado inteiro de uma vez.</p>'+
     '<p class="note">Baseline aleatório usa semente fixa, então o resultado é reprodutível: rodar de novo dá o mesmo número.</p>'));
 
-  if(cfg.colunas){ m.appendChild(el('div',{class:'warnbox'},'Testes ainda não adaptados ao Super Sete. Escolha outro jogo.')); return; }
+  if(cfg.colunas) m.appendChild(el('div',{class:'okbox'},
+    '<b>No Super Sete os testes mudam de unidade, não de espírito.</b> Em vez de dezenas, a estratégia escolhe um dígito para cada uma das 7 colunas, '+
+    'e a pontuação é quantas colunas acertaram. O esperado por puro acaso é 0,7 coluna por concurso. '+
+    'O teste de uniformidade por coluna está na aba <b>Mais &amp; menos</b>, onde o qui-quadrado das sete é calculado separadamente.'));
 
   // Teste 1/2
   const bt=backtestEstrategias(g, 200);
   const p1=el('div',{class:'panel'});
   p1.appendChild(el('h3',null,'Teste 1 · "Dezenas quentes" e "dezenas atrasadas" batem o acaso?'));
-  p1.appendChild(el('p',{class:'note'},'Em cada um dos '+fmtInt(bt.n)+' concursos testados, montamos quatro jogos de '+cfg.pick+' dezenas e contamos os acertos. Média de acertos por concurso:'));
+  p1.appendChild(el('p',{class:'note'},'Em cada um dos '+fmtInt(bt.n)+' concursos testados, montamos quatro jogos'+
+    (cfg.colunas?' escolhendo um dígito por coluna e contamos quantas colunas acertaram'
+                :' de '+cfg.pick+' dezenas e contamos os acertos')+'. Média por concurso:'));
   const linhas=[
     ['Mais frequentes até ali', bt.acc.freq, 'var(--series-2)'],
     ['Mais atrasadas até ali', bt.acc.atraso, 'var(--series-4)'],
@@ -3521,11 +3952,30 @@ function renderEvidencia(m){
     p1.appendChild(row);
   }
   p1.appendChild(el('div',{class:'okbox'},
-    'Valor esperado pela pura matemática: <b>'+bt.esperado.toFixed(4).replace('.',',')+'</b> acertos por concurso ('+cfg.pick+'×'+cfg.pick+'÷'+(cfg.max-cfg.min+1)+'). '+
+    'Valor esperado pela pura matemática: <b>'+bt.esperado.toFixed(4).replace('.',',')+'</b> '+
+    (cfg.colunas?'coluna certa por concurso (7 colunas × 1÷10)':'acertos por concurso ('+cfg.pick+'×'+cfg.pick+'÷'+(cfg.max-cfg.min+1)+')')+'. '+
     'As quatro estratégias orbitam esse número. Nenhuma se destaca — que é exatamente o que a teoria prevê e o oposto do que os vendedores prometem.'));
   m.appendChild(p1);
 
   // Teste 3
+  if(cfg.colunas){
+    const S=statsColunas(g);
+    const p3c=el('div',{class:'panel'});
+    p3c.appendChild(el('h3',null,'Teste 2 · As sete colunas são honestas?'));
+    p3c.appendChild(el('p',{class:'note'},'Aqui não cabe a correção sem reposição: cada coluna sorteia um dígito de 0 a 9 de forma independente, então o qui-quadrado é direto, com 9 graus de liberdade por coluna.'));
+    let hc='<table><tr><th>Coluna</th><th class="num">Qui-quadrado</th><th>Resultado</th></tr>';
+    for(const c of S.colunas) hc+='<tr><td>Coluna '+(c.c+1)+'</td><td class="num tabular">'+c.x2.toFixed(2).replace('.',',')+
+      '</td><td>'+(c.x2<16.92?'compatível com uniforme':'acima do crítico de 16,92')+'</td></tr>';
+    hc+='<tr><td><b>Somadas</b></td><td class="num tabular"><b>'+S.x2total.toFixed(2).replace('.',',')+'</b></td><td>63 graus de liberdade · crítico 82,53</td></tr></table>';
+    p3c.innerHTML+=hc;
+    p3c.appendChild(el('div',{class: S.x2total<82.53 ? 'okbox':'warnbox'},
+      S.x2total<82.53
+        ? 'Nenhuma evidência de viés em nenhuma das sete colunas, sobre '+fmtInt(S.n)+' concursos. O sorteio do Super Sete passa no teste tanto quanto os outros.'
+        : 'O somatório passou do valor crítico. Antes de concluir qualquer coisa, aplique o teste de estabilidade temporal.'));
+    m.appendChild(p3c);
+    renderBacktest(g, m);
+    return;
+  }
   const un=testeUniformidade(g);
   const p3=el('div',{class:'panel'});
   p3.appendChild(el('h3',null,'Teste 2 · As bolas são honestas? (qui-quadrado com correção)'));
@@ -3655,13 +4105,53 @@ function sorteioAleatorio(g, quantas, sementeTxt){
   while(out.length<quantas) out.push(pool.splice(Math.floor(r()*pool.length),1)[0]);
   return out.sort((a,b)=>a-b);
 }
-function faixaValor(g, conc, hits){
-  const cfg=GAMES[g], pr=PREMIOS[g];
-  if(!pr) return null;
+/* ===== MAPA DE FAIXAS DE PRÊMIO =====
+   O arquivo de prêmios traz um array f por concurso, e cada posição é uma faixa.
+   O código antigo assumia "índice = dezenas marcadas − acertos", o que só vale
+   quando a modalidade tem faixas puramente por número de acertos. Cinco não têm:
+
+   · Dupla-Sena tem 8 faixas — as 4 do 1º sorteio e as 4 do 2º. Com a regra
+     antiga, 2 acertos caíam no índice 4, que é a SENA DO 2º SORTEIO. O backtest
+     chegava a mostrar 507.958% de retorno.
+   · Timemania tem o Time do Coração como 6ª faixa: 2 acertos viravam Time.
+   · Dia de Sorte tem o Mês da Sorte como 5ª: 3 acertos viravam Mês.
+   · Lotomania tem a faixa de 0 acertos no fim: 14 acertos caíam nela.
+   · +Milionária combina dezenas com trevos em 10 faixas cuja ordem não
+     conseguimos confirmar contra as probabilidades. Fica marcada como
+     desconhecida — devolver um número seria inventar.
+
+   Cada mapa abaixo foi conferido contra as contagens de ganhadores observadas.
+   Exemplo do Dia de Sorte no concurso 1255: 36.273 ganhadores na última faixa
+   dividido por 1/12 dá ~435 mil apostas; a 4ª faixa prevê 435k × P(4 de 7) =
+   11.720, contra 11.781 observados. */
+const FAIXAS = {
+  megasena:       [6,5,4],
+  lotofacil:      [15,14,13,12,11],
+  quina:          [5,4,3,2],
+  supersete:      [7,6,5,4,3],
+  lotomania:      [20,19,18,17,16,15,0],
+  timemania:      [7,6,5,4,3,'time'],
+  diadesorte:     [7,6,5,4,'mes'],
+  duplasena:      [[6,1],[5,1],[4,1],[3,1],[6,2],[5,2],[4,2],[3,2]],
+  maismilionaria: null
+};
+function faixaMapeada(g){ return !!FAIXAS[g]; }
+function idxFaixa(g, hits, sorteio){
+  const F=FAIXAS[g];
+  if(!F) return -1;
+  if(g==='duplasena'){
+    const sN = sorteio||1;
+    for(let i=0;i<F.length;i++) if(F[i][0]===hits && F[i][1]===sN) return i;
+    return -1;
+  }
+  return F.indexOf(hits);
+}
+function faixaValor(g, conc, hits, sorteio){
+  const pr=PREMIOS[g];
+  if(!pr || !faixaMapeada(g)) return null;
   const p=pr[String(conc)];
   if(!p||!p.f||!p.f.length) return null;
-  let idx=cfg.pick-hits;
-  if(g==='lotomania' && hits===0) idx=p.f.length-1;
+  const idx=idxFaixa(g,hits,sorteio);
   if(idx<0||idx>=p.f.length) return 0;
   return p.f[idx][1]||0;
 }
@@ -3669,13 +4159,12 @@ function faixaValor(g, conc, hits){
    ninguém acertou (a faixa acumulou) ou o jogo não paga aquela faixa. Distinguir
    importa: se você tivesse o bilhete numa faixa que acumulou, teria sido o único
    ganhador — e o prêmio real seria o acumulado, não zero. */
-function faixaAcumulou(g, conc, hits){
-  const cfg=GAMES[g], pr=PREMIOS[g];
-  if(!pr) return false;
+function faixaAcumulou(g, conc, hits, sorteio){
+  const pr=PREMIOS[g];
+  if(!pr || !faixaMapeada(g)) return false;
   const p=pr[String(conc)];
   if(!p||!p.f||!p.f.length) return false;
-  let idx=cfg.pick-hits;
-  if(g==='lotomania' && hits===0) idx=p.f.length-1;
+  const idx=idxFaixa(g,hits,sorteio);
   if(idx<0||idx>=p.f.length) return false;
   return (p.f[idx][0]||0)===0 && (p.f[idx][1]||0)===0;
 }
@@ -3685,14 +4174,25 @@ function conferir(ap){
   const d=(DB[g]?DB[g].draws:[]).find(x=>x.n===ap.conc);
   if(!d) return {estado:'aguardando'};
   const res={estado:'conferida', sorteio:d.sets[0]};
-  const contar=(nums)=>{
-    // jogo com mais dezenas equivale a várias apostas simples: contamos o melhor acerto
-    const hits=nums.filter(v=>d.sets[0].includes(v)).length;
-    return Math.min(hits, cfg.pick);
+  const contarEm=(nums, set)=> Math.min(nums.filter(v=>set.includes(v)).length, cfg.pick);
+  /* Na Dupla-Sena a mesma aposta concorre nos dois sorteios do concurso, e pode
+     ganhar nos dois. Somar é o comportamento correto — ignorar o segundo era
+     jogar fora metade do resultado. */
+  const avaliar=(nums)=>{
+    if(cfg.dupla && d.sets.length>1){
+      const h=[contarEm(nums,d.sets[0]), contarEm(nums,d.sets[1])];
+      const v=[faixaValor(g,ap.conc,h[0],1), faixaValor(g,ap.conc,h[1],2)];
+      const soma=(v[0]||0)+(v[1]||0);
+      return {hits:Math.max(h[0],h[1]), porSorteio:h, premio:(v[0]==null&&v[1]==null)?null:soma};
+    }
+    const hits=contarEm(nums, d.sets[0]);
+    return {hits, porSorteio:null, premio:faixaValor(g, ap.conc, hits)};
   };
-  res.hits=contar(ap.nums);
-  res.premio=faixaValor(g, ap.conc, res.hits);
-  res.acumulouNaFaixa = res.hits>=cfg.pick-1 && faixaAcumulou(g, ap.conc, res.hits);
+  const A=avaliar(ap.nums);
+  res.hits=A.hits; res.hitsPorSorteio=A.porSorteio; res.premio=A.premio;
+  res.faixaDesconhecida = !faixaMapeada(g);
+  res.acumulouNaFaixa = res.hits>=cfg.pick-1 &&
+    faixaAcumulou(g, ap.conc, res.hits, cfg.dupla && A.porSorteio ? (A.porSorteio[0]>=A.porSorteio[1]?1:2) : undefined);
   // jogo com dezenas extras contém várias apostas simples premiadas na mesma faixa
   if(ap.nums.length>cfg.pick && res.premio>0){
     const acertos=res.hits, extras=ap.nums.length-cfg.pick;
@@ -3701,8 +4201,9 @@ function conferir(ap){
     res.bilhetesPremiados=Math.max(1,bilhetes);
   }
   if(ap.sombra){
-    res.hitsS=contar(ap.sombra);
-    res.premioS=faixaValor(g, ap.conc, res.hitsS);
+    const B=avaliar(ap.sombra);
+    res.hitsS=B.hits; res.hitsSPorSorteio=B.porSorteio;
+    res.premioS=B.premio;
     if(ap.sombra.length>cfg.pick && res.premioS>0){
       const b=C(res.hitsS, cfg.pick);
       res.premioS=res.premioS*Math.max(1,b);

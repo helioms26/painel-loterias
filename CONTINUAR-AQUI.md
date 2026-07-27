@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **12.0**, publicada em 27/07/2026.
+Última versão: **13.0**, publicada em 27/07/2026.
 
 ---
 
@@ -24,7 +24,7 @@ Tudo em `C:\Users\hmsue\OneDrive\IA_meus projetos\13 - loteria`.
 | Painel publicado, arquivo único | `repo-github/index.html` |
 | Cópia offline idêntica | `painel-loterias-offline.html` |
 | Fonte do painel | `site/index.html` — sem dados embutidos |
-| Dados | `site/data/*.json` — 28 arquivos: sorteios, datas, prêmios e status |
+| Dados | `site/data/*.json` — 29 arquivos: sorteios, datas, prêmios, status e a varredura histórica do CRIVO |
 | Design system | `site/tokens.css`, `site/components.css`, `site/styleguide.html` |
 | Protótipo da v9 | `prototipo-v9.html` — navegável, serve de referência de interação |
 | Planilhas oficiais baixadas | `planilhas_caixa/` |
@@ -123,6 +123,22 @@ O teste: a retenção de 30% só incide sobre prêmio acima de R$ 1.903,98. Reco
 O teste está reproduzido em comentário no código, logo acima da constante `IR_LOTERIA`, que hoje vale **0**. Se a fatia legal ou o piso de retenção mudarem, é esse teste que precisa ser refeito. Não volte a multiplicar por 0,70 sem refazê-lo.
 
 Consequências: todos os índices subiram ~43%, o prêmio de gatilho caiu 30%, e os cruzamentos históricos de 1,00 passaram de 1 para 5 em 4.635 sorteios — quatro deles em sorteios especiais (Mega da Virada 2015, Quina de São João 2016 e 2018, Timemania de Natal 2025). O `historico_crivo.json` foi regerado sem o fator.
+
+## O que a v13 mudou
+
+A aba Volante deixou de existir — o mapa de calor mora dentro de Mais & menos, agora ordenável por dezena, frequência ou atraso. Estados antigos que apontem para `volante` são redirecionados em silêncio dentro do `refresh()`.
+
+Conjuntos passaram a mostrar última aparição, maior intervalo e a probabilidade de o acaso produzir aquela repetição. Dois painéis novos: um responde se marcar mais dezenas melhora o índice (não melhora — a resposta e a aritmética estão no comentário acima de `painelMaisDezenas`), outro responde se algum sorteio já se repetiu (`painelRepeticoes`).
+
+**Corrupção de base corrigida:** o concurso 2019 da Dupla-Sena era uma cópia byte a byte do 2009. Foi achado pela varredura de repetições e conferido na API oficial. É a segunda corrupção nessa modalidade — a primeira foi o 2373.
+
+Disso saiu uma verificação nova que vale manter: **procurar registro inteiro idêntico a outro**. Coincidência impossível é detector de erro de dados, não curiosidade estatística. Hoje as nove modalidades passam limpas.
+
+## Um erro de processo que não pode se repetir
+
+A regressão desta rodada revelou que o script de teste apontava para `painel_v9.html` desde a v10 — os `sed` que trocavam o caminho nunca casaram, e eu não conferi. As verificações reportadas para a v11 e a v12 rodaram na versão errada.
+
+**Antes de confiar em qualquer regressão, confirme qual arquivo ela está abrindo.** O script agora imprime o alvo. Refeito na v13: 198 combinações (9 modalidades × 11 abas × 2 temas), zero erro, zero estouro no iPhone.
 
 ---
 

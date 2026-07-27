@@ -123,3 +123,7 @@ Varredura histórica do índice CRIVO sobre os 4.635 sorteios da base em que o p
 ## Correção da v12
 
 O painel descontava 30% de IR do prêmio — errado, porque o valor divulgado pela Caixa **já vem líquido**. Verificado contra a base inteira: reconstruindo o bruto das faixas acima do piso de retenção de R$ 1.903,98, o total reproduz a fatia legal de 43,35% da arrecadação com erro menor que 0,7 ponto percentual em sete modalidades independentes. Consequência: todos os índices sobem ~43%, o prêmio de gatilho cai 30%, e os cruzamentos históricos do break-even passam de 1 para 5 em 4.635 sorteios — quatro deles em sorteios especiais. Seção 17 de `METODOLOGIA.md`.
+
+## Novidades da v13
+
+Conjuntos passaram a mostrar quando saíram pela última vez e o maior intervalo entre aparições, com a probabilidade de o acaso produzir aquela repetição. O mapa de calor virou ordenável (por dezena, frequência ou atraso) e absorveu a aba Volante. Um painel novo responde se marcar mais dezenas melhora o índice — não melhora, e piora a frequência de prêmios. Outro responde se algum sorteio já se repetiu: na Mega-Sena nunca, o que era o previsto; na Quina e na Dupla-Sena sim, também previsto. Essa última varredura achou e corrigiu uma corrupção no concurso 2019 da Dupla-Sena. Seção 18 de `METODOLOGIA.md`.

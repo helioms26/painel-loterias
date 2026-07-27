@@ -471,3 +471,60 @@ Isso não contradiz a seção 16, apenas refina a conclusão. O 1,00 continua se
 ### Registro de responsabilidade
 
 A informação de que o valor divulgado já é líquido veio do Hélio, não de uma fonte documental que eu tenha conseguido citar. O que eu fiz foi testá-la contra a base inteira, e ela passou com folga. Fica registrado assim: **afirmação do usuário, confirmada por verificação independente nos dados**, não uma leitura de norma. Se algum dia a fatia legal mudar ou o piso de retenção for corrigido, este teste é o que precisa ser refeito — está reproduzido em comentário no código, logo acima da constante `IR_LOTERIA`.
+
+## 18. Conjuntos, ordenação, desdobramento e repetições (v13)
+
+Quatro pedidos do Hélio numa rodada só, mais um erro de base que apareceu no caminho.
+
+### O que faltava nos conjuntos
+
+O painel de "Mais sorteados juntos" mostrava só a contagem. Agora mostra, para cada conjunto, **quando saiu pela última vez**, **há quantos concursos** e **qual foi o maior intervalo entre duas aparições**. Calculado de forma incremental — um objeto por conjunto observado, sem guardar a lista de concursos, que na Lotofácil passaria de um milhão de entradas.
+
+Para a quadra 04-18-21-38 da Mega-Sena, por exemplo: quatro aparições, a última no concurso 1783 de 23/01/2016, há 1.253 concursos, com maior intervalo de 890 concursos entre duas delas.
+
+Mas o número que dá sentido a tudo isso é outro, e ele também entrou: **quantos conjuntos o acaso sozinho faria repetir tanto assim.** Existem 487.635 quadras possíveis na Mega-Sena, cada uma aparecendo em média 0,093 vez em 3.036 concursos. O acaso produziria cerca de 1,43 quadras com quatro ou mais aparições; observamos 5. A probabilidade de uma base honesta produzir 5 ou mais é de **1,6%**.
+
+Esse 1,6% foi validado por simulação: 250 universos honestos de 3.036 sorteios da Mega-Sena deram média de 1,49 quadras com 4+ aparições (a fórmula de Poisson previa 1,43) e produziram 5 ou mais em 1,6% das vezes — exatamente o que a fórmula de segundo nível calcula. A simulação também desfez uma suposição minha: eu esperava que a sobreposição entre as quinze quadras de um mesmo sorteio inflasse a cauda, e ela praticamente não infla.
+
+É um resultado no limite alto, e o painel diz isso sem drama. Vale lembrar que o teste foi escolhido **depois** de olhar o painel, que é exatamente o tipo de teste post-hoc que fabrica eventos de 1,6%.
+
+### Ordenação do mapa de calor
+
+O volante em ordem de volante é bonito e péssimo para responder "quais saíram mais". Agora dá para ordenar por dezena crescente ou decrescente, por frequência e por atraso, nos dois sentidos. Quando a ordem sai do padrão, o painel avisa que a grade deixou de representar o papel que se preenche na lotérica — e aproveita para lembrar que estar no topo da lista não dá vantagem nenhuma no próximo sorteio.
+
+A aba Volante foi absorvida por Mais & menos. Eram duas abas olhando os mesmos números com controles duplicados. Rotas antigas continuam funcionando: qualquer estado que aponte para `volante` é redirecionado em silêncio.
+
+### Marcar mais uma dezena melhora o índice?
+
+Não melhora, e a razão é exata. Marcar n dezenas equivale a C(n, pick) apostas simples, e a Caixa paga cada combinação vencedora separadamente. Valor esperado e custo são multiplicados pelo **mesmo** fator, e o índice, que é a razão entre os dois, não se move um centésimo. Na Mega-Sena, o custo por unidade de chance é R$ 300.383.160 marcando 6, 7 ou 8 dezenas — idêntico até o último real.
+
+O que muda, muda para pior se o critério for levar algum prêmio. Um desdobramento de 7 dezenas na Mega-Sena paga alguma coisa 1 vez em 1.015. Os mesmos R$ 42 em 7 apostas mínimas independentes pagam 1 em 329 — **três vezes mais frequente**. As sete combinações do desdobramento compartilham seis dezenas entre si, então acertam juntas ou erram juntas. Mesmo valor esperado, risco mais concentrado.
+
+A única razão real para desdobrar é operacional: gastar mais de uma vez só, preenchendo um volante em vez de vários.
+
+### Alguma sena já saiu repetida?
+
+Na Mega-Sena, **nunca** — e isso não significa nada. São 50.063.860 combinações possíveis para 3.036 sorteios. O número esperado de repetições não é sorteios ÷ combinações, é **pares** de sorteios ÷ combinações: 3.036 × 3.035 ÷ 2 ÷ 50.063.860 = 0,09. Não achar nada era o resultado previsto.
+
+Onde o universo é menor, repetições aparecem e também são normais:
+
+| Modalidade | Sorteios | Combinações | Repetições | Esperado |
+|---|---|---|---|---|
+| Quina | 7.075 | 24.040.016 | 3 | 1,04 |
+| Dupla-Sena | 5.974 | 15.890.700 | 2 | 1,12 |
+| Lotofácil | 3.745 | 3.268.760 | 0 | 2,14 |
+| Mega-Sena | 3.036 | 50.063.860 | 0 | 0,09 |
+
+Todas as repetições da Quina e da Dupla-Sena foram conferidas uma a uma na API oficial da Caixa e são reais.
+
+Para a Mega-Sena ter 50% de chance de exibir alguma repetição, seriam necessários cerca de 8.300 sorteios — mais de vinte anos no ritmo atual, e isso só para chegar ao "cara ou coroa".
+
+### O erro de base que essa pergunta revelou
+
+A varredura de repetições acusou algo impossível: na Dupla-Sena, os concursos 2009 e 2019 tinham **os dois sorteios idênticos**. A chance disso por acaso é da ordem de 1 em 30 milhões. Conferido na API oficial: o concurso 2019 é `08 19 29 39 40 41` e `03 08 30 33 37 42`, mas a nossa base guardava uma cópia do 2009. Registro corrigido.
+
+É a segunda corrupção encontrada na Dupla-Sena — a primeira foi o concurso 2373, achado por outra varredura. Fica a lição de método: **a busca por coincidências impossíveis é um detector de erro de dados**, não só um exercício estatístico. Uma varredura de "registro inteiro idêntico a outro" passou a fazer parte da verificação, e hoje as nove modalidades passam limpas.
+
+### Um erro de processo, para constar
+
+Ao rodar a regressão desta rodada descobri que o script apontava para `painel_v9.html` desde a versão 10 — os comandos de substituição do caminho nunca casaram, e eu não conferi. As verificações que reportei para a v11 e a v12 rodaram na v9. Refeitas na v13: 198 combinações (9 modalidades × 11 abas × 2 temas), zero erro de console, zero estouro no iPhone. O script de verificação agora imprime qual arquivo está testando.

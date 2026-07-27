@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **13.0**, publicada em 27/07/2026.
+Última versão: **14.0**, publicada em 27/07/2026.
 
 ---
 
@@ -139,6 +139,16 @@ Disso saiu uma verificação nova que vale manter: **procurar registro inteiro i
 A regressão desta rodada revelou que o script de teste apontava para `painel_v9.html` desde a v10 — os `sed` que trocavam o caminho nunca casaram, e eu não conferi. As verificações reportadas para a v11 e a v12 rodaram na versão errada.
 
 **Antes de confiar em qualquer regressão, confirme qual arquivo ela está abrindo.** O script agora imprime o alvo. Refeito na v13: 198 combinações (9 modalidades × 11 abas × 2 temas), zero erro, zero estouro no iPhone.
+
+## O que a v14 mudou
+
+Bandeiras de exclusividade em "Meu jogo" (`painelBandeiras`) e um botão que completa o jogo fugindo dos padrões da multidão, preservando o que já foi marcado.
+
+A regra que sustenta o painel inteiro aparece aqui de forma explícita: **cada bandeira declara se o efeito é medido ou é raciocínio.** Fugir de datas tem 1,96× medido na Mega-Sena. Evitar dezenas quentes tem efeito medido também, mas dez vezes menor — e a medida limpa vem da Lotofácil, onde todas as dezenas são ≤ 31 e portanto não existe efeito de data para confundir: 1,12×. As outras três bandeiras não têm medição e dizem isso na tela.
+
+Duas ideias intuitivas ficaram de fora, com o motivo escrito: "nunca saiu" não filtra nada (99,9939% das combinações da Mega-Sena nunca saíram) e "as que mais saíram" piora o rateio, porque é o que faz quem joga estatística.
+
+Se for acrescentar bandeira nova, mantenha a disciplina: ou tem número medido ao lado, ou está escrito que é raciocínio.
 
 ---
 

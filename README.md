@@ -127,3 +127,7 @@ O painel descontava 30% de IR do prêmio — errado, porque o valor divulgado pe
 ## Novidades da v13
 
 Conjuntos passaram a mostrar quando saíram pela última vez e o maior intervalo entre aparições, com a probabilidade de o acaso produzir aquela repetição. O mapa de calor virou ordenável (por dezena, frequência ou atraso) e absorveu a aba Volante. Um painel novo responde se marcar mais dezenas melhora o índice — não melhora, e piora a frequência de prêmios. Outro responde se algum sorteio já se repetiu: na Mega-Sena nunca, o que era o previsto; na Quina e na Dupla-Sena sim, também previsto. Essa última varredura achou e corrigiu uma corrupção no concurso 2019 da Dupla-Sena. Seção 18 de `METODOLOGIA.md`.
+
+## Novidades da v14
+
+Bandeiras de exclusividade em "Meu jogo", com um botão que completa o jogo fugindo dos padrões que a multidão joga — preservando as dezenas que você já escolheu. Cada bandeira declara a própria força: fugir de datas tem efeito medido de 1,96× na Mega-Sena; evitar dezenas quentes tem efeito medido, mas dez vezes menor (1,12× na Lotofácil, onde não há efeito de data para confundir); as demais são raciocínio declarado, sem medição. E o painel explica por que duas ideias intuitivas não entraram: "nunca saiu" não filtra nada (99,99% das combinações nunca saíram) e "as que mais saíram" piora o rateio em vez de melhorar. Seção 19 de `METODOLOGIA.md`.

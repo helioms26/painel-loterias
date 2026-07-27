@@ -528,3 +528,45 @@ A varredura de repetições acusou algo impossível: na Dupla-Sena, os concursos
 ### Um erro de processo, para constar
 
 Ao rodar a regressão desta rodada descobri que o script apontava para `painel_v9.html` desde a versão 10 — os comandos de substituição do caminho nunca casaram, e eu não conferi. As verificações que reportei para a v11 e a v12 rodaram na v9. Refeitas na v13: 198 combinações (9 modalidades × 11 abas × 2 temas), zero erro de console, zero estouro no iPhone. O script de verificação agora imprime qual arquivo está testando.
+
+## 19. Bandeiras de exclusividade, e a intuição que aponta para o lado errado (v14)
+
+Pedido do Hélio: uma bandeira em "Meu jogo" que busque combinações que nunca saíram, ou que mais saíram, e que fujam do comportamento do brasileiro. A pergunta veio acompanhada de "faz sentido ter isso?", e a resposta honesta é: **um terço faz muito sentido, um terço é inútil e um terço aponta para o lado contrário do que a intuição sugere.**
+
+### O que é inútil: "nunca saiu"
+
+Na Mega-Sena existem 50.063.860 combinações e só 3.036 já foram sorteadas. **99,9939% nunca saíram.** Um filtro que elimina seis milésimos de por cento do universo não escolhe nada — ele só produz a sensação de ter escolhido. O mesmo vale para todas as modalidades: a menor taxa é da Lotofácil, com 99,8854%.
+
+### O que aponta para o lado errado: "as que mais saíram"
+
+Buscar as dezenas mais sorteadas não muda a chance — ela é idêntica para qualquer combinação. Mas muda o rateio, e **para pior**, porque é exatamente o que faz a parcela da multidão que joga estatística.
+
+Isso deu para medir, com a mesma máquina que mediu o efeito das datas: para cada concurso, quantas das dezenas sorteadas estavam no terço mais frequente **até o concurso anterior**, cruzado com o número de ganhadores da faixa baixa por real arrecadado.
+
+O resultado bruto na Mega-Sena foi 1,15× mais ganhadores nos sorteios ricos em dezenas quentes. Mas parte disso era o efeito das datas vazando, já que as duas coisas se correlacionam. Controlando por faixa de quantidade de datas, o efeito cai para cerca de **1,07×**.
+
+A medida limpa vem da Lotofácil, e ela é elegante: como todas as 25 dezenas são ≤ 31, **não existe efeito de data para confundir**. Lá o efeito das quentes é de **1,12×**, isolado.
+
+Conclusão: existe gente jogando "números quentes", o efeito é real e mensurável, mas é de uma ordem de grandeza menor do que o de quem joga aniversário — 1,07 a 1,12 contra 1,96. A bandeira certa é para **evitar** as quentes, não para procurá-las.
+
+### O que faz muito sentido: fugir de datas
+
+Já era o achado central do projeto, e continua sendo o mais forte: sorteios com muitas dezenas ≤ 31 produziram **1,96×** mais ganhadores por real arrecadado na Mega-Sena e **1,45×** na Quina.
+
+### O que foi construído
+
+Um bloco de bandeiras em "Meu jogo", cada uma declarando a própria força:
+
+| Bandeira | Status |
+|---|---|
+| Fugir de dezenas ≤ 31 | efeito medido: 1,96× na Mega-Sena, 1,45× na Quina |
+| Evitar dezenas muito sorteadas | efeito medido: 1,07× na Mega-Sena controlada, 1,12× na Lotofácil isolada |
+| Evitar combinações já sorteadas | sem efeito medido — raciocínio de que jogo premiado circula |
+| Evitar sequências longas | sem efeito medido |
+| Espalhar pelo volante | sem efeito medido |
+
+E um botão, **Completar fugindo da multidão**, que preenche as dezenas que faltam respeitando as bandeiras ativas e **preservando o que o usuário já marcou**. A busca é por amostragem com rejeição, até 3.000 tentativas, devolvendo a melhor encontrada caso nenhuma passe em tudo — melhor entregar a menos ruim do que travar a interface.
+
+Verificado sobre 32 gerações na Mega-Sena: média de 1,66 dezenas ≤ 31 contra 3,10 esperadas por acaso, nenhuma geração passando de 2, e sequência máxima de 2.
+
+A separação entre "medido" e "raciocínio" fica na tela, ao lado de cada bandeira. É a mesma regra usada nos critérios do Super Sete: quando não há medição, o painel diz que não há.

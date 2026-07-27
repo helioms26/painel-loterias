@@ -2747,7 +2747,9 @@ function renderMeuJogo(m){
   const btnRand=el('button',null,'Sortear para mim');
   const btnTop=el('button',null,'Preencher com mais frequentes');
   const btnCold=el('button',null,'Preencher com menos frequentes');
-  info.appendChild(counter); info.appendChild(btnClear); info.appendChild(btnRand); info.appendChild(btnTop); info.appendChild(btnCold);
+  const btnBusca=el('button',{class:'primary'},'Completar fugindo da multidão');
+  info.appendChild(counter); info.appendChild(btnClear); info.appendChild(btnRand);
+  info.appendChild(btnBusca); info.appendChild(btnTop); info.appendChild(btnCold);
   p.appendChild(info);
 
   const gridWrap=el('div');
@@ -3137,6 +3139,7 @@ function renderMeuJogo(m){
     }
   }
 
+  if(!cfg.colunas) m.appendChild(painelBandeiras(g));
   m.appendChild(painelRepeticoes(g));
   if(!cfg.colunas) m.appendChild(renderFavoritos());
   if(!cfg.colunas) m.appendChild(renderCobertura());
@@ -3154,7 +3157,89 @@ function renderMeuJogo(m){
     Object.entries(freq).map(([n,c])=>[+n,c]).sort((a,b)=>b[1]-a[1]).slice(0,cfg.pick).forEach(e=>sel.push(e[0])); draw(); };
   btnCold.onclick=()=>{ if(cfg.colunas) return; sel.length=0;
     Object.entries(freq).map(([n,c])=>[+n,c]).sort((a,b)=>a[1]-b[1]).slice(0,cfg.pick).forEach(e=>sel.push(e[0])); draw(); };
+  /* Completa o jogo respeitando as bandeiras de anti-popularidade, PRESERVANDO
+     as dezenas que o usuário já marcou. Busca por amostragem com rejeição: até
+     3.000 tentativas, e no fim devolve a melhor que encontrou mesmo que nenhuma
+     tenha passado em tudo — melhor entregar a menos ruim do que travar. */
+  btnBusca.onclick=()=>{
+    if(cfg.colunas) return;
+    const fixas=[...sel];
+    const flags=BANDEIRAS_ATIVAS();
+    const N=cfg.max-cfg.min+1;
+    const espDatas=cfg.pick*Math.min(31,cfg.max)/N;
+    const ordemFreq=Object.entries(freq).map(([n,c])=>[+n,c]).sort((a,b)=>b[1]-a[1]);
+    const quentes=new Set(ordemFreq.slice(0,Math.round(N/3)).map(e=>e[0]));
+    const premiados=winnersSet(g);
+    const densidade=cfg.pick/N, maxRun = densidade>=0.5?5:(densidade>=0.3?3:2);
+    let melhor=null, melhorNota=-1;
+    for(let t=0;t<3000;t++){
+      const pool=[]; for(let i=cfg.min;i<=cfg.max;i++) if(!fixas.includes(i)) pool.push(i);
+      const cand=[...fixas];
+      while(cand.length<cfg.pick && pool.length) cand.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+      if(cand.length<cfg.pick) break;
+      cand.sort((a,b)=>a-b);
+      let nota=0, ok=true;
+      if(flags.datas){ const d=cand.filter(v=>v<=31).length;
+        if(cfg.max>31 && d>espDatas-0.5) ok=false; else nota+=2; }
+      if(flags.quentes){ const q=cand.filter(v=>quentes.has(v)).length;
+        if(q>Math.round(cfg.pick/3)) ok=false; else nota+=1; }
+      if(flags.premiado){ if(premiados.has(cand.join(','))) ok=false; else nota+=1; }
+      if(flags.seq){ let run=1,bad=false;
+        for(let i=1;i<cand.length;i++){ run=cand[i]===cand[i-1]+1?run+1:1; if(run>maxRun){bad=true;break;} }
+        if(bad) ok=false; else nota+=1; }
+      if(flags.linhas){ const ls=new Set(cand.map(v=>Math.floor((v-cfg.min)/cfg.cols)));
+        if(ls.size<Math.min(3,Math.ceil(cfg.pick/2))) ok=false; else nota+=1; }
+      if(nota>melhorNota){ melhorNota=nota; melhor=cand; }
+      if(ok){ melhor=cand; break; }
+    }
+    if(melhor){ sel.length=0; melhor.forEach(v=>sel.push(v)); draw(); }
+  };
   draw();
+}
+/* Bandeiras de anti-popularidade. A força de cada uma está MEDIDA onde deu para
+   medir, e declarada como raciocínio onde não deu. Ver painelBandeiras. */
+function BANDEIRAS_ATIVAS(){
+  const q=id=>{ const e=$('#'+id); return e? e.checked : true; };
+  return {datas:q('bandDatas'), quentes:q('bandQuentes'), premiado:q('bandPremiado'),
+          seq:q('bandSeq'), linhas:q('bandLinhas')};
+}
+function painelBandeiras(g){
+  const cfg=GAMES[g], p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Bandeiras de exclusividade'));
+  p.appendChild(el('p',null,
+    'Estas bandeiras controlam o botão <b>Completar fugindo da multidão</b> logo acima. '+
+    'Nenhuma delas aumenta sua chance de ganhar — a chance é idêntica para toda combinação. '+
+    'O que elas fazem é reduzir a probabilidade de você <b>dividir</b> o prêmio, escolhendo padrões que menos gente joga.'));
+  const ctr=el('div',{class:'controls',style:'flex-direction:column;align-items:flex-start;gap:var(--space-4)'});
+  const mk=(id,txt,forca)=>{
+    const l=el('label',{style:'display:flex;gap:var(--space-4);align-items:flex-start'});
+    const c=el('input',{type:'checkbox',id}); c.checked=true;
+    l.appendChild(c);
+    l.appendChild(el('span',null,txt+' <br><span style="font-size:var(--text-xs);color:var(--ink-muted)">'+forca+'</span>'));
+    return l;
+  };
+  if(cfg.max>31) ctr.appendChild(mk('bandDatas','Fugir de dezenas ≤ 31 (datas de aniversário)',
+    '<b>Efeito medido, e é o mais forte que existe.</b> Sorteios com muitas dezenas ≤ 31 produziram <b>1,96×</b> mais ganhadores por real arrecadado na Mega-Sena e <b>1,45×</b> na Quina.'));
+  else ctr.appendChild(el('p',{class:'note'},'Nesta modalidade todas as dezenas são ≤ 31, então não há como fugir de datas — o efeito não existe aqui.'));
+  ctr.appendChild(mk('bandQuentes','Evitar dezenas muito sorteadas',
+    '<b>Efeito medido, mas fraco.</b> Controlando pelo efeito das datas, sorteios ricos em dezenas "quentes" deram cerca de <b>1,07×</b> mais ganhadores na Mega-Sena. A medida limpa vem da Lotofácil, onde não existe efeito de data para confundir: <b>1,12×</b>. Ou seja: existe gente jogando estatística, mas é muito menos gente do que a que joga aniversário.'));
+  ctr.appendChild(mk('bandPremiado','Evitar combinações que já foram sorteadas',
+    'Sem efeito medido. O raciocínio é que jogos premiados viram palpite conhecido e circulam. Custa nada aplicar.'));
+  ctr.appendChild(mk('bandSeq','Evitar sequências longas',
+    'Sem efeito medido. Padrão visual reconhecível, historicamente muito jogado.'));
+  ctr.appendChild(mk('bandLinhas','Espalhar pelo volante',
+    'Sem efeito medido. Evita desenhos no papel, que são um padrão popular.'));
+  p.appendChild(ctr);
+
+  const U=C(cfg.max-cfg.min+1, cfg.pick);
+  const T=DB[g].draws.length*(cfg.dupla?2:1);
+  p.appendChild(el('div',{class:'warnbox'},
+    '<b>Uma bandeira que eu não vou colocar: "buscar combinações que nunca saíram".</b> '+
+    'Nesta modalidade existem '+fmtInt(U)+' combinações e só '+fmtInt(T)+' já foram sorteadas — ou seja, '+
+    '<b>'+(100*(1-T/U)).toFixed(4).replace('.',',')+'%</b> nunca saíram. O filtro não escolheria nada; ele só daria a sensação de ter escolhido. '+
+    'E o inverso, "buscar as que mais saíram", é pior ainda: além de não mudar a chance, é <b>exatamente</b> o que a parte da multidão que joga estatística faz — '+
+    'por isso a bandeira acima é para <i>evitar</i> as quentes, não para procurá-las. A intuição aqui aponta para o lado errado.'));
+  return p;
 }
 /* ========== MEUS FAVORITOS: encaixar números preferidos ========== */
 function renderFavoritos(){

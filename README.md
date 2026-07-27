@@ -119,3 +119,7 @@ Super Sete e Dupla-Sena deixaram de ser modalidades de segunda classe — o prim
 ## Novidades da v11
 
 Varredura histórica do índice CRIVO sobre os 4.635 sorteios da base em que o prêmio principal foi realmente ganho. Resultado: **o índice cruzou o break-even de 1,00 uma única vez em toda a história** — Lotomania, março de 2017. Nem a maior Mega da Virada chegou lá. O painel deixou de tratar o 1,00 como veredito e passou a mostrar o **percentil histórico da própria modalidade**, que é o que distingue um dia comum de um dia raro. Detalhes e a ressalva sobre o imposto na seção 16 de `METODOLOGIA.md`.
+
+## Correção da v12
+
+O painel descontava 30% de IR do prêmio — errado, porque o valor divulgado pela Caixa **já vem líquido**. Verificado contra a base inteira: reconstruindo o bruto das faixas acima do piso de retenção de R$ 1.903,98, o total reproduz a fatia legal de 43,35% da arrecadação com erro menor que 0,7 ponto percentual em sete modalidades independentes. Consequência: todos os índices sobem ~43%, o prêmio de gatilho cai 30%, e os cruzamentos históricos do break-even passam de 1 para 5 em 4.635 sorteios — quatro deles em sorteios especiais. Seção 17 de `METODOLOGIA.md`.

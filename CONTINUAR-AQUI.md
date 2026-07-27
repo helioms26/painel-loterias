@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **11.0**, publicada em 27/07/2026.
+Última versão: **12.0**, publicada em 27/07/2026.
 
 ---
 
@@ -112,7 +112,17 @@ Consequência de produto: o 1,00 deixou de ser o veredito. Continua marcado na r
 
 A varredura vive em `site/data/historico_crivo.json`, gerado offline. Se a base crescer muito, vale regerar — o script está descrito na seção 16 de `METODOLOGIA.md`.
 
-Duas coisas para não esquecer. A reconstrução do preço histórico se valida sozinha (Lotofácil estimada em R$ 3,49 contra R$ 3,50 oficial, e a série reproduz os aumentos da Caixa sem que ninguém informe as datas) — se algum dia ela parar de bater, é sinal de que a base ou a fórmula quebrou. E ficou uma dúvida aberta: **não consegui confirmar se o rateio publicado pela Caixa é bruto ou líquido de imposto**. Reportagens dizem líquido, a página oficial diz que "o prêmio bruto corresponde a 43,79% da arrecadação" sem esclarecer o momento da retenção, e o teste contra a arrecadação não fecha com nenhuma das hipóteses. Se for líquido, todos os índices sobem ~43% e os cruzamentos vão de 1 para 5. A conclusão prática não muda, mas o número exato depende disso.
+A reconstrução do preço histórico se valida sozinha (Lotofácil estimada em R$ 3,49 contra R$ 3,50 oficial, e a série reproduz os aumentos da Caixa sem que ninguém informe as datas) — se algum dia ela parar de bater, é sinal de que a base ou a fórmula quebrou.
+
+## O que a v12 corrigiu — leia antes de mexer no imposto
+
+O painel descontava 30% de IR do prêmio. **Estava errado: o valor divulgado pela Caixa já vem líquido.** O Hélio informou, e eu verifiquei contra a base inteira antes de mudar.
+
+O teste: a retenção de 30% só incide sobre prêmio acima de R$ 1.903,98. Reconstruindo o bruto de cada faixa que passa desse piso (dividindo por 0,70) e deixando as menores como estão, o total tem de bater a fatia legal de 43,35% da arrecadação. Bate em sete modalidades com estruturas de faixa diferentes, todas dentro de 0,7 ponto percentual — Mega-Sena +0,21pp, Quina +0,11pp, Dupla-Sena +0,07pp. Sem o ajuste do piso, o erro ia de −2 a −3,6pp em todas.
+
+O teste está reproduzido em comentário no código, logo acima da constante `IR_LOTERIA`, que hoje vale **0**. Se a fatia legal ou o piso de retenção mudarem, é esse teste que precisa ser refeito. Não volte a multiplicar por 0,70 sem refazê-lo.
+
+Consequências: todos os índices subiram ~43%, o prêmio de gatilho caiu 30%, e os cruzamentos históricos de 1,00 passaram de 1 para 5 em 4.635 sorteios — quatro deles em sorteios especiais (Mega da Virada 2015, Quina de São João 2016 e 2018, Timemania de Natal 2025). O `historico_crivo.json` foi regerado sem o fator.
 
 ---
 

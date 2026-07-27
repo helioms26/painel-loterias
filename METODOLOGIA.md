@@ -421,3 +421,53 @@ Testei contra os dados. Somando tudo que foi pago e dividindo pela arrecadação
 Se o valor divulgado já for líquido, todos os índices sobem cerca de 43% e os cruzamentos de 1,00 passam de 1 para 5 em 4.635 sorteios: Mega da Virada 2015 (1,155), Quina de São João 2016 (1,012) e 2018 (1,022), Timemania de Natal 2025 (1,014) e a Lotomania de 2017 (1,355).
 
 **Continua raro nas duas leituras, e a conclusão prática não muda** — mas o número exato depende disso, e prefiro registrar a dúvida a escolher a hipótese que deixa o resultado mais bonito.
+
+## 17. O imposto: a dúvida da seção 16, resolvida — e o erro que ela escondia (v12)
+
+Na seção anterior registrei uma dúvida em aberto: o painel descontava 30% de IR do prêmio, mas eu não tinha conseguido confirmar se o valor divulgado pela Caixa já vinha líquido. O Hélio informou que vem. Fui verificar antes de mudar, e o teste fechou de um jeito que não deixa dúvida.
+
+### A verificação
+
+Se o rateio publicado já é líquido, então para reconstruir o valor bruto basta dividir por 0,70 — mas só as faixas que efetivamente sofrem retenção. A retenção de 30% incide sobre prêmios acima de R$ 1.903,98; abaixo disso não há desconto. Então: grosso modo, reconstruir o bruto significa dividir por 0,70 toda faixa cujo prêmio por ganhador passe desse piso, e deixar as demais como estão.
+
+Feito isso, o total reconstruído tem de bater a fatia legal da arrecadação destinada a prêmios: 43,35% nos prognósticos numéricos. Resultado sobre a base inteira:
+
+| Modalidade | Bruto reconstruído | Desvio da fatia legal |
+|---|---|---|
+| Mega-Sena | 43,56% | +0,21pp |
+| Quina | 43,46% | +0,11pp |
+| Dupla-Sena | 43,42% | +0,07pp |
+| Lotofácil | 43,16% | −0,19pp |
+| Lotomania | 43,16% | −0,19pp |
+| Dia de Sorte | 42,92% | −0,43pp |
+| Super Sete | 42,69% | −0,66pp |
+
+Sete modalidades, com estruturas de faixa completamente diferentes — três, quatro, cinco, sete, oito faixas —, todas caindo dentro de sete décimos de ponto percentual do mesmo alvo. Sem o ajuste do piso de retenção, o erro ia de −2 a −3,6 pontos em todas. Um acaso não se comporta assim.
+
+Foi também o que explicou por que, na seção 16, nenhuma das duas hipóteses simples fechava: eu estava testando "tudo bruto" contra "tudo líquido", quando a realidade é mista — as faixas grandes vêm líquidas, as pequenas não sofrem retenção.
+
+### A consequência
+
+O rateio publicado é o que chega na mão do apostador. Então o índice passa a usá-lo como está, sem nenhum fator de imposto. Na prática:
+
+- todos os índices sobem cerca de 43%. A Lotofácil de hoje foi de 0,53 para **0,63**; a Mega-Sena de 0,30 para **0,38**;
+- o prêmio de gatilho cai 30%. Na Lotofácil, de R$ 26,4 milhões para **R$ 18,5 milhões**; na Mega-Sena, de R$ 400 para **R$ 280 milhões**;
+- os cruzamentos históricos de 1,00 passam de 1 para **5 em 4.635 sorteios**.
+
+### Os cinco cruzamentos, e o que eles têm em comum
+
+| Modalidade | Concurso | Data | Índice | Prêmio | |
+|---|---|---|---|---|---|
+| Lotomania | 1741 | 03/03/2017 | 1,355 | R$ 26,4 mi | sorteio comum |
+| Mega-Sena | 1772 | 22/12/2015 | 1,155 | R$ 197,4 mi | Mega da Virada |
+| Quina | 4706 | 23/06/2018 | 1,022 | R$ 125,1 mi | Quina de São João |
+| Timemania | 2336 | 27/12/2025 | 1,014 | R$ 73,2 mi | Timemania de Natal |
+| Quina | 4114 | 24/06/2016 | 1,012 | R$ 143,1 mi | Quina de São João |
+
+**Quatro dos cinco são sorteios especiais.** O break-even existe e é alcançável — mas praticamente só no calendário, uma ou duas vezes por ano, e nem toda edição chega lá. Cinco em 4.635 é pouco mais de um décimo de um por cento.
+
+Isso não contradiz a seção 16, apenas refina a conclusão. O 1,00 continua sem servir de veredito diário: dizer "índice menor que 1, não aposte" segue equivalendo a "quase nunca aposte". O percentil histórico da própria modalidade continua sendo o sinal que separa um dia comum de um dia raro. O que mudou é que agora sabemos exatamente onde fica a fronteira, e que ela tem endereço no calendário.
+
+### Registro de responsabilidade
+
+A informação de que o valor divulgado já é líquido veio do Hélio, não de uma fonte documental que eu tenha conseguido citar. O que eu fiz foi testá-la contra a base inteira, e ela passou com folga. Fica registrado assim: **afirmação do usuário, confirmada por verificação independente nos dados**, não uma leitura de norma. Se algum dia a fatia legal mudar ou o piso de retenção for corrigido, este teste é o que precisa ser refeito — está reproduzido em comentário no código, logo acima da constante `IR_LOTERIA`.

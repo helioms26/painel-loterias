@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **10.0**, publicada em 27/07/2026.
+Última versão: **11.0**, publicada em 27/07/2026.
 
 ---
 
@@ -101,6 +101,18 @@ Fechar essas lacunas expôs dois erros sérios que já estavam lá. O índice da
 Se você for mexer no cálculo de prêmio, o mapa se chama FAIXAS e o comentário acima dele explica cada caso. Não volte para a aritmética.
 
 A Dupla-Sena virou o melhor teste do nosso próprio método: pares dentro de um sorteio estão sob restrição sem reposição, pares entre os dois sorteios são independentes. A calibração devolve 0,8504 no primeiro caso (teórico 0,8503) e 0,9994 no segundo. No Super Sete, entre colunas, dá 1,0000.
+
+## O que a v11 mudou, e por que importa mais que o resto
+
+O Hélio perguntou se o break-even de 1,00 é realista. Fui medir na base inteira: para cada sorteio em que o prêmio principal foi realmente ganho, recalculei o índice com o valor efetivamente pago.
+
+**Em 4.635 sorteios, o índice cruzou 1,00 uma única vez** — Lotomania, concurso 1741, 03/03/2017. Nem a maior Mega da Virada da história (R$ 197 milhões, 2015) passou de 0,851.
+
+Consequência de produto: o 1,00 deixou de ser o veredito. Continua marcado na régua como referência teórica, mas o sinal operacional agora é o **percentil histórico da própria modalidade**. "0,53" não diz nada; "0,53, que é o percentil 99,8 da história da Lotofácil" decide.
+
+A varredura vive em `site/data/historico_crivo.json`, gerado offline. Se a base crescer muito, vale regerar — o script está descrito na seção 16 de `METODOLOGIA.md`.
+
+Duas coisas para não esquecer. A reconstrução do preço histórico se valida sozinha (Lotofácil estimada em R$ 3,49 contra R$ 3,50 oficial, e a série reproduz os aumentos da Caixa sem que ninguém informe as datas) — se algum dia ela parar de bater, é sinal de que a base ou a fórmula quebrou. E ficou uma dúvida aberta: **não consegui confirmar se o rateio publicado pela Caixa é bruto ou líquido de imposto**. Reportagens dizem líquido, a página oficial diz que "o prêmio bruto corresponde a 43,79% da arrecadação" sem esclarecer o momento da retenção, e o teste contra a arrecadação não fecha com nenhuma das hipóteses. Se for líquido, todos os índices sobem ~43% e os cruzamentos vão de 1 para 5. A conclusão prática não muda, mas o número exato depende disso.
 
 ---
 

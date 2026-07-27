@@ -365,3 +365,59 @@ Mas o valor real da Dupla-Sena é outro. Ela oferece um experimento natural que 
 Devolve. Dentro do mesmo sorteio: 0,8504, contra o teórico 250/294 = 0,8503. Entre os dois sorteios: 0,9994, contra o teórico 1,0000. E no Super Sete, onde as sete colunas são sorteios independentes, a escala entre colunas dá exatamente 1,0000.
 
 É o resultado que valida a correção: a calibração está capturando a estrutura do sorteio, e não inventando um ajuste conveniente para fazer os números caírem onde a gente gostaria.
+
+## 16. O break-even de 1,00 é alcançável? A varredura histórica (v11)
+
+Pergunta do Hélio, e das boas: se o índice nunca chega perto de 1,00, talvez o limiar não seja realista. Fui medir.
+
+### O método da varredura
+
+Para cada sorteio da base em que o prêmio principal foi **realmente ganho**, o índice foi recalculado com o valor efetivamente pago — ganhadores × rateio — em vez de uma estimativa. Restringir aos sorteios com ganhador não é conveniência: é o que torna a medida exata. O bolo acumula até ser ganho, então o sorteio em que ele sai é justamente o pico da acumulação. Todo acúmulo passado terminou em alguém ganhando, então todos os picos históricos estão na amostra.
+
+Faltavam duas peças. A primeira é o número de apostas, que define o fator de partilha; obtive estimando as apostas simples equivalentes a partir da contagem de ganhadores da faixa mais baixa, cuja probabilidade é conhecida por combinatória. A segunda é o preço da aposta na época, que veio de arrecadação ÷ apostas estimadas.
+
+Essa reconstrução se valida sozinha, e é por isso que confio nela: o preço efetivo estimado para 2026 deu R$ 3,49 na Lotofácil contra R$ 3,50 oficiais, R$ 2,94 na Quina contra R$ 3,00, R$ 2,54 no Dia de Sorte contra R$ 2,50, R$ 3,54 na Timemania contra R$ 3,50. E a série reproduz os aumentos de preço da Caixa ao longo dos anos sem que ninguém tenha informado a data deles.
+
+O RTP das faixas menores foi calculado em janela expansiva, usando só o passado de cada ponto — sem olhar o futuro.
+
+### O resultado
+
+**Em 4.635 sorteios com prêmio principal observado, o índice cruzou 1,00 uma única vez:** Lotomania, concurso 1741, 03/03/2017, índice 1,006, prêmio de R$ 26,4 milhões dividido entre 2 ganhadores.
+
+O recorde da Mega-Sena é 0,851, na Mega da Virada de 2015, com prêmio de R$ 197 milhões. Nem a maior Virada da história chegou lá. O percentil 99 de cada modalidade fica entre 0,43 e 0,77.
+
+**A conclusão é que o Hélio estava certo.** O 1,00 é um marco teórico correto e operacionalmente inútil. Dizer "índice menor que 1, não aposte" é matematicamente impecável e equivale a dizer "nunca aposte" — que é uma recomendação legítima, mas que não precisa de painel para ser dada.
+
+### O que substitui o 1,00
+
+O percentil histórico da própria modalidade. O painel passou a mostrar, ao lado do índice absoluto, onde ele se situa na distribuição daquele jogo. É a diferença entre "0,53, desfavorável" e "0,53, que é o percentil 99,8 da história da Lotofácil" — a segunda frase informa uma decisão, a primeira não.
+
+O 1,00 continua marcado na régua, como referência do que seria o ponto de virada. Mas ele deixou de ser o veredito.
+
+### Os sorteios especiais, e a tese do método aparecendo sozinha
+
+Classificando os sorteios pela data, os especiais dominam o topo histórico: a Lotofácil da Independência é 1,2% da base e ocupa 13 das 20 melhores posições; a Quina de São João é 3,4% da base e ocupa 10 das 20.
+
+Mas a mediana conta outra história, e é a mais interessante do capítulo:
+
+| Sorteio especial | Ocorrências | Índice mediano | Sorteio comum | Ganho |
+|---|---|---|---|---|
+| Quina de São João | 18 | 0,532 | 0,262 | 2,03× |
+| Mega da Virada | 22 | 0,352 | 0,248 | 1,42× |
+| Timemania de Natal | 4 | 0,327 | 0,293 | 1,12× |
+| Dia de Sorte da Primavera | 12 | 0,323 | 0,290 | 1,11× |
+| Lotofácil da Independência | 35 | 0,355 | 0,347 | 1,02× |
+
+A Lotofácil da Independência tem o prêmio mais chamativo da lista e o menor ganho real: 2%. O prêmio gigante atrai uma enxurrada de apostas — o fator de partilha nesses sorteios chega a λ ≈ 44, ou seja, quarenta e quatro ganhadores esperados — e a multidão come quase toda a vantagem. A Quina de São João é a exceção porque o prêmio cresce mais do que o público.
+
+É a tese do CRIVO se confirmando sem que a gente tenha forçado nada: **o que decide não é o tamanho do prêmio, é quanta gente está disputando ele com você.**
+
+### A ressalva que não consegui fechar
+
+O painel desconta 30% de imposto de renda do prêmio antes de calcular o retorno esperado. Duas reportagens afirmam que o valor divulgado pela Caixa **já é líquido**; a página oficial da Mega-Sena diz que "o prêmio bruto corresponde a 43,79% da arrecadação" e não esclarece em que momento a retenção acontece.
+
+Testei contra os dados. Somando tudo que foi pago e dividindo pela arrecadação, a Mega-Sena dá 32,9%, a Lotofácil 38,6%, o Dia de Sorte 35,5%. Se os valores fossem brutos, esperaríamos algo perto de 43,35%; se fossem líquidos, perto de 30,3%. Nenhuma das duas hipóteses fecha de forma limpa, e a diferença entre modalidades sugere que as reservas dos sorteios especiais desviam frações diferentes da arrecadação em cada jogo — o que impede a conta de fechar por esse caminho.
+
+Se o valor divulgado já for líquido, todos os índices sobem cerca de 43% e os cruzamentos de 1,00 passam de 1 para 5 em 4.635 sorteios: Mega da Virada 2015 (1,155), Quina de São João 2016 (1,012) e 2018 (1,022), Timemania de Natal 2025 (1,014) e a Lotomania de 2017 (1,355).
+
+**Continua raro nas duas leituras, e a conclusão prática não muda** — mas o número exato depende disso, e prefiro registrar a dúvida a escolher a hipótese que deixa o resultado mais bonito.

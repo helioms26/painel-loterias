@@ -115,3 +115,7 @@ Seleção única e compartilhada entre todas as abas, com desfazer e refazer; r�
 ## Novidades da v10
 
 Super Sete e Dupla-Sena deixaram de ser modalidades de segunda classe — o primeiro ganhou análise por coluna, filtro cruzado por (coluna, dígito) e a aba Evidências completa; a segunda ganhou os dois sorteios separados. Fechar essas lacunas expôs **dois erros graves no cálculo de prêmio** que afetavam cinco modalidades: o índice de faixa era calculado por aritmética e atropelava as faixas extras (o backtest da Dupla-Sena chegava a mostrar 507.958% de retorno), e o simulador gerava apostas do tamanho do sorteio em vez do tamanho da aposta real. Os dois estão corrigidos e documentados na seção 15 de `METODOLOGIA.md`. O backtest agora roda oito sementes e mostra a dispersão, porque uma rodada só engana.
+
+## Novidades da v11
+
+Varredura histórica do índice CRIVO sobre os 4.635 sorteios da base em que o prêmio principal foi realmente ganho. Resultado: **o índice cruzou o break-even de 1,00 uma única vez em toda a história** — Lotomania, março de 2017. Nem a maior Mega da Virada chegou lá. O painel deixou de tratar o 1,00 como veredito e passou a mostrar o **percentil histórico da própria modalidade**, que é o que distingue um dia comum de um dia raro. Detalhes e a ressalva sobre o imposto na seção 16 de `METODOLOGIA.md`.

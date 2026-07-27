@@ -952,7 +952,7 @@ function neverDrawn(g,k,map,limit){ // enumerate only when feasible
 /* ================= RENDER: SHELL ================= */
 const TABS = [
   ['visao','Visão geral'],['registro','Minhas apostas'],['ranking','Mais & menos'],
-  ['combos','Conjuntos 2–6'],['meujogo','Meu jogo'],['gerador','Gerador de jogos'],
+  ['combos','Conjuntos 2–6'],['meujogo','Meu jogo'],
   ['metodo','Nosso método'],['evidencia','Evidências & testes'],['evolucao','Evolução do método'],['financeiro','Financeiro'],['risco','Risco']
 ];
 function renderChips(){
@@ -995,13 +995,14 @@ async function refresh(){
   /* A aba Volante foi absorvida por Mais & menos. Qualquer estado antigo — pilha
      de desfazer, link salvo — cai aqui e é redirecionado em silêncio. */
   if(state.tab==='volante') state.tab='ranking';
+  if(state.tab==='gerador') state.tab='meujogo';   // v19: gerador fundido em Meu jogo
   if(!navegandoSel) gravarSel();
   renderChips(); renderTabs(); renderSelbar();
   const m=$('#main'); m.innerHTML='<div class="loading">Processando…</div>';
   try{ await loadGame(state.game); }catch(e){ m.innerHTML='<div class="warnbox">Erro ao carregar dados: '+e.message+'</div>'; return; }
   srcInfo(); renderSelbar();
   m.innerHTML='';
-  const fn={visao:renderVisao, comparar:renderComparar, registro:renderRegistro, ranking:renderRanking, combos:renderCombos, meujogo:renderMeuJogo, gerador:renderGerador, metodo:renderMetodo, evidencia:renderEvidencia, evolucao:renderEvolucao, financeiro:renderFinanceiro, risco:renderRisco}[state.tab];
+  const fn={visao:renderVisao, comparar:renderComparar, registro:renderRegistro, ranking:renderRanking, combos:renderCombos, meujogo:renderJogo, gerador:renderJogo, metodo:renderMetodo, evidencia:renderEvidencia, evolucao:renderEvolucao, financeiro:renderFinanceiro, risco:renderRisco}[state.tab];
   await fn(m);
 }
 function windowSelector(){
@@ -1279,8 +1280,10 @@ function painelTresEixos(){
       '<td class="num tabular">'+(l.pAlgo? '1 em '+fmtInt(Math.round(1/l.pAlgo)) : '—')+'</td></tr>';
   }
   ht+='</tbody></table></div>';
-  p.innerHTML+=ht;
-  p.appendChild(el('p',{class:'note'},'Ordenado pelo eixo do prêmio principal. A seta mostra quantas posições a modalidade sobe ou desce em relação ao ranking do índice total.'));
+  const blocoT=htmlBloco(ht);
+  tabelaOrdenavel(blocoT.querySelector('table'));
+  p.appendChild(blocoT);
+  p.appendChild(el('p',{class:'note'},'Começa ordenado pelo eixo do prêmio principal — <b>clique em qualquer cabeçalho</b> para reordenar (um clique crescente, dois decrescente, três volta ao original). A seta ao lado do nome mostra quantas posições a modalidade sobe ou desce em relação ao ranking do índice total; ela é calculada na ordem inicial e não muda com a reordenação.'));
 
   const t=porTotal[0], so=porSonho[0], fq=porFreq[0];
   const g3=el('div',{class:'cards'});
@@ -1492,24 +1495,38 @@ function perfilJogo(g, nums){
     const chave=s.join(',');
     for(const d of draws) for(const set of d.sets) if([...set].sort((a,b)=>a-b).join(',')===chave){ jaSaiu=d.n; break; }
   }
+  /* v19: os alertas agora vêm da MEDIÇÃO, não de raciocínio. Ver POPULARIDADE.
+     A versão anterior avisava "tem N dezenas seguidas — sequências são muito
+     jogadas". É o contrário: medido, sorteios com sequência curta tiveram mais
+     ganhadores. Aquele aviso empurrava o usuário para o perfil mais disputado. */
   const alertas=[];
-  if(datas>espDatas+1.2) alertas.push({nivel:'ruim', txt:datas+' das '+s.length+' dezenas são ≤ 31 (cara de aniversário) — esperado ~'+espDatas.toFixed(1)+'. Muita gente joga assim, então o rateio piora.'});
-  else if(datas<espDatas-1.2) alertas.push({nivel:'bom', txt:'só '+datas+' dezenas ≤ 31 — foge do padrão de datas, que é o ponto forte do método.'});
-  if(maiorSeq>=3) alertas.push({nivel:'ruim', txt:'tem '+maiorSeq+' dezenas seguidas — sequências são muito jogadas.'});
-  if(linhas.size<=2 && s.length>=5) alertas.push({nivel:'ruim', txt:'as dezenas se concentram em '+linhas.size+' linha(s) do volante — padrão visual popular.'});
-  if(jaSaiu) alertas.push({nivel:'ruim', txt:'esta combinação exata já foi sorteada (concurso '+fmtInt(jaSaiu)+') — jogos premiados são repetidos por muita gente.'});
-  if(coMedio < coEsperado*0.75) alertas.push({nivel:'bom', txt:'as duplas deste jogo saíram juntas menos que a média histórica — combinação pouco trilhada.'});
-  if(!alertas.length) alertas.push({nivel:'bom', txt:'nenhum padrão popular detectado. Perfil equilibrado.'});
-  const nota = alertas.filter(a=>a.nivel==='ruim').length;
+  const fr=fatorRateio(g,s);
+  const temMedicao = fr.medido && POPULARIDADE[g] && POPULARIDADE[g].regras.length>0;
+  if(temMedicao){
+    for(const it of fr.itens){
+      if(it.rot==='Teto de honestidade aplicado') continue;
+      alertas.push({nivel: it.fator<1?'bom':'ruim',
+        txt: it.rot.toLowerCase()+(it.det?' ('+it.det+')':'')+' — medido em '+it.fator.toFixed(2).replace('.',',')+'×: '+
+             (it.fator<1? 'divide com '+Math.round((1-it.fator)*100)+'% MENOS gente que a média.'
+                        : 'divide com '+Math.round((it.fator-1)*100)+'% MAIS gente que a média.')});
+    }
+    if(!fr.itens.length) alertas.push({nivel:'bom', txt:'nenhum dos padrões medidos aparece — rateio esperado igual ao da média.'});
+  } else {
+    alertas.push({nivel:'bom', txt:'ainda não há medição de popularidade para esta modalidade — não damos veredito de rateio, só os números descritivos abaixo.'});
+  }
+  if(jaSaiu) alertas.push({nivel:'ruim', txt:'esta combinação exata já foi sorteada (concurso '+fmtInt(jaSaiu)+'). Não medimos o efeito disso no rateio; fica só como aviso.'});
+  const f=fr.fator;
   return {datas, espDatas, maiorSeq, pares, impares:s.length-pares, soma, somaEsp,
-          linhas:linhas.size, coMedio, coEsperado, jaSaiu, alertas,
-          score: nota===0?'exclusivo':(nota===1?'aceitável':'popular')};
+          linhas:linhas.size, coMedio, coEsperado, jaSaiu, alertas, fator:f, temMedicao,
+          score: !temMedicao? 'aceitável' : (f<=0.85?'exclusivo':(f<=1.15?'aceitável':'popular'))};
 }
 function chipPerfil(p){
   const cor={exclusivo:['var(--good-wash)','var(--status-good)'],
              'aceitável':['var(--accent-wash)','var(--accent)'],
              popular:['var(--warning-wash)','var(--status-warning)']}[p.score];
-  const txt={exclusivo:'POUCO DISPUTADO','aceitável':'RAZOÁVEL',popular:'MUITO DISPUTADO'}[p.score];
+  let txt={exclusivo:'POUCO DISPUTADO','aceitável':'RAZOÁVEL',popular:'MUITO DISPUTADO'}[p.score];
+  if(p.temMedicao===false) txt='SEM MEDIÇÃO';
+  else if(p.fator!=null) txt += ' · '+p.fator.toFixed(2).replace('.',',')+'×';
   return '<span style="display:inline-flex;align-items:center;font-size:var(--text-2xs);font-weight:var(--weight-semi);'+
          'padding:2px var(--space-3);border-radius:var(--radius-full);background:'+cor[0]+';border-left:2px solid '+cor[1]+'">'+txt+'</span>';
 }
@@ -1872,8 +1889,14 @@ function probAlgumPremio(g){
    devolver a tabela ao estado em que ela nasceu, que costuma ser o ranking que
    o painel escolheu de propósito. */
 function numDaCelula(td){
-  const t=(td.textContent||'').trim();
-  const m=t.replace(/\u00A0/g,' ').match(/-?[\d][\d.]*(,\d+)?/);
+  const t=(td.textContent||'').trim().replace(/\u00A0/g,' ');
+  /* "1 em 2.298" é uma probabilidade escrita como razão: o número que ordena é
+     o denominador, e menor = melhor. Sem este caso, o regex genérico devolvia
+     sempre 1 e a coluna inteira ficava sem ordenação nenhuma — parecia que o
+     clique não funcionava. */
+  const raz=t.match(/^1\s+em\s+([\d.]+(?:,\d+)?)/i);
+  if(raz){ const v=parseFloat(raz[1].replace(/\./g,'').replace(',','.')); return isFinite(v)? v : null; }
+  const m=t.match(/-?[\d][\d.]*(,\d+)?/);
   if(!m) return null;
   const v=parseFloat(m[0].replace(/\./g,'').replace(',','.'));
   return isFinite(v)? v : null;
@@ -1891,6 +1914,71 @@ function htmlBloco(html, attrs){
   const d=el('div', attrs||null);
   d.innerHTML=html;
   return d;
+}
+/* ========== COPIAR JOGO(S) ==========
+   navigator.clipboard só existe em contexto seguro (https ou localhost). O painel
+   também roda como arquivo local (file://) e dentro do app do iPhone, onde ele
+   some. Por isso a queda para textarea + execCommand, que ainda funciona em
+   todo lugar. Se as duas falharem, mostramos o texto para copiar na mão —
+   nunca deixe o botão "não fazer nada em silêncio". */
+function copiarTexto(txt, btn, rotOriginal){
+  const feedback = (ok)=>{
+    if(!btn) return;
+    const rot = rotOriginal || btn.dataset.rot || btn.textContent;
+    btn.dataset.rot = rot;
+    btn.textContent = ok ? '✓ Copiado' : 'Falhou — veja abaixo';
+    btn.disabled = false;
+    setTimeout(()=>{ btn.textContent = rot; }, 1800);
+  };
+  const fallback = ()=>{
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=txt;
+      ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0, txt.length);
+      const ok=document.execCommand('copy');
+      document.body.removeChild(ta);
+      feedback(ok);
+      if(!ok) mostrarParaCopiarNaMao(txt, btn);
+    }catch(e){ feedback(false); mostrarParaCopiarNaMao(txt, btn); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>feedback(true)).catch(fallback);
+  } else fallback();
+}
+function mostrarParaCopiarNaMao(txt, btn){
+  const alvo = btn && btn.parentNode ? btn.parentNode : document.body;
+  let cx = alvo.querySelector('.copia-manual');
+  if(!cx){ cx=el('textarea',{class:'copia-manual',readonly:'',
+      style:'width:100%;min-height:90px;margin-top:var(--space-3);font-family:var(--font-mono,monospace);font-size:var(--text-sm)'});
+    alvo.appendChild(cx); }
+  cx.value=txt; cx.select();
+}
+/* Texto de um jogo, no formato que se cola em planilha ou bloco de notas. */
+function textoJogo(g, nums){ return [...nums].sort((a,b)=>a-b).map(v=>pad(v,g)).join(' '); }
+/* Todos os desdobramentos de um conjunto em jogos de k dezenas, um por linha. */
+function textoDesdobramento(g, nums, k, limite){
+  const linhas=[]; let estourou=false;
+  forEachCombo([...nums].sort((a,b)=>a-b), k, c=>{
+    if(linhas.length>=(limite||5000)){ estourou=true; return; }
+    linhas.push(textoJogo(g, c));
+  });
+  return {txt:linhas.join('\n'), n:linhas.length, estourou};
+}
+/* Botão de copiar pronto para pendurar em qualquer painel. fn devolve o texto
+   só na hora do clique, para não gerar 3.000 linhas antes de alguém pedir. */
+function botaoCopiar(rot, fn, attrs){
+  const b=el('button', attrs||null, rot);
+  b.dataset.rot=rot;
+  b.onclick=()=>{
+    let t;
+    try{ t=fn(); }catch(e){ t=null; }
+    if(t==null || t===''){ b.textContent='Nada para copiar'; setTimeout(()=>{b.textContent=rot;},1500); return; }
+    copiarTexto(t, b, rot);
+  };
+  return b;
 }
 function tabelaOrdenavel(tab){
   if(!tab) return tab;
@@ -1921,10 +2009,12 @@ function tabelaOrdenavel(tab){
           const ca=a.children[i], cb=b.children[i];
           if(!ca||!cb) return 0;
           const na=numDaCelula(ca), nb=numDaCelula(cb);
-          let r;
-          if(na!=null && nb!=null) r=na-nb;
-          else r=(ca.textContent||'').localeCompare(cb.textContent||'','pt-BR');
-          return dir===1? r : -r;
+          /* célula sem número ("—") vai sempre para o fim, nos dois sentidos:
+             ela não é "menor que tudo", é ausência de dado. */
+          if(na==null && nb==null) return (ca.textContent||'').localeCompare(cb.textContent||'','pt-BR');
+          if(na==null) return 1;
+          if(nb==null) return -1;
+          return dir===1? na-nb : nb-na;
         });
       }
       linhas.forEach(tr=>corpo.appendChild(tr));
@@ -3089,52 +3179,153 @@ function winnersSet(g){
   for(const d of DB[g].draws) for(const ss of d.sets) s.add([...ss].sort((a,b)=>a-b).join(','));
   _winners[g]=s; return s;
 }
+/* ====================== POPULARIDADE: O QUE É MEDIDO E O QUE É PALPITE ======================
+   Versão 19. A versão anterior desta função era um conjunto de regras que EU escrevi
+   por raciocínio ("gente joga números espalhados, então sequência colada deve ser
+   impopular... ou popular?"). Nunca tinham sido medidas. Ao medir, uma delas estava
+   com o sinal invertido, e era a de maior peso.
+
+   O desenho da medição é o mesmo experimento natural usado no efeito das datas:
+   o sorteio é exógeno (ninguém escolhe o que sai), então comparar quantos ganhadores
+   da faixa máxima apareceram POR COMBINAÇÃO JOGADA, entre concursos que tiveram o
+   padrão X e concursos que não tiveram, isola a preferência da multidão.
+
+   O volume de combinações jogadas é estimado pela FAIXA MAIS BAIXA de prêmio (a que
+   tem milhares de ganhadores por concurso), e não pela arrecadação — o preço da
+   aposta mudou várias vezes ao longo da série e contaminaria a comparação.
+
+   fator > 1  => o padrão é POPULAR: se você ganhar com ele, divide com mais gente.
+   fator < 1  => o padrão é raro na multidão: divide com menos gente.
+   fator = 1  => indiferente (ou medido e sem efeito).
+
+   Onde não há medição, não há regra. Preferimos um índice que só fala do que mediu. */
+const POPULARIDADE = {
+  lotofacil: {
+    base:'3.411 concursos (#335–#3745), volume estimado pela faixa de 11 acertos',
+    regras:[
+      {rot:'Maior sequência de dezenas coladas', tipo:'faixa',
+       calc:s=>maxRunDe(s),
+       faixas:[[1,3,1.916,'≤ 3 coladas'],[4,4,0.949,'4 coladas'],[5,5,0.830,'5 coladas'],
+               [6,6,0.801,'6 coladas'],[7,99,0.823,'7+ coladas']],
+       nota:'Medido: concursos cuja maior sequência foi ≤3 tiveram 2,2× mais ganhadores por combinação jogada (IC95 1,97–2,53). A multidão foge de dezenas coladas.'},
+      {rot:'Soma das dezenas', tipo:'faixa',
+       calc:s=>s.reduce((a,b)=>a+b,0),
+       faixas:[[0,185,0.899,'soma ≤ 185'],[186,210,1.149,'soma 186–210'],[211,999,0.792,'soma > 210']],
+       nota:'Medido: a soma no miolo (186–210) é o perfil mais jogado.'},
+      {rot:'Alguma linha inteira do volante (5 de 5)', tipo:'bool',
+       calc:s=>[0,1,2,3,4].some(L=>s.filter(v=>Math.floor((v-1)/5)===L).length===5),
+       fator:0.720,
+       nota:'Medido: linha cheia é rara entre as apostas (0,72×). Contraintuitivo, mas é o que os dados mostram.'},
+      {rot:'Alguma coluna inteira do volante (5 de 5)', tipo:'bool',
+       calc:s=>[0,1,2,3,4].some(Cc=>s.filter(v=>(v-1)%5===Cc).length===5),
+       fator:1.210,
+       nota:'Medido: coluna cheia é um padrão popular (1,21×).'}
+    ],
+    nulas:['Paridade (7/8 pares): medido, sem efeito — fator 0,96, IC95 0,89–1,05.']
+  },
+  megasena: {
+    base:'3.036 concursos, volume estimado pela faixa de 4 acertos',
+    regras:[
+      {rot:'Todas as dezenas ≤ 31 (perfil de datas)', tipo:'bool',
+       calc:s=>s.every(v=>v<=31), fator:2.05,
+       nota:'Medido: concursos em que as 6 saíram ≤31 tiveram 2,05× mais ganhadores (IC95 1,40–2,77). É o efeito mais forte da Mega-Sena.'},
+      {rot:'Nenhuma dezena colada', tipo:'bool',
+       calc:s=>maxRunDe(s)===1, fator:1.41,
+       nota:'Medido: sorteios sem nenhuma consecutiva tiveram 1,41× mais ganhadores (IC95 1,18–1,70). Jogo com dezenas coladas divide com menos gente.'},
+      {rot:'Três ou mais com o mesmo dígito final', tipo:'bool',
+       calc:s=>{const f={};s.forEach(v=>f[v%10]=(f[v%10]||0)+1);return Math.max(...Object.values(f))>=3;},
+       fator:0.75,
+       nota:'Medido: 0,75× (IC95 0,54–0,98). Efeito fraco e no limite da significância — trate como indício.'}
+    ],
+    nulas:['Paridade 3/3: medido, sem efeito (IC95 0,98–1,61).','Soma no miolo 150–210: medido, sem efeito (IC95 0,78–1,19).']
+  },
+  quina: {
+    base:'2.991 concursos, volume estimado pela faixa de 2 acertos',
+    regras:[],
+    nulas:['Dezenas coladas: medido, sem efeito (0,99× vs 1,02×).',
+           'Mesmo dígito final: medido, sem efeito.','Soma: medido, sem efeito.']
+  }
+};
+function maxRunDe(s){ let mx=1,r=1; for(let i=1;i<s.length;i++){ r = s[i]===s[i-1]+1? r+1 : 1; if(r>mx)mx=r; } return mx; }
+/* Fator de rateio esperado do jogo: quantas vezes o número médio de ganhadores
+   você espera dividir, se ganhar. Só multiplica fatores medidos. */
+function fatorRateio(g, arr){
+  const s=[...arr].sort((a,b)=>a-b);
+  const cfgP=POPULARIDADE[g];
+  const itens=[];
+  let f=1;
+  if(cfgP){
+    for(const r of cfgP.regras){
+      let val=null, det='';
+      if(r.tipo==='bool'){ if(r.calc(s)){ val=r.fator; det='sim'; } }
+      else { const v=r.calc(s);
+        for(const [a,b,fa,rot] of r.faixas) if(v>=a&&v<=b){ val=fa; det=rot; break; } }
+      if(val!=null && Math.abs(val-1)>0.001){ f*=val; itens.push({rot:r.rot, fator:val, det, nota:r.nota}); }
+    }
+  }
+  /* Teto de honestidade. Os fatores foram medidos um a um; multiplicá-los supõe
+     independência, que só testei numa célula conjunta: sequência>=6 E soma>210
+     mediu 0,72x enquanto o produto previa 0,64x. Ou seja, o modelo multiplicativo
+     EXAGERA o benefício. Por isso nunca prometemos menos do que a melhor célula
+     que medimos de fato. */
+  const PISO_MEDIDO = 0.70;
+  if(f < PISO_MEDIDO){ itens.push({rot:'Teto de honestidade aplicado', fator:PISO_MEDIDO/f, det:'produto seria '+f.toFixed(2),
+      nota:'Os fatores foram medidos separadamente. Ao testar uma combinação de dois deles, o efeito conjunto medido (0,72x) foi menor que o produto previsto (0,64x) — o modelo multiplicativo exagera. Não creditamos ganho abaixo de 0,70x, que é a melhor célula conjunta efetivamente medida.'});
+    f = PISO_MEDIDO; }
+  return {fator:f, itens, medido:!!cfgP, base:cfgP?cfgP.base:null, nulas:cfgP?cfgP.nulas:[]};
+}
+/* Jogo com dezenas extras (desdobramento): quem ganha é UM dos subconjuntos de
+   cfg.pick dezenas, e cada um tem um perfil diferente. O fator honesto é a média
+   sobre todos eles — e ela costuma ser bem pior que a do conjunto grande, porque
+   basta alguns subconjuntos caírem num perfil popular para puxar a média. */
+function fatorDesdobramento(g, arr){
+  const cfg=GAMES[g], n=arr.length;
+  if(n<=cfg.pick) return null;
+  const total=C(n,cfg.pick);
+  if(total>3000) return {muitos:true, total};
+  let soma=0, cont=0, min=Infinity, max=0;
+  forEachCombo([...arr].sort((a,b)=>a-b), cfg.pick, c=>{
+    const f=fatorRateio(g,c).fator; soma+=f; cont++;
+    if(f<min)min=f; if(f>max)max=f;
+  });
+  return {media:soma/cont, n:cont, min, max, total};
+}
+/* Índice 0–100 derivado do fator, só para leitura rápida. 0,60 -> 100, 2,50 -> 0. */
+function scoreDoFator(f){
+  const lo=Math.log(0.60), hi=Math.log(2.50), x=Math.log(Math.max(0.3,Math.min(3.5,f)));
+  return Math.max(0, Math.min(100, Math.round(100*(hi-x)/(hi-lo))));
+}
 function scoreJogo(g, arr){
   const cfg=GAMES[g];
   const s=[...arr].sort((a,b)=>a-b);
   const n=s.length;
-  const pen=[];
-  let score=100;
-  // 1. datas de aniversário (dezenas <= 31)
-  if(cfg.max>31){
-    const baixas=s.filter(v=>v<=31).length;
-    const esperado=n*(31-cfg.min+1)/(cfg.max-cfg.min+1);
-    const excesso=Math.max(0,baixas-esperado)/n;
-    const p=Math.round(excesso*45);
-    if(p>0){ score-=p; pen.push(['Dezenas ≤ 31 (datas)', -p, baixas+' de '+n]); }
+  const fr=fatorRateio(g,s);
+  const pen=fr.itens.map(it=>[it.rot+(it.det?' ('+it.det+')':''),
+                              +( (1/it.fator-1)*100 ).toFixed(0), 'fator '+it.fator.toFixed(2)+'×']);
+  let score;
+  if(fr.medido && POPULARIDADE[g].regras.length){
+    score=scoreDoFator(fr.fator);
+  } else {
+    /* Modalidade ainda sem medição de popularidade. Não inventamos regra:
+       devolvemos o neutro e avisamos na tela. */
+    score=null;
   }
-  // 2. sequências consecutivas
-  let maxRun=1,run=1,runs=0;
-  for(let i=1;i<n;i++){ if(s[i]===s[i-1]+1){ run++; if(run===2) runs++; } else run=1; maxRun=Math.max(maxRun,run); }
-  if(maxRun>=3){ const p=(maxRun-2)*12; score-=p; pen.push(['Sequência de '+maxRun+' consecutivas', -p, '']); }
-  else if(runs>=2){ score-=6; pen.push(['Vários pares consecutivos', -6, runs+' pares']); }
-  // 3. paridade extrema
-  const pares=s.filter(v=>v%2===0).length;
-  if(pares===0||pares===n){ score-=14; pen.push(['Todas '+(pares?'pares':'ímpares'), -14, '']); }
-  else if(Math.abs(pares-n/2)>=n/2-0.5){ score-=6; pen.push(['Paridade desequilibrada', -6, pares+'/'+(n-pares)]); }
-  // 4. mesmo dígito final / coluna do volante
-  const fins={}; s.forEach(v=>fins[v%10]=(fins[v%10]||0)+1);
-  const maxFin=Math.max(...Object.values(fins));
-  if(maxFin>=Math.max(3,Math.ceil(n*0.6))){ const p=10; score-=p; pen.push(['Muitas dezenas com o mesmo dígito final', -p, maxFin+' dezenas']); }
-  // 5. linha do volante (mesma dezena de dezena)
-  const dez={}; s.forEach(v=>{ const d=Math.floor((v-cfg.min)/10); dez[d]=(dez[d]||0)+1; });
-  const maxDez=Math.max(...Object.values(dez));
-  if(maxDez>=Math.max(4,Math.ceil(n*0.6))){ score-=10; pen.push(['Concentração numa faixa do volante', -10, maxDez+' dezenas']); }
-  // 6. combinação já premiada
-  if(n===cfg.pick && winnersSet(g).has(s.join(','))){
-    score-=20; pen.push(['Combinação já sorteada — muita gente repete', -20, '']);
-  }
-  // 7. soma muito no centro da distribuição (jogos "equilibrados" são populares)
+  /* combinação já sorteada: não é medível pelo experimento natural (nunca há
+     ganhador para calibrar), mas é um fato observável e vale como aviso. */
+  const jaSaiu = (n===cfg.pick && winnersSet(g).has(s.join(',')));
   const soma=s.reduce((a,b)=>a+b,0);
-  const media=n*(cfg.min+cfg.max)/2;
-  const desvio=Math.abs(soma-media)/media;
-  if(desvio<0.05){ score-=5; pen.push(['Soma quase exata na média — perfil muito comum', -5, 'soma '+soma]); }
-  else if(desvio>0.30){ score+=4; pen.push(['Soma fora do padrão comum', +4, 'soma '+soma]); }
-  return {score:Math.max(0,Math.min(100,Math.round(score))), pen, soma, pares, maxRun};
+  const pares=s.filter(v=>v%2===0).length;
+  return {score, fator:fr.fator, itens:fr.itens, medido:fr.medido && POPULARIDADE[g].regras.length>0,
+          baseMedicao:fr.base, nulas:fr.nulas, jaSaiu, pen, soma, pares, maxRun:maxRunDe(s)};
 }
+/* Trocas que reduzem o FATOR DE RATEIO medido. Se a modalidade ainda não tem
+   medição de popularidade, não sugerimos nada — sugerir troca sem medida é
+   exatamente o erro que a versão 18 cometia. */
 function sugerirTrocas(g, arr, maxSwaps){
   const cfg=GAMES[g];
-  const base=scoreJogo(g,arr).score;
+  const s0=scoreJogo(g,arr);
+  const base=s0.score, baseFator=s0.fator;
+  if(!s0.medido) return {base, baseFator, passos:[], semMedicao:true};
   let atual=[...arr], ganho=[];
   for(let step=0; step<maxSwaps; step++){
     let melhor=null;
@@ -3142,18 +3333,45 @@ function sugerirTrocas(g, arr, maxSwaps){
       for(let v=cfg.min; v<=cfg.max; v++){
         if(atual.includes(v)) continue;
         const cand=[...atual]; cand[i]=v;
-        const sc=scoreJogo(g,cand).score;
-        if(!melhor || sc>melhor.sc) melhor={sc, out:atual[i], in:v, cand};
+        const r=scoreJogo(g,cand);
+        if(!melhor || r.fator<melhor.fator) melhor={sc:r.score, fator:r.fator, out:atual[i], in:v, cand};
       }
     }
     if(!melhor) break;
-    const antes = step===0? base : ganho[ganho.length-1].sc;
-    if(melhor.sc<=antes) break;
+    const antes = step===0? baseFator : ganho[ganho.length-1].fator;
+    if(melhor.fator >= antes-1e-6) break;
     ganho.push(melhor); atual=melhor.cand;
   }
-  return {base, passos:ganho};
+  return {base, baseFator, passos:ganho};
 }
-/* ================= RENDER: MEU JOGO ================= */
+/* ================= RENDER: MEU JOGO (montar + gerar num lugar só) =================
+   v19: as abas "Meu jogo" e "Gerador de jogos" eram a mesma tarefa partida em
+   duas. Quem gerava um jogo tinha de reescrever as dezenas na outra aba para
+   ver a análise. Agora é uma aba com dois modos, e o botão "Analisar este jogo"
+   leva o jogo gerado direto para o volante. */
+async function renderJogo(m){
+  const g=state.game, cfg=GAMES[g];
+  if(state.modoJogo!=='gerar') state.modoJogo='montar';
+  const seg=el('div',{class:'controls',style:'margin-bottom:var(--space-4)'});
+  const b1=el('button',{class: state.modoJogo==='montar'?'primary':''},'Montar eu mesmo');
+  const b2=el('button',{class: state.modoJogo==='gerar'?'primary':''},'Gerar para mim');
+  b1.onclick=()=>{ state.modoJogo='montar'; refresh(); };
+  b2.onclick=()=>{ state.modoJogo='gerar'; refresh(); };
+  seg.appendChild(b1); seg.appendChild(b2);
+  seg.appendChild(el('span',{class:'note',style:'flex:1;min-width:240px'},
+    state.modoJogo==='montar'
+      ? 'Você clica nas dezenas e o painel analisa. Para receber jogos prontos, use "Gerar para mim".'
+      : 'O painel sorteia e escolhe pelo fator de rateio medido. Clique em "Analisar" em qualquer jogo para levá-lo ao volante.'));
+  m.appendChild(seg);
+  const box=el('div'); m.appendChild(box);
+  if(state.modoJogo==='gerar') renderGerador(box); else renderMeuJogo(box);
+  /* painéis de apoio valem nos dois modos */
+  if(!cfg.colunas) box.appendChild(painelBandeiras(g));
+  box.appendChild(painelRepeticoes(g));
+  if(!cfg.colunas) box.appendChild(renderFavoritos());
+  if(!cfg.colunas) box.appendChild(renderCobertura());
+  box.appendChild(renderQuandoJogar());
+}
 function renderMeuJogo(m){
   const g=state.game,cfg=GAMES[g];
   state.pick = state.pick || {};
@@ -3346,6 +3564,10 @@ function renderMeuJogo(m){
     const jogo=state.pickCols;
     const b=el('div',{class:'balls'}); jogo.forEach((v,c)=>b.appendChild(el('span',{class:'ball',title:'coluna '+(c+1)},String(v))));
     pa.appendChild(b);
+    const bc=el('div',{class:'controls',style:'margin-top:var(--space-4)'});
+    bc.appendChild(botaoCopiar('Copiar jogo', ()=>jogo.join(' '), {class:'primary'}));
+    bc.appendChild(botaoCopiar('Copiar por coluna', ()=>jogo.map((v,c)=>'Coluna '+(c+1)+': '+v).join('\n')));
+    pa.appendChild(bc);
     const draws=DB[g].draws;
     let exact=0; for(const d of draws) if(d.sets[0].every((v,i)=>v===jogo[i])) exact++;
     pa.appendChild(el('p',{class:'note',style:'margin-top:var(--space-5)'},'Probabilidade de acertar as 7 colunas: 1 em 10.000.000. Essa combinação exata já saiu <b>'+exact+'</b> vez(es) em '+fmtInt(draws.length)+' concursos.'));
@@ -3380,6 +3602,42 @@ function renderMeuJogo(m){
     pa.appendChild(el('h3',null,'Seu jogo'));
     const b=el('div',{class:'balls'}); sorted.forEach(v=>b.appendChild(el('span',{class:'ball'},pad(v,g))));
     pa.appendChild(b);
+
+    /* ---- copiar ---- */
+    const barraCopia=el('div',{class:'controls',style:'margin-top:var(--space-4)'});
+    barraCopia.appendChild(botaoCopiar('Copiar dezenas', ()=>textoJogo(g,sorted), {class:'primary'}));
+    if(sel.length>cfg.pick){
+      const nComb=C(sel.length,cfg.pick);
+      if(nComb<=5000){
+        barraCopia.appendChild(botaoCopiar('Copiar os '+fmtInt(nComb)+' jogos de '+cfg.pick, ()=>{
+          const r=textoDesdobramento(g, sorted, cfg.pick, 5000);
+          return r.txt;
+        }));
+      } else {
+        barraCopia.appendChild(el('span',{class:'note',style:'align-self:center'},
+          'São '+fmtInt(nComb)+' jogos desdobrados — demais para copiar de uma vez.'));
+      }
+    }
+    barraCopia.appendChild(botaoCopiar('Copiar com a análise', ()=>{
+      const sc=scoreJogo(g,sorted);
+      const nComb=sel.length>=cfg.pick? C(sel.length,cfg.pick) : 0;
+      const L=[GAMES[g].label+' · jogo montado no Painel Loterias',
+               textoJogo(g,sorted),
+               sorted.length+' dezenas'+(nComb? ' · '+fmtInt(nComb)+' aposta(s) simples · R$ '+(nComb*cfg.price).toLocaleString('pt-BR',{minimumFractionDigits:2}) : ''),
+               (sc.medido? 'Fator de rateio medido: '+sc.fator.toFixed(2).replace('.',',')+'x (1,00x = média) · índice '+sc.score+'/100'
+                         : 'Sem medição de popularidade para esta modalidade.'),
+               'Soma '+sc.soma+' · pares '+sc.pares+'/'+(sorted.length-sc.pares)+' · maior sequência '+sc.maxRun];
+      if(nComb) L.push('Chance do prêmio máximo: 1 em '+fmtInt(Math.round(cfg.odds()/nComb)));
+      if(sel.length>cfg.pick && sc.medido){
+        const fdz=fatorDesdobramento(g,sorted);
+        if(fdz && !fdz.muitos) L.push('Fator médio dos '+fdz.n+' desdobramentos (o que vale de verdade): '+
+          fdz.media.toFixed(2).replace('.',',')+'x, variando de '+fdz.min.toFixed(2).replace('.',',')+'x a '+fdz.max.toFixed(2).replace('.',',')+'x');
+      }
+      L.push('Lembrete: o índice mede rateio, não chance. Toda combinação tem a mesma probabilidade.');
+      return L.join('\n');
+    }));
+    pa.appendChild(barraCopia);
+
     // custo e probabilidade se completo
     if(sel.length>=cfg.pick){
       const nComb=C(sel.length,cfg.pick);
@@ -3488,20 +3746,65 @@ function renderMeuJogo(m){
     let somaHist=0,nS=0; for(const d of draws) for(const s of d.sets){ somaHist+=s.reduce((a,b)=>a+b,0); nS++; }
     const mediaSoma=somaHist/nS;
     const pd=el('div',{class:'panel'});
-    pd.appendChild(el('h3',null,'Qualidade do conjunto · índice de exclusividade'));
-    pd.appendChild(el('p',{class:'note'},'Este índice <b>não</b> mede chance de ganhar — ela é idêntica para qualquer combinação. Ele mede o quanto seu jogo foge dos padrões que milhões de pessoas apostam. Índice alto = se você ganhar, divide com menos gente.'));
-    const barColor = sc.score>=75?'var(--status-good)':(sc.score>=50?'var(--status-warning)':'var(--status-critical)');
-    const scoreBox=el('div',{style:'display:flex;align-items:center;gap:14px;margin:6px 0 12px'});
-    scoreBox.innerHTML='<div style="font-size:var(--text-3xl);font-weight:var(--weight-bold);line-height:1;color:'+barColor+'">'+sc.score+'<span style="font-size:var(--text-md);color:var(--ink-muted);font-weight:400">/100</span></div>'+
-      '<div style="flex:1"><div style="height:10px;background:var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden"><div style="height:100%;width:'+sc.score+'%;background:'+barColor+';border-radius:0 var(--radius-xs) var(--radius-xs) 0"></div></div>'+
-      '<div style="font-size:var(--text-sm);color:var(--ink-secondary);margin-top:5px">'+(sc.score>=75?'Jogo pouco convencional — bom perfil de rateio.':(sc.score>=50?'Perfil intermediário — dá para melhorar.':'Perfil muito popular — alto risco de dividir o prêmio.'))+'</div></div>';
-    pd.appendChild(scoreBox);
-    if(sc.pen.length){
-      const tb=el('table');
-      let h='<tr><th>O que pesou no índice</th><th class="num">Efeito</th><th class="num">Detalhe</th></tr>';
-      for(const [txt,val,det] of sc.pen) h+='<tr><td>'+txt+'</td><td class="num" style="color:'+(val<0?'var(--status-critical)':'var(--status-good-ink)')+'">'+(val>0?'+':'')+val+'</td><td class="num">'+(det||'—')+'</td></tr>';
-      tb.innerHTML=h; pd.appendChild(tb);
-    } else pd.appendChild(el('p',{class:'note'},'Nenhum padrão popular detectado.'));
+    pd.appendChild(el('h3',null,'Perfil de rateio · com quanta gente você dividiria'));
+    pd.appendChild(el('p',{class:'note'},'Isto <b>não</b> mede chance de ganhar — ela é idêntica para qualquer combinação. Mede o quanto seu jogo coincide com o que a multidão aposta, a partir de padrões <b>medidos</b> no histórico de ganhadores. Fator abaixo de 1,00 = se você ganhar, divide com menos gente que a média.'));
+    if(!sc.medido){
+      pd.appendChild(el('div',{class:'warnbox'},'Ainda não há medição de popularidade para '+cfg.label+'. Nas versões anteriores este painel mostrava um índice construído por raciocínio, não por medida — e ao medir descobrimos que uma das regras estava com o sinal invertido. Enquanto não medirmos esta modalidade, preferimos não dar nota nenhuma a dar uma nota errada.'));
+    } else {
+      const f=sc.fator;
+      const cor = f<=0.85?'var(--status-good)':(f<=1.15?'var(--status-warning)':'var(--status-critical)');
+      const largura = Math.max(4, Math.min(100, Math.round(sc.score)));
+      const box=el('div',{style:'display:flex;align-items:center;gap:14px;margin:6px 0 12px;flex-wrap:wrap'});
+      box.innerHTML='<div style="font-size:var(--text-3xl);font-weight:var(--weight-bold);line-height:1;color:'+cor+'">'+
+        f.toFixed(2).replace('.',',')+'×<div style="font-size:var(--text-xs);color:var(--ink-muted);font-weight:400;margin-top:3px">ganhadores vs. média</div></div>'+
+        '<div style="flex:1;min-width:200px"><div style="height:10px;background:var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden"><div style="height:100%;width:'+largura+'%;background:'+cor+';border-radius:0 var(--radius-xs) var(--radius-xs) 0"></div></div>'+
+        '<div style="font-size:var(--text-sm);color:var(--ink-secondary);margin-top:5px">'+
+        (f<=0.85?'Perfil pouco disputado — se ganhar, divide com menos gente que a média.'
+          :(f<=1.15?'Perfil próximo da média da multidão.'
+                   :'Perfil popular — alto risco de dividir o prêmio com muita gente.'))+
+        ' <span style="color:var(--ink-muted)">(índice '+sc.score+'/100)</span></div></div>';
+      pd.appendChild(box);
+      if(sc.itens.length){
+        const tb=el('table');
+        let h='<tr><th>Padrão medido no seu jogo</th><th class="num">Fator</th><th class="num">Efeito no rateio</th></tr>';
+        for(const it of sc.itens){
+          const bom = it.fator<1;
+          h+='<tr><td>'+esc(it.rot)+(it.det?' <span style="color:var(--ink-muted)">· '+esc(it.det)+'</span>':'')+'</td>'+
+             '<td class="num" style="color:'+(bom?'var(--status-good-ink)':'var(--status-critical)')+'">'+it.fator.toFixed(2).replace('.',',')+'×</td>'+
+             '<td class="num">'+(bom? 'divide com '+Math.round((1-it.fator)*100)+'% menos gente'
+                                    : 'divide com '+Math.round((it.fator-1)*100)+'% mais gente')+'</td></tr>';
+        }
+        tb.innerHTML=h; pd.appendChild(tb);
+        const notas=el('div',{class:'note',style:'margin-top:var(--space-4)'});
+        notas.innerHTML=sc.itens.map(it=>'• '+esc(it.nota)).join('<br>');
+        pd.appendChild(notas);
+      } else {
+        pd.appendChild(el('p',{class:'note'},'Nenhum dos padrões medidos aparece neste jogo — o rateio esperado é o da média.'));
+      }
+      const fd = fatorDesdobramento(g, sorted);
+      if(fd && !fd.muitos){
+        const dif = fd.media - sc.fator;
+        const cx=el('div',{class: dif>0.08? 'warnbox':'okbox', style:'margin-top:var(--space-5)'});
+        cx.innerHTML='<b>Atenção: você está com '+sorted.length+' dezenas, não '+cfg.pick+'.</b><br>'+
+          'Quem ganha o prêmio é <b>um</b> dos '+fmtInt(fd.n)+' jogos de '+cfg.pick+' embutidos aí dentro — e cada um tem um perfil diferente. '+
+          'O fator que vale é a <b>média</b> deles: <b>'+fd.media.toFixed(2).replace('.',',')+'×</b> '+
+          '(variam de '+fd.min.toFixed(2).replace('.',',')+'× a '+fd.max.toFixed(2).replace('.',',')+'×). '+
+          (dif>0.08
+            ? 'O conjunto de '+sorted.length+' parece bom ('+sc.fator.toFixed(2).replace('.',',')+'×), mas o desdobramento <b>dilui</b> a vantagem: basta alguns subconjuntos caírem num perfil popular para puxar a média para cima. '+
+              'Com o mesmo dinheiro, '+fmtInt(fd.n)+' jogos de '+cfg.pick+' escolhidos um a um mantêm o fator baixo — e ainda premiam com muito mais frequência, porque não erram todos juntos.'
+            : 'Neste caso o desdobramento preserva o perfil.');
+        pd.appendChild(cx);
+      }
+      if(sc.nulas && sc.nulas.length){
+        const nl=el('details',{style:'margin-top:var(--space-4)'});
+        nl.innerHTML='<summary style="cursor:pointer;font-size:var(--text-sm);color:var(--ink-muted)">O que foi medido e <b>não</b> teve efeito</summary>'+
+          '<div class="note" style="margin-top:var(--space-3)">'+sc.nulas.map(x=>'• '+esc(x)).join('<br>')+
+          '<br><br>Base da medição: '+esc(sc.baseMedicao||'—')+'</div>';
+        pd.appendChild(nl);
+      }
+    }
+    if(sc.jaSaiu) pd.appendChild(el('div',{class:'warnbox',style:'margin-top:var(--space-4)'},
+      'Esta combinação exata já foi sorteada. Isso não muda a probabilidade dela sair de novo, mas combinações já sorteadas costumam ser repetidas por muita gente — sem medição para dimensionar o efeito, fica só como aviso.'));
     const stats=el('table',{style:'margin-top:var(--space-5)'});
     stats.innerHTML='<tr><th>Métrica</th><th class="num">Seu jogo</th><th class="num">Média histórica</th></tr>'+
       '<tr><td>Soma das dezenas</td><td class="num">'+sc.soma+'</td><td class="num">'+mediaSoma.toFixed(0)+'</td></tr>'+
@@ -3515,10 +3818,12 @@ function renderMeuJogo(m){
       const ps=el('div',{class:'panel'});
       ps.appendChild(el('h3',null,'Vale trocar 1, 2 ou 3 dezenas?'));
       const sug=sugerirTrocas(g,sorted,3);
-      if(!sug.passos.length){
-        ps.appendChild(el('p',{class:'note'},'Seu jogo já está no melhor perfil que este método consegue — nenhuma troca de 1 a 3 dezenas melhora o índice. Mantenha.'));
+      if(sug.semMedicao){
+        ps.appendChild(el('p',{class:'note'},'Sem medição de popularidade para '+cfg.label+', não há troca que a gente possa recomendar com base em evidência. Mantenha seu jogo.'));
+      } else if(!sug.passos.length){
+        ps.appendChild(el('p',{class:'note'},'Seu jogo já está no melhor perfil de rateio que os padrões medidos alcançam — nenhuma troca de 1 a 3 dezenas reduz o fator. Mantenha.'));
       } else {
-        ps.appendChild(el('p',{class:'note'},'Trocas cumulativas, da mais útil para a menos útil. Elas <b>não</b> aumentam sua chance de ganhar — melhoram o perfil de rateio. Você decide se vale.'));
+        ps.appendChild(el('p',{class:'note'},'Trocas cumulativas, da mais útil para a menos útil. Elas <b>não</b> aumentam sua chance de ganhar — reduzem o número esperado de pessoas com quem você dividiria. Você decide se vale.'));
         let acumulado=[...sorted];
         sug.passos.forEach((p2,i)=>{
           acumulado=[...p2.cand];
@@ -3528,7 +3833,7 @@ function renderMeuJogo(m){
             '<span class="ball mini" style="background:var(--status-critical)">'+pad(p2.out,g)+'</span>'+
             '<span style="color:var(--ink-muted)">→</span>'+
             '<span class="ball mini" style="background:var(--status-good)">'+pad(p2.in,g)+'</span>'+
-            '<span style="color:var(--ink-secondary);font-size:var(--text-sm)">índice '+(i===0?sug.base:sug.passos[i-1].sc)+' → <b style="color:var(--status-good-ink)">'+p2.sc+'</b></span>';
+            '<span style="color:var(--ink-secondary);font-size:var(--text-sm)">fator de rateio '+(i===0?sug.baseFator:sug.passos[i-1].fator).toFixed(2).replace('.',',')+'× → <b style="color:var(--status-good-ink)">'+p2.fator.toFixed(2).replace('.',',')+'×</b></span>';
           row.appendChild(head);
           const bb=el('div',{class:'balls',style:'margin-top:var(--space-3)'});
           [...p2.cand].sort((a,b)=>a-b).forEach(v=>bb.appendChild(el('span',{class:'ball mini',style:(v===p2.in?'background:var(--status-good)':'')},pad(v,g))));
@@ -3564,11 +3869,6 @@ function renderMeuJogo(m){
     }
   }
 
-  if(!cfg.colunas) m.appendChild(painelBandeiras(g));
-  m.appendChild(painelRepeticoes(g));
-  if(!cfg.colunas) m.appendChild(renderFavoritos());
-  if(!cfg.colunas) m.appendChild(renderCobertura());
-  m.appendChild(renderQuandoJogar());
 
   btnClear.onclick=()=>{ sel.length=0; if(cfg.colunas) state.pickCols=Array(7).fill(null); draw(); };
   btnRand.onclick=()=>{
@@ -3676,10 +3976,26 @@ function renderFavoritos(){
   ctr.appendChild(el('label',null,'Minhas dezenas:'));
   const inp=el('input',{type:'text',placeholder:'ex: 09 13 14 23 29 54 21 08',style:'flex:1;min-width:240px'});
   ctr.appendChild(inp);
-  ctr.appendChild(el('label',null,'Dezenas por jogo:'));
-  const selSize=el('select');
-  for(let k=cfg.pick;k<=Math.min(cfg.pick+4,15);k++) selSize.appendChild(el('option',{value:k},k));
-  ctr.appendChild(selSize);
+  /* v19: os tamanhos vinham de um intervalo inventado (pick..pick+4, teto 15).
+     Na Lotofacil isso colapsava para uma unica opcao — um menu suspenso com um
+     item so, que nao e escolha nenhuma. Agora vem dos tamanhos que a Caixa
+     realmente aceita, e quando so existe um, mostramos texto em vez de menu. */
+  const ap0=APOSTAS[g];
+  const tamanhos=[];
+  if(!ap0.colunas && !ap0.fixo) for(let k=ap0.minN;k<=ap0.maxN;k++) tamanhos.push(k);
+  else tamanhos.push(cfg.pick);
+  let selSize;
+  if(tamanhos.length>1){
+    ctr.appendChild(el('label',null,'Dezenas por jogo:'));
+    selSize=el('select');
+    for(const k of tamanhos) selSize.appendChild(el('option',{value:k},k+' dezenas — '+
+      (custoAposta(g,k)===cfg.price? 'R$ '+cfg.price.toFixed(2).replace('.',',')+' (aposta simples)'
+        : 'R$ '+custoAposta(g,k).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' cada')));
+    ctr.appendChild(selSize);
+  } else {
+    selSize={value:tamanhos[0]};
+    ctr.appendChild(el('span',{class:'note'},'Jogos de '+tamanhos[0]+' dezenas (unico tamanho na '+cfg.label+').'));
+  }
   const btn=el('button',{class:'primary'},'Analisar combinações');
   ctr.appendChild(btn);
   p.appendChild(ctr);
@@ -3706,12 +4022,12 @@ function renderFavoritos(){
         hitDist[h]=(hitDist[h]||0)+1;
         if(h>best){ best=h; bestConc=draws[Math.floor(i/(draws[0].sets.length))] ? null : null; }
       }
-      const sc=scoreJogo(g,[...c]).score;
+      const scObj=scoreJogo(g,[...c]); const sc = scObj.score!=null? scObj.score : 50; const fatorC = scObj.fator;
       // faixas premiáveis do jogo (aproximação: prêmio a partir de pick-2 acertos)
       const minPrem=Math.max(2,cfg.pick-2);
       let premiados=0;
       for(const hh in hitDist) if(+hh>=minPrem) premiados+=hitDist[hh];
-      results.push({c:[...c], best, premiados, score:sc, hitDist});
+      results.push({c:[...c], best, premiados, score:sc, fator:fatorC, hitDist});
     });
     // ordenação: primeiro por vezes que teria sido premiado, depois por índice de exclusividade
     results.sort((a,b)=> b.premiados-a.premiados || b.score-a.score);
@@ -3719,28 +4035,39 @@ function renderFavoritos(){
     const cards=el('div',{class:'cards'});
     cards.appendChild(cardHtml('Dezenas listadas', nums.length+'', nums.map(v=>pad(v,g)).join(' ')));
     cards.appendChild(cardHtml('Combinações de '+k, fmtInt(total), 'todas avaliadas'));
-    cards.appendChild(cardHtml('Custo se jogar todas', 'R$ '+(total*cfg.price).toLocaleString('pt-BR',{minimumFractionDigits:2}), 'a R$ '+cfg.price.toFixed(2).replace('.',',')+' por aposta'));
+    const unitK=custoAposta(g,k);
+    cards.appendChild(cardHtml('Custo se jogar todas', 'R$ '+(total*unitK).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      'a R$ '+unitK.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' por jogo de '+k+' dezenas'));
     out.appendChild(cards);
 
     const mk=(title,rows,note)=>{
       const pp=el('div',{class:'panel'});
       pp.appendChild(el('h3',null,title));
       if(note) pp.appendChild(el('p',{class:'note'},note));
-      let h='<table><tr><th>Jogo</th><th class="num">≥'+minPrem+' acertos</th><th class="num">Melhor</th><th class="num">Índice</th></tr>';
+      const temMed = !!(POPULARIDADE[g] && POPULARIDADE[g].regras.length);
+      let h='<table><tr><th>Jogo</th><th class="num">≥'+minPrem+' acertos</th><th class="num">Melhor</th><th class="num">'+(temMed?'Fator de rateio':'Índice')+'</th></tr>';
       for(const r of rows){
+        const cel = temMed
+          ? '<td class="num" style="color:'+(r.fator<=0.85?'var(--status-good-ink)':(r.fator<=1.15?'var(--ink-secondary)':'var(--status-critical)'))+'">'+r.fator.toFixed(2).replace('.',',')+'×</td>'
+          : '<td class="num" style="color:var(--ink-muted)">—</td>';
         h+='<tr><td>'+r.c.map(v=>'<span class="ball mini">'+pad(v,g)+'</span>').join(' ')+'</td>'+
-           '<td class="num">'+fmtInt(r.premiados)+'×</td><td class="num">'+r.best+'</td>'+
-           '<td class="num" style="color:'+(r.score>=75?'var(--status-good-ink)':(r.score>=50?'var(--ink-secondary)':'var(--status-critical)'))+'">'+r.score+'</td></tr>';
+           '<td class="num">'+fmtInt(r.premiados)+'×</td><td class="num">'+r.best+'</td>'+cel+'</tr>';
       }
       h+='</table>';
-      pp.innerHTML+=h;
+      pp.appendChild(htmlBloco(h));
+      const bc=el('div',{class:'controls',style:'margin-top:var(--space-4)'});
+      bc.appendChild(botaoCopiar('Copiar os '+rows.length+' jogos', ()=>rows.map(r=>textoJogo(g,r.c)).join('\n'), {class:'primary'}));
+      bc.appendChild(botaoCopiar('Copiar com os números da tabela', ()=>
+        ['jogo\t>=' + minPrem + ' acertos\tmelhor\tindice']
+          .concat(rows.map(r=>textoJogo(g,r.c)+'\t'+r.premiados+'\t'+r.best+'\t'+r.score)).join('\n')));
+      pp.appendChild(bc);
       return pp;
     };
     out.appendChild(mk('Melhor desempenho histórico', results.slice(0,10),
       'Quantas vezes esse conjunto teria alcançado '+minPrem+' acertos ou mais em '+fmtInt(drawSets.length)+' sorteios. Diferenças entre combinações aqui são, em grande parte, ruído estatístico.'));
-    const byScore=[...results].sort((a,b)=>b.score-a.score || b.premiados-a.premiados);
-    out.appendChild(mk('Melhor perfil de rateio (índice de exclusividade)', byScore.slice(0,10),
-      'Combinações que menos se parecem com o que a multidão joga. Se ganhar, divide com menos gente. Esta é a única otimização com efeito econômico real.'));
+    const byScore=[...results].sort((a,b)=>a.fator-b.fator || b.premiados-a.premiados);
+    out.appendChild(mk('Melhor perfil de rateio — o único ranking que importa', byScore.slice(0,10),
+      'Ordenado pelo fator de rateio MEDIDO no histórico de ganhadores: abaixo de 1,00× você divide com menos gente. Esta é a única otimização com efeito econômico real — as duas tabelas de desempenho histórico acima e abaixo são ruído, e estão aqui só para você ver que são.'));
     const pior=[...results].sort((a,b)=>a.premiados-b.premiados || a.score-b.score);
     out.appendChild(mk('Pior desempenho histórico', pior.slice(0,5),
       'Mostrado só para calibrar: repare como a diferença para o topo é pequena. Isso é a evidência prática de que o histórico não seleciona jogos.'));
@@ -3838,7 +4165,7 @@ function renderCobertura(){
     // sugestão concreta: melhores N jogos do conjunto
     if(melhor && melhor.dezenas===cfg.pick && melhor.bilhetes<=30 && totalCombos<=20000){
       const cand=[];
-      forEachCombo(nums,cfg.pick,c=>{ cand.push({c:[...c], s:scoreJogo(g,[...c]).score}); });
+      forEachCombo(nums,cfg.pick,c=>{ const r=scoreJogo(g,[...c]); cand.push({c:[...c], s:(r.score!=null?r.score:50), f:r.fator}); });
       cand.sort((a,b)=>b.s-a.s);
       // seleciona jogos com pouca sobreposição entre si
       const escolhidos=[];
@@ -3901,7 +4228,8 @@ function renderGerador(m){
   const g=state.game,cfg=GAMES[g],ap=APOSTAS[g];
   const p=el('div',{class:'panel'});
   p.appendChild(el('h3',null,'Gerador de jogos · anti-popularidade'));
-  p.appendChild(el('p',{class:'note'},'Nenhuma combinação tem probabilidade maior que outra. O que o gerador faz é evitar padrões que <i>muita gente</i> joga — datas, sequências, jogos já premiados, concentração no volante. Se você ganhar, divide com menos gente.'));
+  p.appendChild(htmlBloco('<p class="note">Nenhuma combinação tem probabilidade maior que outra. O que o gerador faz é fugir dos padrões que <i>muita gente</i> joga, usando os fatores <b>medidos</b> no histórico de ganhadores (aba Método, seção 24). Se você ganhar, divide com menos gente.</p>'+
+    '<div class="warnbox" style="margin-top:var(--space-3)"><b>Mudou na v19.</b> Até a v18 o gerador filtrava por regras que eu tinha escrito por raciocínio, sem medir — entre elas "evitar 3+ dezenas consecutivas". Ao medir, essa regra estava com o <b>sinal invertido</b>: a multidão é que foge de dezenas coladas. Pior, num jogo de 16 dezenas em 25 quase nenhum sorteio passava nesse filtro, e o gerador simplesmente deixava de gerar o jogo sem avisar — pedir 1 devolvia 0, pedir 3 devolvia 1. As duas coisas estão corrigidas.</div>'));
 
   // ---------- modo ----------
   const modos=el('div',{class:'controls'});
@@ -3960,10 +4288,14 @@ function renderGerador(m){
   const opts=el('div',{class:'controls'});
   const mkChk=(id,lbl)=>{const l=el('label');const c=el('input',{type:'checkbox',id});c.checked=true;l.appendChild(c);l.append(' '+lbl);return l;};
   if(!cfg.colunas){
-    opts.appendChild(mkChk('fSeq','evitar 3+ dezenas consecutivas'));
+    opts.appendChild(mkChk('fOtim','otimizar pelo rateio medido'));
     if(cfg.max>31) opts.appendChild(mkChk('fBday','evitar excesso de dezenas ≤ 31'));
     opts.appendChild(mkChk('fWin','evitar combinações já premiadas'));
-    opts.appendChild(mkChk('fLinha','espalhar pelo volante'));
+    const nota=el('span',{class:'note',style:'flex:1;min-width:260px'});
+    nota.innerHTML = (POPULARIDADE[g] && POPULARIDADE[g].regras.length)
+      ? 'A otimização escolhe, entre centenas de candidatos, o de menor <b>fator de rateio medido</b>. Os filtros "evitar sequências" e "espalhar pelo volante" foram <b>removidos na v19</b>: ao medir, eles empurravam para o perfil mais disputado.'
+      : 'Ainda não há medição de popularidade para '+cfg.label+'. Os jogos saem sorteados sem filtro de perfil — preferimos isso a filtrar por palpite.';
+    opts.appendChild(nota);
   } else {
     opts.appendChild(mkChk('fSeq','evitar padrões de dígito que gente costuma jogar'));
     opts.appendChild(el('span',{class:'note',style:'flex:1;min-width:240px'},
@@ -4056,7 +4388,8 @@ function renderGerador(m){
            menos trilhado por outros apostadores, que é onde o rateio melhora. */
         const candidatos=[];
         let escolhido=null, tentativas=0;
-        while(candidatos.length<25 && tentativas<900){
+        const ALVO_CAND = cfg.colunas? 1 : 300;
+        while(candidatos.length<ALVO_CAND && tentativas<1200){
           tentativas++;
           let pick;
           if(cfg.colunas){
@@ -4080,30 +4413,48 @@ function renderGerador(m){
             }
           }
           else {
+            /* v19: nada de rejeição por regra de palpite. Geramos candidatos
+               livremente e escolhemos depois pelo fator de rateio MEDIDO.
+               O único filtro duro que sobrou é o de combinação já premiada,
+               e mesmo ele só vale quando o jogo tem exatamente cfg.pick dezenas.
+               Motivo do conserto: com "evitar 3+ consecutivas" ligado, um jogo
+               de 16 dezenas em 25 quase nunca passava — a rejeição estourava as
+               900 tentativas e o painel simplesmente NÃO gerava o jogo, sem
+               dizer nada. Pedir 1 devolvia 0; pedir 3 devolvia 1. */
             const pool=Array.from({length:N},(_,i)=>i+cfg.min);
             pick=[];
             while(pick.length<alvo){ pick.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); }
             pick.sort((a,b)=>a-b);
-            if($('#fSeq')&&$('#fSeq').checked){ let run=1,bad=false;
-              for(let i=1;i<pick.length;i++){ run=pick[i]===pick[i-1]+1?run+1:1; if(run>=3){bad=true;break;} }
-              if(bad) continue; }
             if($('#fBday')&&$('#fBday').checked && cfg.max>31){
               const esp=alvo*Math.min(31,cfg.max)/N;
-              if(pick.filter(v=>v<=31).length > esp+1) continue; }
-            if($('#fWin')&&$('#fWin').checked && alvo===cfg.pick && winners.has(pick.join(','))) continue;
-            if($('#fLinha')&&$('#fLinha').checked){
-              const ls=new Set(pick.map(v=>Math.floor((v-cfg.min)/cfg.cols)));
-              if(ls.size < Math.min(3, Math.ceil(alvo/2))) continue; }
+              if(pick.filter(v=>v<=31).length > esp+1 && tentativas<700) continue; }
+            if($('#fWin')&&$('#fWin').checked && alvo===cfg.pick && winners.has(pick.join(',')) && tentativas<700) continue;
           }
           candidatos.push(pick);
           if(cfg.colunas) break;
         }
         if(candidatos.length){
           if(cfg.colunas) escolhido=candidatos[0];
-          else {
+          else if($('#fOtim') && $('#fOtim').checked && POPULARIDADE[g] && POPULARIDADE[g].regras.length){
+            /* Para jogo com dezenas extras o que vale é a média sobre os
+               desdobramentos, não o perfil do conjunto grande. */
+            const usaDesd = alvo>cfg.pick && C(alvo,cfg.pick)<=200;
+            let melhorF=Infinity;
+            for(const c of candidatos){
+              const f = usaDesd ? fatorDesdobramento(g,c).media : fatorRateio(g,c).fator;
+              if(f<melhorF){ melhorF=f; escolhido=c; }
+            }
+          } else {
             let melhorZ=Infinity;
             for(const c of candidatos){ const z=zMedioPares(g,c); if(z<melhorZ){ melhorZ=z; escolhido=c; } }
           }
+        }
+        /* Nunca some com um jogo em silêncio. Se por qualquer motivo não houver
+           candidato, sorteia um sem filtro nenhum e marca como tal. */
+        if(!escolhido && !cfg.colunas){
+          const pool=Array.from({length:N},(_,i)=>i+cfg.min); const fb=[];
+          while(fb.length<alvo) fb.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+          escolhido=fb.sort((a,b)=>a-b);
         }
         if(escolhido) jogos.push({nums:escolhido, n:item.n, t:item.t, unit:item.unit, candidatos:candidatos.length});
       }
@@ -4131,6 +4482,14 @@ function renderGerador(m){
             '<span style="color:'+(a.nivel==='bom'?'var(--status-good-ink)':'var(--status-warning)')+'">'+
             (a.nivel==='bom'?'✓ ':'▲ ')+'</span>'+a.txt).join('<br>')+'</div>';
         bloco.appendChild(exp);
+        const bar=el('div',{class:'controls',style:'margin-top:var(--space-3)'});
+        const snap=[...jg.nums];
+        const bAn=el('button',{style:'font-size:var(--text-sm);padding:var(--space-2) var(--space-5)'},'Analisar este jogo');
+        bAn.onclick=()=>{ state.pick=state.pick||{}; state.pick[g]=[...snap]; state.modoJogo='montar'; refresh();
+          setTimeout(()=>{ const el0=document.querySelector('#main .panel'); if(el0) el0.scrollIntoView({behavior:'smooth',block:'start'}); },120); };
+        bar.appendChild(bAn);
+        bar.appendChild(botaoCopiar('Copiar', ()=>textoJogo(g,snap)));
+        bloco.appendChild(bar);
       } else {
         const nums=jg.nums, distintos=new Set(nums).size;
         let maiorRun=1, run=1;
@@ -4154,10 +4513,23 @@ function renderGerador(m){
       out.appendChild(row);
     });
     const total=pl.itens.reduce((a,i)=>a+i.q*i.unit,0);
-    rodape.innerHTML='<div class="okbox"><b>'+jogos.length+' jogo(s) · R$ '+
+    const pedidos=pl.itens.reduce((a,i)=>a+i.q,0);
+    rodape.innerHTML='';
+    const cx=el('div',{class: jogos.length===pedidos?'okbox':'warnbox'});
+    cx.innerHTML='<b>'+jogos.length+' de '+pedidos+' jogo(s) gerados · R$ '+
       total.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</b><br>'+
-      'Cada jogo passou pelos filtros marcados acima. O rótulo ao lado das dezenas diz o quanto aquela combinação se parece com o que a multidão joga — '+
-      'quanto menos parecida, maior o prêmio que sobra para você <i>se</i> ganhar. Isso não muda a chance de ganhar.</div>';
+      (jogos.length===pedidos? '' : '<b>Faltaram jogos — isso é um defeito, me avise.</b><br>')+
+      'O rótulo ao lado das dezenas é o <b>fator de rateio medido</b>: abaixo de 1,00× você divide com menos gente que a média. Isso não muda a chance de ganhar.';
+    rodape.appendChild(cx);
+    if(jogos.length && !cfg.colunas){
+      const bar=el('div',{class:'controls',style:'margin-top:var(--space-4)'});
+      bar.appendChild(botaoCopiar('Copiar os '+jogos.length+' jogos',
+        ()=>jogos.map(j=>textoJogo(g,j.nums)).join('\n'), {class:'primary'}));
+      bar.appendChild(botaoCopiar('Copiar com o fator de cada um',
+        ()=>jogos.map((j,i)=>'Jogo '+(i+1)+'\t'+textoJogo(g,j.nums)+'\t'+
+             fatorRateio(g,j.nums).fator.toFixed(2).replace('.',',')+'x').join('\n')));
+      rodape.appendChild(bar);
+    }
   };
   setModo(true);
 }

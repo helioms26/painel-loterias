@@ -762,3 +762,128 @@ E o seletor avisa quando a opção é lenta: "5 dezenas · leva ~3s". Melhor inf
 Os dois bugs têm a mesma raiz: eu testei o que era fácil testar. A lógica, por chamada direta; o desempenho, por suposição. Nenhum dos dois foi testado como o usuário encontra — clicando e esperando.
 
 O terceiro caso da mesma família apareceu na v13, quando o script de regressão passou seis versões apontando para o arquivo errado. Três ocorrências é padrão, não azar.
+
+---
+
+## 24. Popularidade medida, não suposta (v19) — e a regra que estava com o sinal trocado
+
+Até a v18 o "índice de exclusividade" era um conjunto de regras que eu escrevi por
+raciocínio: penalizava sequências consecutivas, paridade desequilibrada, dígitos finais
+repetidos, concentração no volante. Nenhuma delas tinha sido medida. Ao medir, uma
+estava **invertida** — e era a de maior peso.
+
+### Desenho
+
+O mesmo experimento natural do efeito das datas. O sorteio é exógeno: ninguém escolhe o
+que sai. Então, comparando concursos que tiveram o padrão X com os que não tiveram,
+quantos ganhadores da faixa máxima apareceram **por combinação jogada**, isolamos a
+preferência da multidão.
+
+O volume de combinações jogadas é estimado pela **faixa mais baixa de prêmio** (milhares
+de ganhadores por concurso), não pela arrecadação: o preço da aposta mudou várias vezes
+ao longo da série e contaminaria a comparação. Como controle, refiz tudo com a
+arrecadação restrita aos 900 concursos mais recentes — mesma direção, magnitude parecida.
+
+**Viés conhecido, e ele é conservador.** A faixa baixa também sobe quando o sorteio é
+popular. Isso normaliza parte do efeito para dentro do denominador, então as razões
+abaixo são **piso**, não teto.
+
+### Resultado — Lotofácil (3.411 concursos)
+
+| padrão no sorteio | ganhadores vs. esperado | IC95 |
+|---|---|---|
+| maior sequência ≤ 3 | **2,21×** | 1,97 – 2,53 |
+| sequência 4 | 0,95× | — |
+| sequência 5 | 0,83× | — |
+| sequência ≥ 6 | 0,80× | 0,76 – 0,87 |
+| soma 186–210 | 1,15× | — |
+| soma > 210 | 0,79× | 0,74 – 0,85 |
+| alguma linha inteira do volante | 0,72× | 0,66 – 0,78 |
+| alguma coluna inteira do volante | 1,21× | 1,10 – 1,35 |
+| paridade 7/8 pares | 0,96× | 0,89 – 1,05 — **sem efeito** |
+
+**Leitura: a multidão foge de dezenas coladas.** Quem joga sequência longa divide com
+menos gente. A v18 penalizava exatamente isso.
+
+### Resultado — Mega-Sena (3.036 concursos)
+
+| padrão | razão | IC95 |
+|---|---|---|
+| todas as 6 ≤ 31 (datas) | 2,05× | 1,40 – 2,77 |
+| nenhuma consecutiva | 1,41× | 1,18 – 1,70 |
+| 2+ consecutivas | 0,71× | 0,58 – 0,85 |
+| 3+ mesmo dígito final | 0,75× | 0,54 – 0,98 (fraco) |
+| paridade 3/3 | sem efeito | 0,98 – 1,61 |
+| soma no miolo | sem efeito | 0,78 – 1,19 |
+
+O efeito das consecutivas aparece **de forma independente** em duas modalidades.
+
+### Resultado — Quina (2.991 concursos)
+
+Nada. Coladas 0,99× vs 1,02×; dígito final e soma sem efeito. Medido e nulo — a Quina
+fica sem regras, e o painel diz isso em vez de inventar.
+
+### Teto de honestidade
+
+Os fatores foram medidos um a um. Multiplicá-los supõe independência. Testei **uma**
+célula conjunta — sequência ≥6 **e** soma >210 — e ela mediu 0,72× enquanto o produto
+previa 0,64×: o modelo multiplicativo **exagera**. Por isso o painel aplica um piso de
+**0,70×**, a melhor célula conjunta efetivamente medida, e mostra na tela quando o piso
+entrou em ação.
+
+### Desdobramento dilui a vantagem
+
+Num jogo com dezenas extras, quem ganha é **um** dos subconjuntos de `pick` dezenas, e
+cada um tem perfil próprio. O fator honesto é a média sobre eles. Exemplo real: um
+conjunto de 16 dezenas com sequência de 6 e soma 223 tem fator 0,70× **como conjunto**,
+mas seus 16 desdobramentos variam de 0,70× a 2,20× e a média é **1,02×** — a vantagem
+some. Com o mesmo dinheiro, 16 jogos de 15 escolhidos um a um seguram o fator em 0,70×
+e ainda premiam com muito mais frequência (83% dos concursos contra 22%), porque não
+erram todos juntos.
+
+### 24.1 Dois defeitos que a medição expôs no gerador
+
+**O gerador não gerava.** O filtro "evitar 3+ dezenas consecutivas" era rejeição pura:
+sorteia, testa, descarta. Num jogo de 16 dezenas em 25, quase nenhum sorteio tem
+sequência máxima ≤ 2 — a rejeição estourava o limite de 900 tentativas e o jogo era
+descartado **em silêncio**. Pedir 1 jogo devolvia 0; pedir 3 devolvia 1. Não havia
+erro no console, e nenhum teste meu contava os jogos gerados contra os pedidos.
+
+Conserto: nada de filtro por palpite. O gerador junta até 300 candidatos livres e
+escolhe o de menor **fator de rateio medido**; se por qualquer motivo não houver
+candidato, sorteia um sem filtro e entrega assim mesmo. O rodapé agora mostra
+"N de M jogos gerados" — se faltar, aparece.
+
+**O filtro estava do lado errado.** Ver 24: sequências coladas são anti-multidão,
+não pró. O gerador da v18 empurrava para o perfil mais disputado, e o rótulo
+"POUCO DISPUTADO" confirmava a escolha errada. O rótulo agora carrega o fator
+medido, e diz "SEM MEDIÇÃO" onde não há medida.
+
+**Abas "Meu jogo" e "Gerador" fundidas.** Eram a mesma tarefa em dois lugares: quem
+gerava um jogo tinha de redigitar as dezenas para ver a análise. Agora é uma aba com
+dois modos e um botão "Analisar este jogo" em cada jogo gerado.
+
+### 24.2 Menu de uma opção só
+
+Em "Meus números favoritos", o seletor "Dezenas por jogo" vinha de um intervalo que eu
+inventei (`pick` até `pick+4`, com teto arbitrário de 15). Na Lotofácil, cujo `pick` já
+é 15, isso colapsava para **uma única opção** — um menu suspenso que não oferece escolha
+nenhuma. Agora os tamanhos vêm dos que a Caixa realmente aceita (Lotofácil 15 a 20,
+Mega-Sena 6 a 20), com o preço de cada um no rótulo; onde só existe um tamanho
+(Lotomania, Timemania), aparece texto em vez de menu. O card de custo também estava
+errado para tamanhos acima do mínimo: multiplicava pelo preço da aposta simples em vez
+do preço do jogo daquele tamanho.
+
+O ranking desse painel passou a ser ordenado pelo **fator de rateio medido**, e o título
+diz que é o único dos três que importa — os de desempenho histórico ficam como
+contraprova de que a diferença entre eles é ruído.
+
+### 24.3 O ordenador de tabelas ignorava colunas em "1 em N"
+
+`numDaCelula` extraía o primeiro número da célula. Numa coluna escrita como razão —
+"1 em 9", "1 em 2.298" — ele devolvia sempre **1**, então a ordenação era estável e nada
+se movia: parecia que o clique no cabeçalho não funcionava. Agora "1 em N" é lido pelo
+denominador, e menor = melhor. Células sem dado ("—") vão para o fim nos dois sentidos,
+em vez de serem tratadas como o menor valor possível.
+
+O defeito valia para **todas** as tabelas ordenáveis do painel, não só a dos três eixos.

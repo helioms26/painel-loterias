@@ -147,3 +147,9 @@ A aba Onde apostar abre com uma **matriz de decisão**: nove modalidades, quatro
 ## Correções da v18
 
 Os botões de perfil da matriz não respondiam: `innerHTML +=` reconstrói o conteúdo e descarta os listeners já ligados. Corrigido, e agora existe um teste que clica em todo botão de toda aba e verifica se algum está morto. E o limite de tamanho dos conjuntos, que era constante chutada, passou a ser calculado pelo custo real medido — a Lotofácil foi de 3 para 5 dezenas, a Timemania e o Dia de Sorte de 3 e 4 para 6. Seção 23 de `METODOLOGIA.md`.
+
+### v19 · a rodada em que o método mediu a si mesmo
+
+O índice de exclusividade era um conjunto de regras escritas por raciocínio, nunca medidas. Ao medir, **uma delas estava com o sinal invertido, e era a de maior peso**: o painel penalizava dezenas consecutivas, quando os dados mostram que é a multidão que foge delas. Na Lotofácil, concursos com sequência máxima ≤3 tiveram **2,21× mais ganhadores por combinação jogada** (IC95 1,97–2,53); na Mega-Sena, concursos sem nenhuma consecutiva tiveram 1,41×. Na Quina, medido e nulo — e a Quina ficou sem regra nenhuma.
+
+Agora cada padrão carrega o fator medido e o intervalo de confiança, ou o rótulo "SEM MEDIÇÃO". Junto vieram três defeitos que a medição expôs: o gerador descartava jogos em silêncio quando o filtro (errado) era impossível de satisfazer, o ordenador de tabelas ignorava colunas escritas como "1 em N", e um seletor de tamanho de jogo tinha uma opção só. As abas "Meu jogo" e "Gerador" viraram uma, e há botão de copiar em toda parte. Seção 24 de `METODOLOGIA.md`.

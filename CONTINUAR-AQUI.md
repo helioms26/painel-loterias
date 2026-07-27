@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **18.0**, publicada em 27/07/2026.
+Última versão: **19.0**, publicada em 27/07/2026 (segunda publicação do dia).
 
 ---
 
@@ -227,3 +227,54 @@ As telas 2 a 5 do redesenho existem no código e no protótipo em HTML, não no 
 ## O aviso que não sai
 
 Loteria não é investimento nem fonte de renda. O retorno esperado é negativo por lei. Nada neste projeto aumenta a chance de ganhar — o que ele faz é medir onde se perde menos e como dividir com menos gente no caso improvável de acerto. Se em algum momento o painel começar a sugerir outra coisa, o painel está errado.
+
+
+## O que a v19 mudou — a rodada em que o método mediu a si mesmo
+
+Esta é a rodada mais importante desde a v12. **Uma regra do painel estava com o sinal invertido, e era a de maior peso.**
+
+Até a v18, o "índice de exclusividade" era um conjunto de regras que eu tinha escrito por raciocínio: penalizava sequências consecutivas, paridade desequilibrada, dígitos finais repetidos, concentração no volante. Nenhuma delas tinha sido medida. Ao aplicar o mesmo experimento natural do efeito das datas — comparar, entre concursos já sorteados, quantos ganhadores da faixa máxima apareceram **por combinação jogada** — o resultado foi:
+
+| Lotofácil (3.411 concursos) | fator | IC95 |
+|---|---|---|
+| maior sequência ≤ 3 | **2,21×** | 1,97 – 2,53 |
+| sequência ≥ 6 | 0,80× | 0,76 – 0,87 |
+| soma 186–210 | 1,15× | — |
+| soma > 210 | 0,79× | 0,74 – 0,85 |
+| linha inteira do volante | 0,72× | 0,66 – 0,78 |
+| coluna inteira do volante | 1,21× | 1,10 – 1,35 |
+| paridade 7/8 pares | 0,96× | **sem efeito** |
+
+Na Mega-Sena, independentemente: todas ≤31 → 2,05×; nenhuma consecutiva → 1,41×; paridade e soma sem efeito. Na Quina, medido e **nulo em tudo** — e a Quina ficou sem regra nenhuma, porque inventar é pior que não ter.
+
+**A multidão foge de dezenas coladas.** O painel empurrava o usuário exatamente para o perfil mais disputado, com um selo verde de "POUCO DISPUTADO" por cima.
+
+Detalhes, desenho da medição e o viés conhecido (conservador) na seção 24 de `METODOLOGIA.md`.
+
+### Regras que a v19 estabeleceu
+
+1. **Onde não há medição, não há regra.** O painel diz "SEM MEDIÇÃO" em vez de dar nota.
+2. **Teto de honestidade.** Os fatores foram medidos um a um; multiplicá-los supõe independência. A única célula conjunta testada (sequência ≥6 **e** soma >210) mediu 0,72× contra 0,64× previsto pelo produto — o modelo multiplicativo exagera. Piso de 0,70×, e o painel avisa quando ele entra em ação.
+3. **Desdobramento dilui.** Num jogo com dezenas extras quem ganha é **um** subconjunto, e cada um tem perfil próprio. O fator honesto é a média sobre eles. Caso real: conjunto de 16 com sequência de 6 e soma 223 dá 0,70× como conjunto, mas seus 16 desdobramentos variam de 0,70× a 2,20× e a média é 1,02× — a vantagem some.
+
+### Três defeitos que a medição expôs
+
+**O gerador não gerava.** "Evitar 3+ dezenas consecutivas" era rejeição pura, e num jogo de 16 dezenas em 25 quase nenhum sorteio passa. A rejeição estourava as 900 tentativas e o jogo era descartado **em silêncio**: pedir 1 devolvia 0, pedir 3 devolvia 1. Nenhum erro no console, e nenhum teste contava gerados contra pedidos. Hoje o gerador junta até 300 candidatos livres, escolhe pelo fator medido, e o rodapé mostra "N de M".
+
+**O ordenador ignorava colunas em "1 em N".** `numDaCelula` pegava o primeiro número da célula e devolvia sempre 1 para "1 em 9" / "1 em 2.298" — a ordenação era estável e nada se movia. Valia para **todas** as tabelas ordenáveis, inclusive as que já tinham sido "verificadas". Agora "1 em N" ordena pelo denominador, e "—" vai para o fim nos dois sentidos.
+
+**Menu de uma opção só.** Em "Meus números favoritos", o seletor de tamanho vinha de um intervalo inventado (`pick`..`pick+4`, teto 15), que na Lotofácil colapsava para um item. Agora vem dos tamanhos que a Caixa aceita, com preço no rótulo. O card de custo também multiplicava tudo pelo preço da aposta simples.
+
+### Produto
+
+- Abas **"Meu jogo"** e **"Gerador de jogos"** fundidas numa só, com dois modos e um botão "Analisar este jogo" em cada jogo gerado. Estados antigos apontando para `gerador` são redirecionados no `refresh()`, como já se fazia com `volante`.
+- **Botão copiar** em toda parte: dezenas, desdobramento linha a linha, jogo com a análise, jogos gerados, tabelas de combinações. Com queda para `execCommand` porque `navigator.clipboard` não existe em `file://`.
+- Tabela dos três eixos ordenável por coluna.
+
+### Lição de processo, de novo
+
+Na v18 o defeito foi teste que não clicava nos botões. Na v19 foi teste que não contava quantos jogos o gerador devolveu, e regra de produto que nunca tinha sido medida embora o projeto inteiro se apresente como método de medição. **Quando o painel afirma alguma coisa sobre comportamento humano, essa afirmação precisa de um número e de um intervalo de confiança, ou de um rótulo dizendo que não tem.**
+
+### Aposta real registrada
+
+Em 27/07/2026 o Hélio fez duas apostas na Lotofácil para o concurso 3746 (prêmio estimado R$ 9 milhões, índice CRIVO 0,487, percentil 98,9 da história da modalidade, gatilho R$ 31,7 milhões). Os jogos sugeridos e a comparação entre desdobramento e jogos separados estão em `jogos-3746.md`. **Quando sair o resultado, vale conferir — não para validar o método, que não prevê sorteio nenhum, mas porque um registro honesto de apostas reais é o único jeito de o painel não virar autoelogio.**

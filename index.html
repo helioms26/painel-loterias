@@ -655,7 +655,7 @@ const SEQ_BLUE = ['var(--seq-1)','var(--seq-2)','var(--seq-3)','var(--seq-4)','v
 const SEQ_ORANGE = ['var(--seq2-1)','var(--seq2-2)','var(--seq2-3)','var(--seq2-4)','var(--seq2-5)','var(--seq2-6)','var(--seq2-7)','var(--seq2-8)'];
 /* ================= STATE ================= */
 const state = { game:'megasena', tab:'visao', windowN:0, metric:'freq', comboK:2, comboDir:'top', topN:10,
-                dezenas:[], celulas:[], sorteioDS:0, ordemVolante:'num' };
+                dezenas:[], celulas:[], sorteioDS:0, ordemVolante:'num', perfilAposta:'equilibrado' };
 
 /* ===== FILTRO CRUZADO =====
    Uma seleção só, compartilhada por todas as abas: modalidade, janela e dezenas.
@@ -666,7 +666,7 @@ const PILHA_SEL=[]; let PI_SEL=-1, navegandoSel=false;
 function _instantanea(){ return JSON.stringify({game:state.game,tab:state.tab,windowN:state.windowN,
   metric:state.metric,comboK:state.comboK,comboDir:state.comboDir,topN:state.topN,
   dezenas:state.dezenas,celulas:state.celulas,sorteioDS:state.sorteioDS,
-  ordemVolante:state.ordemVolante}); }
+  ordemVolante:state.ordemVolante, perfilAposta:state.perfilAposta}); }
 function gravarSel(){
   const s=_instantanea();
   if(PI_SEL>=0 && PILHA_SEL[PI_SEL]===s) return;
@@ -1105,9 +1105,173 @@ async function renderComparar(m){
     'Conta as faixas menores (medidas no histórico real) e desconta tanto o imposto quanto a chance de dividir o prêmio.</p>'+
     '<p class="note" style="margin-bottom:0">Nenhuma modalidade fica matematicamente favorável na prática. O que esta tabela responde não é "vale a pena apostar?", e sim: <b>se você já decidiu gastar, onde o mesmo dinheiro rende mais.</b></p>'));
   await loadHistorico();
+  m.appendChild(matrizDecisao());
   m.appendChild(painelRegua());
+  m.appendChild(painelTresEixos());
   m.appendChild(painelHistoricoCrivo());
   m.appendChild(comparativoModalidades());
+}
+
+/* ===== MATRIZ DE DECISÃO =====
+   O painel inteiro condensado numa tabela. Cada indicador é normalizado de 0 a
+   100 entre as nove modalidades da rodada, e o índice final é a média ponderada
+   pelos pesos do perfil escolhido.
+
+   Aviso que precisa ficar no código e na tela: o índice final NÃO é medição.
+   Os quatro indicadores são medidos; o peso de cada um é preferência. Por isso
+   o perfil é escolhido pelo usuário e os pesos aparecem na tela — trocar de
+   perfil troca o primeiro colocado, e isso é o comportamento correto, não um
+   defeito. Um número final com pesos escondidos seria opinião disfarçada de
+   resultado, que é exatamente o que este projeto critica nos outros. */
+const PERFIS = {
+  premio:      {rot:'Quero o prêmio grande',    pesos:{sonho:60, negocio:25, raridade:15, freq:0},
+                nota:'Peso quase todo no quanto do retorno vem do prêmio principal. Faixas pequenas contam pouco.'},
+  frequencia:  {rot:'Quero ver algo voltar',    pesos:{freq:45, negocio:30, raridade:15, sonho:10},
+                nota:'Peso na chance de levar qualquer prêmio. Bom para quem joga com regularidade e não quer só bilhete branco.'},
+  equilibrado: {rot:'Equilibrado',              pesos:{negocio:35, sonho:30, freq:20, raridade:15},
+                nota:'Sem privilegiar nenhum eixo. É o padrão, não a resposta certa.'},
+  negocio:     {rot:'Só o retorno por real',    pesos:{negocio:100, sonho:0, freq:0, raridade:0},
+                nota:'Ignora gosto e olha só a matemática crua do retorno esperado por real gasto.'}
+};
+function matrizDecisao(){
+  const L=indiceCrivo();
+  const p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Matriz de decisão · onde apostar hoje'));
+  if(!L.length){ p.appendChild(el('p',{class:'note'},'Sem estimativa de prêmio disponível agora.')); return p; }
+
+  const perfil=PERFIS[state.perfilAposta]||PERFIS.equilibrado, W=perfil.pesos;
+  const seg=el('div',{class:'controls'});
+  seg.appendChild(el('label',null,'O que você quer:'));
+  for(const k in PERFIS){
+    const b=el('button',{class: state.perfilAposta===k?'primary':''}, PERFIS[k].rot);
+    b.onclick=()=>{ state.perfilAposta=k; refresh(); };
+    seg.appendChild(b);
+  }
+  p.appendChild(seg);
+  p.appendChild(el('p',{class:'note'},esc(perfil.nota)+' Pesos: '+
+    Object.entries(W).filter(([,v])=>v>0).map(([k,v])=>({negocio:'negócio',sonho:'prêmio grande',freq:'frequência',raridade:'raridade'}[k])+' '+v+'%').join(' · ')));
+
+  // normalização 0–100 entre as modalidades desta rodada
+  const eixos={
+    negocio:  L.map(l=>l.indice),
+    sonho:    L.map(l=>l.idxPrincipal),
+    freq:     L.map(l=>l.pAlgo||0),
+    raridade: L.map(l=>{ const h=percentilHist(l.g,l.indice); return h? h.pct/100 : 0; })
+  };
+  const norm={};
+  for(const k in eixos){
+    const a=eixos[k], mn=Math.min(...a), mx=Math.max(...a);
+    norm[k]=a.map(v=> mx>mn ? 100*(v-mn)/(mx-mn) : 50);
+  }
+  const somaW=Object.values(W).reduce((x,y)=>x+y,0)||1;
+  const dados=L.map((l,i)=>{
+    const nn={negocio:norm.negocio[i], sonho:norm.sonho[i], freq:norm.freq[i], raridade:norm.raridade[i]};
+    const final=(nn.negocio*W.negocio + nn.sonho*W.sonho + nn.freq*W.freq + nn.raridade*W.raridade)/somaW;
+    const h=percentilHist(l.g,l.indice);
+    return {l, nn, final, pct:h?h.pct:null};
+  }).sort((a,b)=>b.final-a.final);
+
+  const barra=(v,cor)=>'<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'+
+    '<span style="width:46px;height:6px;border-radius:3px;background:var(--border-subtle);overflow:hidden;display:inline-block">'+
+    '<i style="display:block;height:6px;width:'+Math.max(2,Math.round(v))+'%;background:'+cor+'"></i></span>'+
+    '<b class="tabular">'+Math.round(v)+'</b></span>';
+  let ht='<div class="rolagem" style="margin-top:var(--space-6)"><table><thead><tr>'+
+    '<th>#</th><th>Modalidade</th>'+
+    '<th class="num">Negócio</th><th class="num">Prêmio grande</th><th class="num">Frequência</th><th class="num">Raridade</th>'+
+    '<th class="num">Índice final</th><th>Veredito</th></tr></thead><tbody>';
+  for(let i=0;i<dados.length;i++){
+    const d=dados[i], primeiro=i===0;
+    ht+='<tr data-g="'+d.l.g+'"'+(primeiro?' class="on"':'')+' style="cursor:pointer">'+
+      '<td style="color:var(--ink-muted)">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap"'+(primeiro?' class="tabular"':'')+'><b>'+esc(d.l.label)+'</b></td>'+
+      '<td class="num">'+barra(d.nn.negocio,'var(--series-1)')+'</td>'+
+      '<td class="num">'+barra(d.nn.sonho,'var(--series-7)')+'</td>'+
+      '<td class="num">'+barra(d.nn.freq,'var(--series-3)')+'</td>'+
+      '<td class="num">'+barra(d.nn.raridade,'var(--series-4)')+'</td>'+
+      '<td class="num"><b style="font-size:var(--text-md)">'+d.final.toFixed(1).replace('.',',')+'</b></td>'+
+      '<td>'+vereditoChip(d.l.veredito)+'</td></tr>';
+  }
+  ht+='</tbody></table></div>';
+  p.innerHTML+=ht;
+  p.querySelectorAll('tbody tr[data-g]').forEach(tr=>{
+    tr.onclick=()=>{ state.game=tr.dataset.g; state.dezenas=[]; state.celulas=[]; state.tab='visao'; refresh(); };
+  });
+  tabelaOrdenavel(p.querySelector('table'));
+
+  const top=dados[0];
+  p.appendChild(el('div',{class:'okbox'},
+    '<b>Com o perfil "'+esc(perfil.rot).toLowerCase()+'", a primeira é a '+esc(top.l.label)+'</b>, com índice final '+
+    top.final.toFixed(1).replace('.',',')+' de 100. Clique em qualquer linha para abrir a análise completa daquela modalidade.<br><br>'+
+    'Os quatro indicadores são <b>medidos</b>: negócio é o retorno esperado por real; prêmio grande é a parcela desse retorno que vem da faixa máxima; '+
+    'frequência é a probabilidade de a aposta mínima levar qualquer prêmio; raridade é o percentil do índice de hoje na história daquela modalidade. '+
+    'Cada um é normalizado de 0 a 100 entre as nove desta rodada — então são notas <i>relativas</i>, não absolutas.'));
+  p.appendChild(el('div',{class:'warnbox'},
+    '<b>O índice final não é medição, e isso é importante.</b> Os quatro indicadores são medidos; o <b>peso</b> de cada um é preferência sua. '+
+    'Por isso os pesos estão na tela e o perfil é escolhido por você: trocar de perfil troca o primeiro colocado, e isso é o comportamento correto. '+
+    'Um número único com pesos escondidos seria opinião disfarçada de resultado — exatamente o que este painel existe para desmontar em quem vende método. '+
+    '<b>Nenhum perfil torna a aposta favorável:</b> mesmo o primeiro colocado tem retorno esperado negativo, como a régua abaixo mostra.'));
+  return p;
+}
+
+/* ===== TRÊS EIXOS =====
+   Um número só não decide, porque as pessoas jogam por motivos diferentes.
+   Separar o índice em "troco" e "prêmio grande" muda o ranking — e a escolha
+   entre eles não é técnica, é de gosto. O painel expõe os dois e deixa decidir. */
+function painelTresEixos(){
+  const L=indiceCrivo();
+  const p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Três perguntas diferentes, três respostas diferentes'));
+  if(!L.length) return p;
+  p.appendChild(el('p',null,
+    'O índice CRIVO soma duas coisas de naturezas distintas: o <b>troco das faixas pequenas</b>, que é quase devolução do seu próprio dinheiro, '+
+    'e o <b>prêmio principal</b>, que é o motivo pelo qual quase todo mundo joga. Juntos num número só, eles escondem a decisão. Separados, o ranking muda.'));
+  const porTotal=[...L].sort((a,b)=>b.indice-a.indice);
+  const porSonho=[...L].sort((a,b)=>b.idxPrincipal-a.idxPrincipal);
+  const porFreq=[...L].filter(l=>l.pAlgo).sort((a,b)=>b.pAlgo-a.pAlgo);
+  let ht='<div class="rolagem"><table><thead><tr><th>Modalidade</th>'+
+    '<th class="num">Índice total</th><th class="num">Troco das faixas menores</th>'+
+    '<th class="num">Prêmio principal</th><th class="num">% que é prêmio grande</th>'+
+    '<th class="num">Leva algum prêmio</th></tr></thead><tbody>';
+  for(const l of porSonho){
+    const pos=porTotal.indexOf(l)+1, posS=porSonho.indexOf(l)+1;
+    const subiu = pos-posS;
+    ht+='<tr'+(posS===1?' class="on"':'')+'><td style="white-space:nowrap"><b>'+esc(l.label)+'</b>'+
+      (subiu>0?' <span class="t-label" style="color:var(--status-good-ink)">↑'+subiu+'</span>':
+       subiu<0?' <span class="t-label" style="color:var(--status-warning)">↓'+(-subiu)+'</span>':'')+'</td>'+
+      '<td class="num tabular">'+l.indice.toFixed(3).replace('.',',')+'</td>'+
+      '<td class="num tabular" style="color:var(--ink-muted)">'+l.idxMenores.toFixed(3).replace('.',',')+'</td>'+
+      '<td class="num tabular"><b>'+l.idxPrincipal.toFixed(3).replace('.',',')+'</b></td>'+
+      '<td class="num tabular">'+Math.round(100*l.idxPrincipal/l.indice)+'%</td>'+
+      '<td class="num tabular">'+(l.pAlgo? '1 em '+fmtInt(Math.round(1/l.pAlgo)) : '—')+'</td></tr>';
+  }
+  ht+='</tbody></table></div>';
+  p.innerHTML+=ht;
+  p.appendChild(el('p',{class:'note'},'Ordenado pelo eixo do prêmio principal. A seta mostra quantas posições a modalidade sobe ou desce em relação ao ranking do índice total.'));
+
+  const t=porTotal[0], so=porSonho[0], fq=porFreq[0];
+  const g3=el('div',{class:'cards'});
+  g3.appendChild(cardHtml('Se a pergunta é "onde perco menos"', t.label, 'índice total '+t.indice.toFixed(3).replace('.',',')));
+  g3.appendChild(cardHtml('Se a pergunta é "onde compro mais sonho"', so.label, 'prêmio principal '+so.idxPrincipal.toFixed(3).replace('.',',')+' por real'));
+  g3.appendChild(cardHtml('Se a pergunta é "onde vejo algo voltar"', fq.label, '1 em '+fmtInt(Math.round(1/fq.pAlgo))+' apostas'));
+  p.appendChild(g3);
+
+  p.appendChild(el('div',{class:'okbox'},
+    '<b>A Lotofácil lidera o índice total e cai para terceira no eixo do prêmio grande.</b> '+
+    'Ela devolve muito nas faixas pequenas — '+Math.round(100*L.find(l=>l.g==='lotofacil').idxMenores/L.find(l=>l.g==='lotofacil').indice)+
+    '% do índice dela é troco — e isso é ótimo para quem quer jogar bastante vezes com o mesmo dinheiro, e irrelevante para quem quer o prêmio. '+
+    'A Mega-Sena é o contrário: '+Math.round(100*L.find(l=>l.g==='megasena').idxPrincipal/L.find(l=>l.g==='megasena').indice)+
+    '% do índice dela é prêmio principal, com apenas 1 chance em '+fmtInt(Math.round(1/L.find(l=>l.g==='megasena').pAlgo))+' de levar qualquer coisa. '+
+    '<b>Nenhuma das duas é melhor — são apostas em coisas diferentes.</b>'));
+
+  p.appendChild(el('div',{class:'warnbox'},
+    '<b>E marcar uma dezena a mais? Não mexe em nenhum dos três eixos para melhor.</b><br><br>'+
+    'O <b>índice</b> não se move, porque custo e retorno esperado sobem pelo mesmo fator. '+
+    'A <b>chance do prêmio principal</b> por real gasto também não se move, pelo mesmo motivo. '+
+    'E a <b>frequência de retorno</b> piora: na Mega-Sena, um desdobramento de 7 dezenas leva algum prêmio 1 vez em 1.015, enquanto os mesmos R$ 42 em sete apostas mínimas separadas levam 1 em 329. '+
+    'As sete combinações do desdobramento compartilham seis dezenas, então acertam juntas ou erram juntas.<br><br>'+
+    'Ou seja: para o mesmo dinheiro, <b>desdobrar é igual em dois eixos e pior no terceiro</b>. '+
+    'A vantagem real do desdobramento é de outra ordem — preencher um volante em vez de sete, e receber em várias faixas de uma vez quando acerta.'));
+  return p;
 }
 
 /* ===== O 1,00 É ALCANÇÁVEL? =====
@@ -1154,6 +1318,8 @@ function painelHistoricoCrivo(){
   p.querySelectorAll('tbody tr[data-g]').forEach(tr=>{
     tr.onclick=()=>{ state.game=tr.dataset.g; state.dezenas=[]; state.celulas=[]; state.tab='visao'; refresh(); };
   });
+  tabelaOrdenavel(p.querySelector('table'));
+  p.appendChild(el('p',{class:'note'},'Clique em qualquer cabeçalho para ordenar. Um clique ordena crescente, dois decrescente, três devolve à ordem original — que aqui é o percentil, do mais raro para o mais comum.'));
 
   const melhorPct=ordenado[0];
   p.appendChild(el('div',{class: melhorPct.h.pct>=95 ? 'okbox' : 'warnbox'},
@@ -1585,6 +1751,139 @@ function metricasJogo(g){
   const arrTipica=recentes[Math.floor(recentes.length/2)];
   return {rtpMenores, rtpTotal, arrTipica, nConc:arrs.length};
 }
+/* ===== O PÚBLICO CRESCE COM O PRÊMIO =====
+   Falha do método que ficou escondida até a v15: o índice usava o prêmio ATUAL
+   mas o volume TÍPICO de apostas. Só que o público responde ao prêmio — e o
+   índice existe justamente para avaliar acumulações grandes, que é onde o erro
+   é maior.
+
+   Medido no histórico, o volume cresce com a sequência de concursos acumulados:
+   na Mega-Sena vai de 0,67× a 1,93× a mediana entre "saiu no anterior" e
+   "sete ou mais acumulados". Usar a sequência como preditor, e não o prêmio,
+   é de propósito: a sequência é determinada ANTES do sorteio, então não pode
+   ser causada pelo volume de agora. Regredir contra o prêmio dava um efeito
+   maior, mas parte dele é mecânica — o prêmio cresce porque as pessoas apostam.
+
+   A curva é recalibrada nos próprios dados a cada carga, então melhora sozinha
+   conforme a base cresce. */
+const FX_SEQ=[[0,1],[1,2],[2,4],[4,7],[7,1e9]];
+const _cacheVol={};
+function faixaBaixaInfo(g){
+  const cfg=GAMES[g], F=FAIXAS[g];
+  if(!F) return null;
+  let alvo=null;
+  for(let i=0;i<F.length;i++){
+    const v=F[i];
+    if(Array.isArray(v)){ if(v[1]===1 && v[0]>0 && (!alvo||v[0]<alvo.h)) alvo={i,h:v[0]}; }
+    else if(typeof v==='number' && v>0 && (!alvo||v<alvo.h)) alvo={i,h:v};
+  }
+  if(!alvo) return null;
+  const N=cfg.max-cfg.min+1, m=(APOSTAS[g]&&APOSTAS[g].minN)||cfg.pick, d=cfg.pick, k=alvo.h;
+  const p = cfg.colunas ? C(7,k)*Math.pow(0.1,k)*Math.pow(0.9,7-k)
+                        : C(d,k)*C(N-d,m-k)/C(N,m);
+  return (p>0 && isFinite(p)) ? {idx:alvo.i, p} : null;
+}
+function curvaVolume(g){
+  if(_cacheVol[g]!==undefined) return _cacheVol[g];
+  const info=faixaBaixaInfo(g), pr=PREMIOS[g];
+  if(!info||!pr){ return _cacheVol[g]=null; }
+  const ks=Object.keys(pr).map(Number).sort((a,b)=>a-b);
+  let seq=0; const obs=[];
+  for(const k of ks){
+    const d=pr[String(k)];
+    if(!d||!d.a||d.a<1000||!d.f||d.f.length<=info.idx) continue;
+    if(d.f[info.idx][0]>=50) obs.push({seq, N:d.f[info.idx][0]/info.p});
+    seq = d.f[0][0]>0 ? 0 : seq+1;
+  }
+  if(obs.length<200){ return _cacheVol[g]=null; }
+  const uso=obs.slice(Math.floor(obs.length/4));
+  const med=a=>{ const x=a.slice().sort((p1,p2)=>p1-p2); return x[Math.floor(x.length/2)]; };
+  const base=med(uso.map(o=>o.N));
+  if(!base){ return _cacheVol[g]=null; }
+  const curva=FX_SEQ.map(([lo,hi])=>{
+    const sub=uso.filter(o=>o.seq>=lo&&o.seq<hi).map(o=>o.N);
+    return sub.length>=10 ? med(sub)/base : null;
+  });
+  return _cacheVol[g]={curva, base, n:uso.length, seqAtual:seq};
+}
+function multiplicadorVolume(g){
+  const v=curvaVolume(g);
+  if(!v) return {mult:1, seq:null, medido:false};
+  for(let i=0;i<FX_SEQ.length;i++){
+    if(v.seqAtual>=FX_SEQ[i][0] && v.seqAtual<FX_SEQ[i][1])
+      return {mult: v.curva[i]||1, seq:v.seqAtual, medido: v.curva[i]!=null, curva:v.curva};
+  }
+  return {mult:1, seq:v.seqAtual, medido:false, curva:v.curva};
+}
+/* Probabilidade de a aposta MÍNIMA levar algum prêmio, qualquer faixa. */
+function probAlgumPremio(g){
+  const cfg=GAMES[g], a=APOSTAS[g], F=FAIXAS[g];
+  if(!F) return null;
+  let fmin=null;
+  for(const v of F){
+    const h=Array.isArray(v)?(v[1]===1?v[0]:null):v;
+    if(typeof h==='number' && h>0 && (fmin===null||h<fmin)) fmin=h;
+  }
+  if(fmin==null) return null;
+  if(cfg.colunas){ let s=0; for(let k=fmin;k<=7;k++) s+=C(7,k)*Math.pow(0.1,k)*Math.pow(0.9,7-k); return s; }
+  const N=cfg.max-cfg.min+1, m=(a&&a.minN)||cfg.pick, d=cfg.pick;
+  let s=0; for(let k=fmin;k<=Math.min(m,d);k++) s+=C(d,k)*C(N-d,m-k);
+  const t=C(N,m);
+  return t? s/t : null;
+}
+/* ===== ORDENAÇÃO POR CLIQUE NO CABEÇALHO =====
+   Vale para qualquer tabela do painel. Lê o valor numérico de dentro da célula
+   ignorando "R$", "1 em", "%", "×" e a pontuação brasileira — se não achar
+   número, ordena como texto. Guarda a ordem original para o terceiro clique
+   devolver a tabela ao estado em que ela nasceu, que costuma ser o ranking que
+   o painel escolheu de propósito. */
+function numDaCelula(td){
+  const t=(td.textContent||'').trim();
+  const m=t.replace(/\u00A0/g,' ').match(/-?[\d][\d.]*(,\d+)?/);
+  if(!m) return null;
+  const v=parseFloat(m[0].replace(/\./g,'').replace(',','.'));
+  return isFinite(v)? v : null;
+}
+function tabelaOrdenavel(tab){
+  if(!tab) return tab;
+  const cab=tab.querySelector('thead tr') || tab.querySelector('tr');
+  if(!cab) return tab;
+  const corpo=tab.querySelector('tbody') || tab;
+  const original=[...corpo.querySelectorAll('tr')].filter(tr=>tr.querySelector('td'));
+  if(original.length<3) return tab;
+  const guarda=original.slice();
+  const ths=[...cab.querySelectorAll('th')];
+  let colAtual=-1, dir=0;   // 0 = original, 1 = crescente, 2 = decrescente
+  ths.forEach((th,i)=>{
+    th.style.cursor='pointer';
+    th.style.userSelect='none';
+    th.title='Clique para ordenar';
+    const seta=el('span',{style:'opacity:.35;margin-left:4px;font-size:var(--text-2xs)'},'↕');
+    th.appendChild(seta);
+    th.onclick=()=>{
+      if(colAtual===i) dir=(dir+1)%3; else { colAtual=i; dir=1; }
+      ths.forEach(x=>{ const sp=x.querySelector('span:last-child');
+        if(sp){ sp.textContent='↕'; sp.style.opacity='.35'; } });
+      const sp=th.querySelector('span:last-child');
+      if(sp){ sp.textContent = dir===0?'↕':(dir===1?'↑':'↓'); sp.style.opacity = dir===0?'.35':'1'; }
+      let linhas;
+      if(dir===0) linhas=guarda.slice();
+      else {
+        linhas=guarda.slice().sort((a,b)=>{
+          const ca=a.children[i], cb=b.children[i];
+          if(!ca||!cb) return 0;
+          const na=numDaCelula(ca), nb=numDaCelula(cb);
+          let r;
+          if(na!=null && nb!=null) r=na-nb;
+          else r=(ca.textContent||'').localeCompare(cb.textContent||'','pt-BR');
+          return dir===1? r : -r;
+        });
+      }
+      linhas.forEach(tr=>corpo.appendChild(tr));
+    };
+  });
+  return tab;
+}
 function fatorPartilha(lambda){ return lambda>1e-9 ? (1-Math.exp(-lambda))/lambda : 1; }
 function indiceCrivo(){
   const linhas=[];
@@ -1601,11 +1900,15 @@ function indiceCrivo(){
       medido=true;
       evMenores = cfg.price*mt.rtpMenores;
       apostas   = mt.arrTipica/cfg.price;
-      lambda    = apostas/odds;
+      const mv  = multiplicadorVolume(g);
+      const lambdaTip = apostas/odds;
+      lambda    = lambdaTip*mv.mult;      // corrigido pela sequência de acumulação
       partilha  = fatorPartilha(lambda);
       ev        = evMenores + (liquido/odds)*partilha;
       indice    = ev/cfg.price;
       gatilho   = (cfg.price-evMenores)*odds/partilha;
+      var volInfo = {mult:mv.mult, seq:mv.seq, medido:mv.medido,
+                     lambdaTip, indiceSemCorrecao: evMenores/cfg.price + (liquido/odds)*fatorPartilha(lambdaTip)/cfg.price};
     } else {
       // sem histórico de prêmios ainda: só a faixa principal, e avisamos
       medido=false;
@@ -1614,8 +1917,18 @@ function indiceCrivo(){
       indice=ev/cfg.price;
       gatilho=cfg.price*odds;
     }
+    /* ===== TRÊS EIXOS, NÃO UM =====
+       O índice total mistura duas coisas de naturezas diferentes: o troco das
+       faixas pequenas, que é quase devolução do próprio dinheiro, e o prêmio
+       principal, que é o motivo pelo qual quase todo mundo joga. Somados num
+       número só, a Lotofácil lidera; separados, ela cai para terceira no eixo
+       do prêmio grande. Quem decide qual eixo importa é o apostador, não nós. */
+    const idxMenores = evMenores/cfg.price;
+    const idxPrincipal = indice - idxMenores;
     linhas.push({g, label:cfg.label, odds, price:cfg.price, bruto, liquido,
                  evMenores, ev, indice, gatilho, lambda, partilha, medido,
+                 idxMenores, idxPrincipal, pAlgo: probAlgumPremio(g),
+                 vol: (typeof volInfo!=='undefined'? volInfo : null),
                  rtpMenores: mt?mt.rtpMenores:null, rtpTotal: mt?mt.rtpTotal:null,
                  nConc: mt?mt.nConc:0,
                  acum: st.acumulado===true||st.acumulado==='True'||st.acumulado==='true',
@@ -1801,6 +2114,36 @@ function comparativoModalidades(){
   }
   p.appendChild(el('p',{class:'note'},'<b>Índice = retorno esperado de uma aposta simples ÷ custo dela.</b> Break-even em 1,00: abaixo disso a aposta é desfavorável. '+
     'O <b>prêmio de gatilho</b> é o valor que o prêmio precisaria alcançar para o índice bater 1,00 naquele jogo.'));
+  // correção de volume: mostra o antes e o depois, em vez de esconder
+  const comVol=linhas.filter(l=>l.vol&&l.vol.medido&&Math.abs(l.vol.mult-1)>0.05)
+                     .sort((a,b)=>b.vol.mult-a.vol.mult);
+  if(comVol.length){
+    let hv='<div class="rolagem"><table><thead><tr><th>Modalidade</th><th class="num">Concursos acumulados</th>'+
+      '<th class="num">Público esperado</th><th class="num">Índice sem corrigir</th><th class="num">Índice corrigido</th>'+
+      '<th class="num">Diferença</th></tr></thead><tbody>';
+    for(const l of comVol){
+      const dif=100*(1-l.indice/l.vol.indiceSemCorrecao);
+      hv+='<tr><td><b>'+esc(l.label)+'</b></td>'+
+        '<td class="num tabular">'+fmtInt(l.vol.seq)+'</td>'+
+        '<td class="num tabular">'+l.vol.mult.toFixed(2).replace('.',',')+'× o normal</td>'+
+        '<td class="num tabular" style="color:var(--ink-muted)">'+l.vol.indiceSemCorrecao.toFixed(3).replace('.',',')+'</td>'+
+        '<td class="num tabular"><b>'+l.indice.toFixed(3).replace('.',',')+'</b></td>'+
+        '<td class="num tabular">'+(dif>0.5?'−'+dif.toFixed(1).replace('.',',')+'%':'—')+'</td></tr>';
+    }
+    const q=el('div',{style:'margin-top:var(--space-8)'});
+    q.appendChild(el('h3',null,'Correção do público: o prêmio grande atrai gente'));
+    q.appendChild(el('p',null,
+      'Uma falha do método que só apareceu na versão 16: o índice usava o prêmio de <b>agora</b> com o volume de apostas <b>típico</b>. '+
+      'Mas o público responde ao prêmio — e o índice existe justamente para avaliar acumulação grande, que é onde o erro era maior.'));
+    q.innerHTML+=hv+'</tbody></table></div>';
+    q.appendChild(el('div',{class:'okbox'},
+      '<b>O preditor é a sequência de concursos acumulados, não o prêmio, e isso é de propósito.</b> '+
+      'A sequência é definida <i>antes</i> do sorteio, então não pode ser causada pelo volume de apostas de agora. '+
+      'Usar o prêmio dava um efeito maior, mas parte dele é mecânica: o prêmio cresce porque as pessoas apostam. '+
+      'Medido no histórico da Mega-Sena, o volume vai de <b>0,67×</b> a mediana quando o prêmio saiu no concurso anterior para <b>1,93×</b> com sete ou mais acumulados. '+
+      'A curva é recalibrada nos próprios dados a cada carga do painel, então melhora sozinha conforme a base cresce.'));
+    p.appendChild(q);
+  }
   p.appendChild(el('div',{class:'okbox'},
     '<b>As duas colunas de índice são iguais de propósito — e a igualdade é a resposta.</b> '+
     'Marcar uma dezena a mais equivale exatamente a comprar várias apostas simples, e a Caixa paga cada combinação vencedora separadamente. '+

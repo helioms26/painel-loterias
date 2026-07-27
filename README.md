@@ -135,3 +135,11 @@ Bandeiras de exclusividade em "Meu jogo", com um botão que completa o jogo fugi
 ## Novidades da v15
 
 A tabela de Onde apostar ganhou duas colunas de índice — aposta mínima e com uma dezena a mais — e elas mostram o mesmo número de propósito. Sete vezes o preço na Mega-Sena, o mesmo 0,376. Verificado recalculando o índice do desdobramento do zero: iguais até a sexta casa decimal. Seção 20 de `METODOLOGIA.md`.
+
+## Revisão da v16
+
+Auditoria da metodologia encontrou uma falha estrutural: o índice usava o prêmio atual com o volume de apostas típico, sendo otimista exatamente nas acumulações grandes que ele existe para avaliar. Corrigido usando a sequência de concursos acumulados como preditor do público — um instrumento causalmente limpo, já que é determinado antes do sorteio. O índice da Lotofácil caiu 22,9% e o prêmio de gatilho dela quase dobrou. Seção 21 de `METODOLOGIA.md`.
+
+## Novidades da v17
+
+A aba Onde apostar abre com uma **matriz de decisão**: nove modalidades, quatro indicadores medidos (negócio, prêmio grande, frequência, raridade) e um índice final ponderado. Os pesos são escolhidos por você entre quatro perfis e aparecem na tela — trocar de perfil troca o primeiro colocado, e isso é intencional. A decomposição mostra algo que o índice único escondia: a Lotofácil lidera no total mas cai para terceira quando se olha só o prêmio grande, onde a Quina passa na frente. Tabelas ordenáveis por clique. Seção 22 de `METODOLOGIA.md`.

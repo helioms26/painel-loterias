@@ -1,294 +1,337 @@
 {
-    "versao":  "15.0",
-    "nome":  "Painel Loterias",
-    "geradoEm":  "2026-07-27T20:30:00Z",
-    "geradoEmBrasilia":  "2026-07-27 17:30",
-    "commitDoConteudo":  "077f09cd5a9fef0ee5a1f38abd1f77ac5328d91f",
-    "publicadoEm":  "https://helioms26.github.io/painel-loterias/",
-    "figma":  {
-                  "arquivo":  "https://www.figma.com/design/A9hm8FcF7ctUhve0KR2aM7",
-                  "paginas":  [
-                                  "Cor",
-                                  "Tipografia e espaço",
-                                  "Painel v9 · telas"
-                              ],
-                  "limite":  "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
-              },
-    "baseDeDados":  {
-                        "fechadaEm":  "26/07/2026",
-                        "concursosPorModalidade":  {
-                                                       "timemania":  {
-                                                                         "ultimoConcurso":  2420,
-                                                                         "data":  "26/07/2026",
-                                                                         "acumulado":  true,
-                                                                         "proximoSorteio":  "28/07/2026",
-                                                                         "estimativa":  5500000.0
-                                                                     },
-                                                       "diadesorte":  {
-                                                                          "ultimoConcurso":  1255,
-                                                                          "data":  "26/07/2026",
-                                                                          "acumulado":  true,
-                                                                          "proximoSorteio":  "27/07/2026",
-                                                                          "estimativa":  500000.0
-                                                                      },
-                                                       "quina":  {
-                                                                     "ultimoConcurso":  7075,
-                                                                     "data":  "26/07/2026",
-                                                                     "acumulado":  true,
-                                                                     "proximoSorteio":  "27/07/2026",
-                                                                     "estimativa":  23000000.0
-                                                                 },
-                                                       "duplasena":  {
-                                                                         "ultimoConcurso":  2987,
-                                                                         "data":  "24/07/2026",
-                                                                         "acumulado":  true,
-                                                                         "proximoSorteio":  "27/07/2026",
-                                                                         "estimativa":  2000000.0
-                                                                     },
-                                                       "lotofacil":  {
-                                                                         "ultimoConcurso":  3745,
-                                                                         "data":  "26/07/2026",
-                                                                         "acumulado":  true,
-                                                                         "proximoSorteio":  "27/07/2026",
-                                                                         "estimativa":  9000000.0
-                                                                     },
-                                                       "maismilionaria":  {
-                                                                              "ultimoConcurso":  375,
-                                                                              "data":  "26/07/2026",
-                                                                              "acumulado":  true,
-                                                                              "proximoSorteio":  "29/07/2026",
-                                                                              "estimativa":  77000000.0
-                                                                          },
-                                                       "lotomania":  {
-                                                                         "ultimoConcurso":  2954,
-                                                                         "data":  "24/07/2026",
-                                                                         "acumulado":  true,
-                                                                         "proximoSorteio":  "27/07/2026",
-                                                                         "estimativa":  3600000.0
-                                                                     },
-                                                       "megasena":  {
-                                                                        "ultimoConcurso":  3036,
-                                                                        "data":  "26/07/2026",
-                                                                        "acumulado":  true,
-                                                                        "proximoSorteio":  "28/07/2026",
-                                                                        "estimativa":  78000000.0
-                                                                    },
-                                                       "supersete":  {
-                                                                         "ultimoConcurso":  877,
-                                                                         "data":  "24/07/2026",
-                                                                         "acumulado":  true,
-                                                                         "proximoSorteio":  "27/07/2026",
-                                                                         "estimativa":  4100000.0
-                                                                     }
-                                                   },
-                        "arquivos":  {
-                                         "dates_diadesorte.json":  23994,
-                                         "dates_duplasena.json":  58634,
-                                         "dates_lotofacil.json":  73794,
-                                         "dates_lotomania.json":  57974,
-                                         "dates_maismilionaria.json":  7018,
-                                         "dates_megasena.json":  59614,
-                                         "dates_quina.json":  140394,
-                                         "dates_supersete.json":  16556,
-                                         "dates_timemania.json":  47294,
-                                         "diadesorte.json":  66115,
-                                         "duplasena.json":  204997,
-                                         "lotofacil.json":  313474,
-                                         "lotomania.json":  320880,
-                                         "maismilionaria.json":  17541,
-                                         "megasena.json":  117298,
-                                         "premios_diadesorte.json":  108881,
-                                         "premios_duplasena.json":  337641,
-                                         "premios_lotofacil.json":  359110,
-                                         "premios_lotomania.json":  323044,
-                                         "premios_maismilionaria.json":  53984,
-                                         "premios_megasena.json":  197806,
-                                         "premios_quina.json":  530446,
-                                         "premios_supersete.json":  71957,
-                                         "premios_timemania.json":  234245,
-                                         "quina.json":  239444,
-                                         "status.json":  1300,
-                                         "supersete.json":  31465,
-                                         "timemania.json":  145425
-                                     },
-                        "totalArquivos":  28
-                    },
-    "indiceCrivoNaPublicacao":  [
-                                    {
-                                        "modalidade":  "Lotofácil",
-                                        "indice":  0.5277,
-                                        "premioGatilho":  26448767,
-                                        "premioEstimado":  9000000
-                                    },
-                                    {
-                                        "modalidade":  "Quina",
-                                        "indice":  0.3806,
-                                        "premioGatilho":  91838230,
-                                        "premioEstimado":  23000000
-                                    },
-                                    {
-                                        "modalidade":  "Mega-Sena",
-                                        "indice":  0.3038,
-                                        "premioGatilho":  400513703,
-                                        "premioEstimado":  78000000
-                                    },
-                                    {
-                                        "modalidade":  "Super Sete",
-                                        "indice":  0.2906,
-                                        "premioGatilho":  34909204,
-                                        "premioEstimado":  4100000
-                                    },
-                                    {
-                                        "modalidade":  "Dia de Sorte",
-                                        "indice":  0.267,
-                                        "premioGatilho":  8352324,
-                                        "premioEstimado":  500000
-                                    },
-                                    {
-                                        "modalidade":  "Lotomania",
-                                        "indice":  0.2523,
-                                        "premioGatilho":  42403530,
-                                        "premioEstimado":  3600000
-                                    },
-                                    {
-                                        "modalidade":  "+Milionária",
-                                        "indice":  0.2519,
-                                        "premioGatilho":  1608680519,
-                                        "premioEstimado":  77000000
-                                    },
-                                    {
-                                        "modalidade":  "Timemania",
-                                        "indice":  0.2471,
-                                        "premioGatilho":  106782932,
-                                        "premioEstimado":  5500000
-                                    },
-                                    {
-                                        "modalidade":  "Dupla-Sena",
-                                        "indice":  0.2083,
-                                        "premioGatilho":  56902695,
-                                        "premioEstimado":  2000000
-                                    }
-                                ],
-    "artefatos":  {
-                      "painelPublicado":  "repo-github/index.html (arquivo único, dados embutidos)",
-                      "painelOffline":  "painel-loterias-offline.html (cópia idêntica)",
-                      "fonteDoPainel":  "site/index.html + site/data/*.json (não embutidos)",
-                      "designSystem":  [
-                                           "site/tokens.css",
-                                           "site/components.css",
-                                           "site/styleguide.html",
-                                           "DESIGN-SYSTEM.md"
-                                       ],
-                      "documentacao":  [
-                                           "README.md",
-                                           "METODOLOGIA.md",
-                                           "CONTINUAR-AQUI.md"
-                                       ],
-                      "prototipo":  "prototipo-v9.html",
-                      "bundler":  "bundle.py"
-                  },
-    "tarefaSemanal":  {
-                          "id":  "trig_01QG7R8GitNHNrH5Lvazpr6A",
-                          "quando":  "segundas 14:00 UTC = 11h de Brasília",
-                          "faz":  "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
-                      },
-    "mudancasDaVersao":  [
-                             "Tabela de Onde apostar com duas colunas de indice: aposta minima e com +1 dezena",
-                             "As duas colunas mostram o mesmo numero de proposito — verificado ate a sexta casa decimal",
-                             "Super Sete tratado a parte: +1 digito dobra o custo pelo produto das escolhas, indice inalterado",
-                             "Lotomania e Timemania marcadas com travessao: aposta de tamanho fixo"
-                         ],
-    "validacaoDaCalibracao":  {
-                                  "duplaSena_dentroDoMesmoSorteio":  0.8504,
-                                  "duplaSena_teorico":  0.8503,
-                                  "duplaSena_entreOsDoisSorteios":  0.9994,
-                                  "superSete_entreColunas":  1.0,
-                                  "observacao":  "escala calibrada nos dados reencontra a correcao hipergeometrica onde ela existe e 1,0000 onde os sorteios sao independentes"
-                              },
-    "lacunasDeclaradas":  [
-                              "+Milionaria fora do backtest do metodo (ordem das faixas nao verificada)",
-                              "criterios anti-popularidade do Super Sete sao analogia, nao medicao — a Caixa nao publica a distribuicao das apostas",
-                              "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)"
-                          ],
-    "varreduraHistorica":  {
-                               "sorteiosMedidos":  4635,
-                               "cruzaram1":  5,
-                               "cruzamentos":  [
-                                                   {
-                                                       "m":  "Lotomania",
-                                                       "c":  1741,
-                                                       "d":  "03/03/2017",
-                                                       "i":  1.355,
-                                                       "tipo":  "sorteio comum"
-                                                   },
-                                                   {
-                                                       "m":  "Mega-Sena",
-                                                       "c":  1772,
-                                                       "d":  "22/12/2015",
-                                                       "i":  1.155,
-                                                       "tipo":  "Mega da Virada"
-                                                   },
-                                                   {
-                                                       "m":  "Quina",
-                                                       "c":  4706,
-                                                       "d":  "23/06/2018",
-                                                       "i":  1.022,
-                                                       "tipo":  "Quina de Sao Joao"
-                                                   },
-                                                   {
-                                                       "m":  "Timemania",
-                                                       "c":  2336,
-                                                       "d":  "27/12/2025",
-                                                       "i":  1.014,
-                                                       "tipo":  "Timemania de Natal"
-                                                   },
-                                                   {
-                                                       "m":  "Quina",
-                                                       "c":  4114,
-                                                       "d":  "24/06/2016",
-                                                       "i":  1.012,
-                                                       "tipo":  "Quina de Sao Joao"
-                                                   }
-                                               ],
-                               "validacaoImposto":  {
-                                                        "megasena":  43.56,
-                                                        "quina":  43.46,
-                                                        "duplasena":  43.42,
-                                                        "lotofacil":  43.16,
-                                                        "lotomania":  43.16,
-                                                        "diadesorte":  42.92,
-                                                        "supersete":  42.69,
-                                                        "alvoLegal":  43.35
-                                                    }
-                           },
-    "repeticoesDeSorteio":  {
-                                "megasena":  {
-                                                 "obs":  0,
-                                                 "esp":  0.09
-                                             },
-                                "lotofacil":  {
-                                                  "obs":  0,
-                                                  "esp":  2.14
-                                              },
-                                "quina":  {
-                                              "obs":  3,
-                                              "esp":  1.04
-                                          },
-                                "duplasena":  {
-                                                  "obs":  2,
-                                                  "esp":  1.12
-                                              },
-                                "diadesorte":  {
-                                                   "obs":  0,
-                                                   "esp":  0.3
-                                               },
-                                "nota":  "todas conferidas na API oficial da Caixa"
-                            },
-    "efeitosMedidos":  {
-                           "datas_megasena":  1.96,
-                           "datas_quina":  1.45,
-                           "quentes_megasena_controlado":  1.07,
-                           "quentes_lotofacil_isolado":  1.12,
-                           "nota":  "ganhadores da faixa baixa por real arrecadado; Lotofacil isola o efeito das quentes porque todas as dezenas sao \u003c= 31"
-                       }
+  "versao": "17.0",
+  "nome": "Painel Loterias",
+  "geradoEm": "2026-07-27T23:30:00Z",
+  "geradoEmBrasilia": "2026-07-27 20:30",
+  "commitDoConteudo": "preenchido pelo passo seguinte",
+  "publicadoEm": "https://helioms26.github.io/painel-loterias/",
+  "figma": {
+    "arquivo": "https://www.figma.com/design/A9hm8FcF7ctUhve0KR2aM7",
+    "paginas": [
+      "Cor",
+      "Tipografia e espaço",
+      "Painel v9 · telas"
+    ],
+    "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
+  },
+  "baseDeDados": {
+    "fechadaEm": "26/07/2026",
+    "concursosPorModalidade": {
+      "timemania": {
+        "ultimoConcurso": 2420,
+        "data": "26/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "28/07/2026",
+        "estimativa": 5500000.0
+      },
+      "diadesorte": {
+        "ultimoConcurso": 1255,
+        "data": "26/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "27/07/2026",
+        "estimativa": 500000.0
+      },
+      "quina": {
+        "ultimoConcurso": 7075,
+        "data": "26/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "27/07/2026",
+        "estimativa": 23000000.0
+      },
+      "duplasena": {
+        "ultimoConcurso": 2987,
+        "data": "24/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "27/07/2026",
+        "estimativa": 2000000.0
+      },
+      "lotofacil": {
+        "ultimoConcurso": 3745,
+        "data": "26/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "27/07/2026",
+        "estimativa": 9000000.0
+      },
+      "maismilionaria": {
+        "ultimoConcurso": 375,
+        "data": "26/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "29/07/2026",
+        "estimativa": 77000000.0
+      },
+      "lotomania": {
+        "ultimoConcurso": 2954,
+        "data": "24/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "27/07/2026",
+        "estimativa": 3600000.0
+      },
+      "megasena": {
+        "ultimoConcurso": 3036,
+        "data": "26/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "28/07/2026",
+        "estimativa": 78000000.0
+      },
+      "supersete": {
+        "ultimoConcurso": 877,
+        "data": "24/07/2026",
+        "acumulado": true,
+        "proximoSorteio": "27/07/2026",
+        "estimativa": 4100000.0
+      }
+    },
+    "arquivos": {
+      "dates_diadesorte.json": 23994,
+      "dates_duplasena.json": 58634,
+      "dates_lotofacil.json": 73794,
+      "dates_lotomania.json": 57974,
+      "dates_maismilionaria.json": 7018,
+      "dates_megasena.json": 59614,
+      "dates_quina.json": 140394,
+      "dates_supersete.json": 16556,
+      "dates_timemania.json": 47294,
+      "diadesorte.json": 66115,
+      "duplasena.json": 204997,
+      "lotofacil.json": 313474,
+      "lotomania.json": 320880,
+      "maismilionaria.json": 17541,
+      "megasena.json": 117298,
+      "premios_diadesorte.json": 108881,
+      "premios_duplasena.json": 337641,
+      "premios_lotofacil.json": 359110,
+      "premios_lotomania.json": 323044,
+      "premios_maismilionaria.json": 53984,
+      "premios_megasena.json": 197806,
+      "premios_quina.json": 530446,
+      "premios_supersete.json": 71957,
+      "premios_timemania.json": 234245,
+      "quina.json": 239444,
+      "status.json": 1300,
+      "supersete.json": 31465,
+      "timemania.json": 145425
+    },
+    "totalArquivos": 28
+  },
+  "indiceCrivoNaPublicacao": [
+    {
+      "modalidade": "Lotofácil",
+      "indice": 0.5277,
+      "premioGatilho": 26448767,
+      "premioEstimado": 9000000
+    },
+    {
+      "modalidade": "Quina",
+      "indice": 0.3806,
+      "premioGatilho": 91838230,
+      "premioEstimado": 23000000
+    },
+    {
+      "modalidade": "Mega-Sena",
+      "indice": 0.3038,
+      "premioGatilho": 400513703,
+      "premioEstimado": 78000000
+    },
+    {
+      "modalidade": "Super Sete",
+      "indice": 0.2906,
+      "premioGatilho": 34909204,
+      "premioEstimado": 4100000
+    },
+    {
+      "modalidade": "Dia de Sorte",
+      "indice": 0.267,
+      "premioGatilho": 8352324,
+      "premioEstimado": 500000
+    },
+    {
+      "modalidade": "Lotomania",
+      "indice": 0.2523,
+      "premioGatilho": 42403530,
+      "premioEstimado": 3600000
+    },
+    {
+      "modalidade": "+Milionária",
+      "indice": 0.2519,
+      "premioGatilho": 1608680519,
+      "premioEstimado": 77000000
+    },
+    {
+      "modalidade": "Timemania",
+      "indice": 0.2471,
+      "premioGatilho": 106782932,
+      "premioEstimado": 5500000
+    },
+    {
+      "modalidade": "Dupla-Sena",
+      "indice": 0.2083,
+      "premioGatilho": 56902695,
+      "premioEstimado": 2000000
+    }
+  ],
+  "artefatos": {
+    "painelPublicado": "repo-github/index.html (arquivo único, dados embutidos)",
+    "painelOffline": "painel-loterias-offline.html (cópia idêntica)",
+    "fonteDoPainel": "site/index.html + site/data/*.json (não embutidos)",
+    "designSystem": [
+      "site/tokens.css",
+      "site/components.css",
+      "site/styleguide.html",
+      "DESIGN-SYSTEM.md"
+    ],
+    "documentacao": [
+      "README.md",
+      "METODOLOGIA.md",
+      "CONTINUAR-AQUI.md"
+    ],
+    "prototipo": "prototipo-v9.html",
+    "bundler": "bundle.py"
+  },
+  "tarefaSemanal": {
+    "id": "trig_01QG7R8GitNHNrH5Lvazpr6A",
+    "quando": "segundas 14:00 UTC = 11h de Brasília",
+    "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
+  },
+  "mudancasDaVersao": [
+    "Matriz de decisao abrindo a aba Onde apostar: 4 indicadores medidos + indice final ponderado",
+    "Pesos escolhidos pelo usuario entre 4 perfis e visiveis na tela — trocar perfil troca o 1o colocado",
+    "Indice decomposto em troco das faixas menores e premio principal: Lotofacil cai de 1o para 3o no eixo do premio",
+    "Resposta sobre +1 dezena: igual em dois eixos, pior no terceiro (frequencia)",
+    "Tabelas ordenaveis por clique no cabecalho"
+  ],
+  "validacaoDaCalibracao": {
+    "duplaSena_dentroDoMesmoSorteio": 0.8504,
+    "duplaSena_teorico": 0.8503,
+    "duplaSena_entreOsDoisSorteios": 0.9994,
+    "superSete_entreColunas": 1.0,
+    "observacao": "escala calibrada nos dados reencontra a correcao hipergeometrica onde ela existe e 1,0000 onde os sorteios sao independentes"
+  },
+  "lacunasDeclaradas": [
+    "+Milionaria fora do backtest do metodo (ordem das faixas nao verificada)",
+    "criterios anti-popularidade do Super Sete sao analogia, nao medicao — a Caixa nao publica a distribuicao das apostas",
+    "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)"
+  ],
+  "varreduraHistorica": {
+    "sorteiosMedidos": 4635,
+    "cruzaram1": 5,
+    "cruzamentos": [
+      {
+        "m": "Lotomania",
+        "c": 1741,
+        "d": "03/03/2017",
+        "i": 1.355,
+        "tipo": "sorteio comum"
+      },
+      {
+        "m": "Mega-Sena",
+        "c": 1772,
+        "d": "22/12/2015",
+        "i": 1.155,
+        "tipo": "Mega da Virada"
+      },
+      {
+        "m": "Quina",
+        "c": 4706,
+        "d": "23/06/2018",
+        "i": 1.022,
+        "tipo": "Quina de Sao Joao"
+      },
+      {
+        "m": "Timemania",
+        "c": 2336,
+        "d": "27/12/2025",
+        "i": 1.014,
+        "tipo": "Timemania de Natal"
+      },
+      {
+        "m": "Quina",
+        "c": 4114,
+        "d": "24/06/2016",
+        "i": 1.012,
+        "tipo": "Quina de Sao Joao"
+      }
+    ],
+    "validacaoImposto": {
+      "megasena": 43.56,
+      "quina": 43.46,
+      "duplasena": 43.42,
+      "lotofacil": 43.16,
+      "lotomania": 43.16,
+      "diadesorte": 42.92,
+      "supersete": 42.69,
+      "alvoLegal": 43.35
+    }
+  },
+  "repeticoesDeSorteio": {
+    "megasena": {
+      "obs": 0,
+      "esp": 0.09
+    },
+    "lotofacil": {
+      "obs": 0,
+      "esp": 2.14
+    },
+    "quina": {
+      "obs": 3,
+      "esp": 1.04
+    },
+    "duplasena": {
+      "obs": 2,
+      "esp": 1.12
+    },
+    "diadesorte": {
+      "obs": 0,
+      "esp": 0.3
+    },
+    "nota": "todas conferidas na API oficial da Caixa"
+  },
+  "efeitosMedidos": {
+    "datas_megasena": 1.96,
+    "datas_quina": 1.45,
+    "quentes_megasena_controlado": 1.07,
+    "quentes_lotofacil_isolado": 1.12,
+    "nota": "ganhadores da faixa baixa por real arrecadado; Lotofacil isola o efeito das quentes porque todas as dezenas sao <= 31"
+  },
+  "curvaDeVolume": {
+    "megasena": {
+      "0": 0.67,
+      "1": 0.82,
+      "2a3": 0.95,
+      "4a6": 1.22,
+      "7+": 1.93
+    },
+    "quina": {
+      "0": 0.71,
+      "7+": 1.53
+    },
+    "lotofacil": {
+      "0": 0.91,
+      "2a3": 1.94
+    },
+    "diadesorte": {
+      "0": 0.78,
+      "7+": 1.86
+    },
+    "nota": "multiplicador do volume de apostas relativo a mediana, por sequencia de concursos acumulados"
+  },
+  "tresEixos": {
+    "lotofacil": {
+      "total": 0.487,
+      "troco": 0.284,
+      "premio": 0.203,
+      "umEm": 9
+    },
+    "quina": {
+      "total": 0.458,
+      "troco": 0.174,
+      "premio": 0.284,
+      "umEm": 34
+    },
+    "megasena": {
+      "total": 0.36,
+      "troco": 0.135,
+      "premio": 0.224,
+      "umEm": 2298
+    }
+  }
 }

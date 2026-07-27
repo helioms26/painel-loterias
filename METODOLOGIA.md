@@ -592,3 +592,124 @@ Sete vezes o preço na Mega-Sena, o mesmo índice. A verificação foi feita rec
 Lotomania e Timemania aparecem com travessão: nelas a aposta tem tamanho fixo, 50 e 10 dezenas, e não há o que desdobrar. O Super Sete tem tratamento próprio — "uma a mais" ali significa marcar dois dígitos em uma das sete colunas, o que dobra o custo pelo produto das escolhas, e o índice também não muda.
 
 Esta seção e a 18 dizem a mesma coisa por dois caminhos diferentes, o que é proposital: uma pela aritmética do custo por unidade de chance, outra pela tabela lado a lado. **Não existe desconto por volume na sorte.**
+
+## 21. Revisitando a metodologia: a falha que o índice escondia (v16)
+
+O Hélio perguntou se não devíamos revisitar a metodologia. Fui auditar, e encontrei um erro estrutural — não de código, de modelagem — que estava lá desde a primeira versão do índice.
+
+### A falha
+
+O índice CRIVO usava o **prêmio de agora** com o **volume de apostas típico**. A mediana da arrecadação dos últimos 60 concursos entrava no cálculo de λ, e λ define o fator de partilha.
+
+O problema é que o público responde ao prêmio. Quando a acumulação cresce, mais gente aposta, λ sobe, o fator de partilha desaba e o prêmio se divide entre mais gente. Ou seja: **o índice era mais otimista exatamente na situação que ele existe para avaliar.**
+
+Pior: o "prêmio de gatilho" é, por definição, uma acumulação enorme. Ele era calculado segurando λ fixo, o que o tornava sistematicamente baixo demais.
+
+Isso também explicava uma inconsistência que eu não tinha percebido: a varredura histórica da seção 16 usava o número de apostas **real** de cada sorteio, estimado pela faixa mais baixa. O índice ao vivo usava o volume típico. Os dois nunca falaram a mesma língua.
+
+### Medindo, e evitando a armadilha da causalidade reversa
+
+O primeiro instinto é regredir o volume contra o prêmio. Fiz isso, e o ajuste log-log dá expoentes de 0,18 a 0,44 — o volume cresce mais ou menos com a raiz quadrada do prêmio, com R² entre 0,23 e 0,56.
+
+Mas esse número está inflado, e por um motivo que invalidaria a correção se eu ignorasse: **o prêmio cresce porque as pessoas apostam.** Parte da arrecadação de cada concurso alimenta o bolo. Correlação mecânica, não resposta do público.
+
+O instrumento limpo é a **sequência de concursos acumulados** até o sorteio anterior. Ela é determinada inteiramente antes do sorteio atual, então não pode ser causada pelo volume de agora. Se o volume sobe com a sequência, a causalidade prêmio → público existe de fato.
+
+Sobe, e de forma monótona:
+
+| Concursos acumulados | Mega-Sena | Quina | Dia de Sorte |
+|---|---|---|---|
+| 0 (saiu no anterior) | 0,67× | 0,71× | 0,78× |
+| 1 | 0,82× | 0,80× | 0,86× |
+| 2 a 3 | 0,95× | 0,94× | 1,02× |
+| 4 a 6 | 1,22× | 1,16× | 1,37× |
+| 7 ou mais | 1,93× | 1,53× | 1,86× |
+
+Valores relativos à mediana de cada modalidade. Na Lotofácil, onde a acumulação é rara, o salto é ainda mais rápido: 0,91× com prêmio saindo todo concurso, 1,94× com duas ou três acumulações.
+
+### A correção
+
+λ passou a ser multiplicado pela curva medida, indexada pela sequência de acumulação corrente. A curva é recalibrada nos próprios dados a cada carga do painel, então melhora sozinha conforme a base cresce.
+
+O efeito nos números de hoje:
+
+| Modalidade | Acumulados | Público | Índice antes | Índice agora |
+|---|---|---|---|---|
+| Lotofácil | 2 | 1,96× | 0,632 | **0,487** |
+| Mega-Sena | 7 | 1,93× | 0,376 | **0,360** |
+| Quina | 11 | 1,53× | 0,469 | **0,458** |
+| Dupla-Sena | 9 | 1,24× | 0,221 | 0,220 |
+
+A Lotofácil perde 22,9% do índice e o percentil histórico dela cai de 99,8 para 98,9. Continua na frente, mas a distância para a Quina encolheu de 0,163 para 0,029 — de folga confortável para empate técnico.
+
+O prêmio de gatilho da Lotofácil subiu de R$ 17,6 milhões para R$ 31,7 milhões. Faz sentido: para o índice bater 1,00 seria preciso um prêmio que, ele próprio, atrairia uma multidão maior.
+
+### Por que a Lotofácil é a mais castigada
+
+Porque o λ dela já é alto. Com λ ≈ 2,8, o fator de partilha está no regime em que se comporta como 1/λ, então qualquer aumento de público bate proporcionalmente. Nas modalidades com λ bem abaixo de 1 — Mega-Sena, Quina, Lotomania — o fator de partilha está perto de 1 e mal se move.
+
+É a tese do método aparecendo mais uma vez, agora contra nós mesmos: **o que decide não é o tamanho do prêmio, é quanta gente está disputando ele com você** — inclusive quando essa gente aparece *por causa* do prêmio.
+
+### O que continua de pé, e o que continua frágil
+
+De pé: o efeito das datas (1,96× medido), o efeito das quentes (1,12× medido na Lotofácil isolada), o fator de partilha como eixo central, o percentil histórico como veredito operacional, e a disciplina de separar medido de raciocínio.
+
+Frágil, e declarado: o R² da elasticidade é baixo, entre 0,23 e 0,56 — a relação é ruidosa e a curva é uma mediana por faixa, não um modelo fino. A +Milionária não tem base suficiente para calibrar e fica com multiplicador 1. E o backtest do próprio método continua indistinguível do acaso na maioria das modalidades, o que é o resultado previsto e permanece o dado mais importante do projeto: **o CRIVO escolhe onde e quando gastar, não escolhe números que ganham.**
+
+## 22. Matriz de decisão e o problema do número único (v17)
+
+Três pedidos que se resolvem juntos: saber se apostar o mínimo ou uma dezena a mais faz diferença, ter indicadores separados em vez de um só, e ter uma matriz consolidada abrindo a aba Onde apostar.
+
+### A resposta sobre a dezena a mais
+
+Marcar uma dezena a mais **não melhora nenhum dos três eixos**, e piora um.
+
+O índice não se move, porque custo e retorno esperado sobem pelo mesmo fator. A chance do prêmio principal **por real gasto** também não se move, pelo mesmo motivo. E a frequência de retorno piora: na Mega-Sena, um desdobramento de 7 dezenas leva algum prêmio 1 vez em 1.015, enquanto os mesmos R$ 42 em sete apostas mínimas separadas levam 1 em 329.
+
+Para o mesmo dinheiro, desdobrar é **igual em dois eixos e pior no terceiro**. A vantagem real é de outra natureza: preencher um volante em vez de sete, e receber em várias faixas de uma vez quando acerta.
+
+### Por que um número único escondia a decisão
+
+O índice CRIVO soma duas coisas de naturezas diferentes: o troco das faixas pequenas, que é quase devolução do próprio dinheiro, e o prêmio principal, que é o motivo pelo qual quase todo mundo joga. Separando os dois, o ranking muda:
+
+| Modalidade | Índice total | Troco | Prêmio grande | % que é prêmio |
+|---|---|---|---|---|
+| Lotofácil | 0,487 | 0,284 | 0,203 | 42% |
+| Quina | 0,458 | 0,174 | **0,284** | 62% |
+| Mega-Sena | 0,360 | 0,135 | 0,224 | 62% |
+
+A Lotofácil lidera o índice total e cai para **terceira** no eixo do prêmio grande. Ela devolve muito nas faixas pequenas, o que é excelente para quem quer jogar muitas vezes com o mesmo dinheiro e irrelevante para quem quer o prêmio. A Mega-Sena é o contrário: 62% do índice dela é prêmio principal, com apenas 1 chance em 2.298 de levar qualquer coisa.
+
+Nenhuma das duas é melhor. São apostas em coisas diferentes.
+
+### A matriz
+
+Abrindo a aba Onde apostar, uma tabela com as nove modalidades e quatro indicadores, cada um normalizado de 0 a 100 entre as modalidades da rodada:
+
+- **Negócio** — retorno esperado por real
+- **Prêmio grande** — parcela desse retorno que vem da faixa máxima
+- **Frequência** — probabilidade de a aposta mínima levar qualquer prêmio
+- **Raridade** — percentil do índice de hoje na história daquela modalidade
+
+E um **índice final**, que é a média ponderada desses quatro.
+
+### O aviso que acompanha o índice final
+
+Os quatro indicadores são medidos. O **peso** de cada um é preferência, não medição. Por isso o painel oferece quatro perfis — prêmio grande, ver algo voltar, equilibrado, só o retorno por real — e mostra os pesos na tela.
+
+Trocar de perfil troca o primeiro colocado, e isso é o comportamento correto:
+
+| Perfil | 1º | 2º | 3º |
+|---|---|---|---|
+| Equilibrado | Lotofácil 90,0 | Quina 79,9 | Mega-Sena 50,5 |
+| Quero o prêmio grande | **Quina 95,5** | Lotofácil 80,0 | Mega-Sena 67,8 |
+| Quero ver algo voltar | Lotofácil 96,7 | Quina 62,4 | Super Sete 36,8 |
+| Só o retorno por real | Lotofácil 100,0 | Quina 89,0 | Mega-Sena 52,3 |
+
+**Um número final com pesos escondidos seria opinião disfarçada de resultado** — exatamente o que este painel existe para desmontar em quem vende método. Deixar os pesos visíveis e ajustáveis é o que separa uma ferramenta de decisão de um oráculo.
+
+E nenhum perfil torna a aposta favorável: mesmo o primeiro colocado tem retorno esperado negativo.
+
+### Tabelas ordenáveis
+
+Toda tabela grande do painel passou a ordenar por clique no cabeçalho — um clique crescente, dois decrescente, três devolve à ordem original, que costuma ser o ranking escolhido de propósito. O leitor de valores entende "R$", "1 em", "%" e "×", além da pontuação brasileira.

@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **15.0**, publicada em 27/07/2026.
+Última versão: **17.0**, publicada em 27/07/2026.
 
 ---
 
@@ -155,6 +155,30 @@ Se for acrescentar bandeira nova, mantenha a disciplina: ou tem número medido a
 A tabela de Onde apostar tem duas colunas de índice — mínima e +1 dezena — mostrando o mesmo número. Não é bug: `comMaisUmaDezena` existe para tornar a igualdade visível, com o custo embaixo de cada valor. Sete vezes o preço na Mega-Sena, o mesmo 0,376.
 
 Se alguém "consertar" essa duplicação achando que é erro, terá removido justamente o que a coluna prova.
+
+## O que a v16 mudou — revisão de metodologia, leia antes de mexer no índice
+
+Auditoria encontrou uma falha estrutural no índice CRIVO: ele usava o **prêmio de agora** com o **volume de apostas típico**. Como o público responde ao prêmio, o índice era otimista exatamente nas acumulações grandes que ele existe para avaliar. O prêmio de gatilho sofria ainda mais, já que é por definição uma acumulação enorme.
+
+A correção usa a **sequência de concursos acumulados** como preditor do público — não o prêmio. Isso é deliberado: a sequência é determinada antes do sorteio, então não pode ser causada pelo volume de agora. Regredir contra o prêmio dá efeito maior, mas parte é mecânica, porque o prêmio cresce *porque* as pessoas apostam. Se for reescrever `multiplicadorVolume`, não troque o preditor sem refazer esse raciocínio.
+
+A curva se recalibra nos dados a cada carga (`curvaVolume`), então melhora sozinha conforme a base cresce.
+
+Efeito: Lotofácil caiu de 0,632 para 0,487 (−22,9%) e o gatilho dela subiu de R$ 17,6 mi para R$ 31,7 mi. A distância para a Quina encolheu de 0,163 para 0,029.
+
+Benefício lateral que vale saber: o índice ao vivo e a varredura histórica agora usam a mesma noção de volume. Antes a varredura usava o número real de apostas de cada sorteio e o índice ao vivo usava a mediana — nunca tinham falado a mesma língua.
+
+Fragilidade declarada: o R² da elasticidade fica entre 0,23 e 0,56. A relação é ruidosa e a curva é mediana por faixa, não modelo fino. A +Milionária não tem base para calibrar e fica com multiplicador 1.
+
+## O que a v17 mudou
+
+A aba Onde apostar abre com a **matriz de decisão** (`matrizDecisao`): nove modalidades, quatro indicadores normalizados de 0 a 100 e um índice final ponderado.
+
+A regra que não pode ser quebrada nessa tela: **os quatro indicadores são medidos, os pesos são preferência.** Por isso os perfis são escolhidos pelo usuário e os pesos aparecem escritos. Se alguém "simplificar" escondendo os pesos, terá transformado a ferramenta em oráculo — que é o que o painel existe para desmontar em quem vende método.
+
+O índice também foi decomposto em troco das faixas menores e prêmio principal, e a decomposição muda o ranking: a Lotofácil lidera o total e cai para terceira no eixo do prêmio grande, atrás da Quina. Não existe "melhor" aqui — existe o que a pessoa quer.
+
+Toda tabela grande virou ordenável por clique (`tabelaOrdenavel`), com terceiro clique voltando à ordem original.
 
 ---
 

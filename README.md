@@ -17,36 +17,41 @@ Dashboard estatístico das 9 loterias da Caixa, com base oficial completa e meto
 ```
 13 - loteria/
 ├── painel-loterias-offline.html   ← arquivo único, abre com dois cliques
+├── PAINEL LOTERIAS (abrir online).url
 ├── METODOLOGIA.md                 ← método CRIVO, testes e resultados
+├── DESIGN-SYSTEM.md               ← tokens, componentes, princípios visuais
+├── LEIA-ME.txt                    ← passo a passo de atualização
 ├── README.md
+├── planilhas_caixa/               ← as 9 planilhas oficiais baixadas da Caixa
 └── dashboard/
     ├── index.html                 ← versão para hospedar
-    ├── update_base.ps1            ← atualiza os resultados de todos os jogos
-    ├── fetch_dates.ps1            ← coleta as datas dos concursos
-    ├── fetch_premios.ps1          ← coleta ganhadores, rateio e arrecadação
-    ├── verify.ps1                 ← reconfere a base contra a API oficial
-    └── data/
-        ├── megasena.json ... maismilionaria.json   ← dezenas por concurso
-        ├── dates_<jogo>.json                       ← data de cada concurso
-        ├── premios_<jogo>.json                     ← ganhadores, rateio, arrecadação
-        └── status.json                             ← situação atual de cada jogo
+    ├── tokens.css                 ← camada de tokens do design system
+    ├── components.css             ← camada de componentes
+    ├── styleguide.html            ← style guide navegável
+    ├── atualizar_tudo.ps1         ← coleta + reparo + verificação + backup
+    ├── data/                      ← base de dados
+    └── data_backup/               ← backup único, refeito só após verificação
 ```
 
 ## Base de dados
 
-Histórico oficial completo, coletado da API `servicebus2.caixa.gov.br/portaldeloterias`.
+Histórico oficial completo. As dezenas e datas vêm da API `servicebus2.caixa.gov.br/portaldeloterias`; os prêmios, ganhadores e arrecadação vêm das **nove planilhas oficiais** baixadas de `loterias.caixa.gov.br`, que cobrem todas as faixas desde o concurso 1.
 
 | Jogo | Concursos | Último |
 |---|---|---|
-| Mega-Sena | 3.035 | 23/07/2026 |
-| Lotofácil | 3.744 | 24/07/2026 |
-| Quina | 7.074 | 24/07/2026 |
+| Mega-Sena | 3.036 | 26/07/2026 |
+| Lotofácil | 3.745 | 26/07/2026 |
+| Quina | 7.075 | 26/07/2026 |
 | Lotomania | 2.954 | 24/07/2026 |
 | Dupla-Sena | 2.987 | 24/07/2026 |
-| Timemania | 2.419 | 23/07/2026 |
-| Dia de Sorte | 1.254 | 24/07/2026 |
+| Timemania | 2.420 | 26/07/2026 |
+| Dia de Sorte | 1.255 | 26/07/2026 |
 | Super Sete | 877 | 24/07/2026 |
-| +Milionária | 374 | 22/07/2026 |
+| +Milionária | 375 | 26/07/2026 |
+
+**Preços oficiais conferidos em 26/07/2026:** Mega-Sena R$ 6,00 · Lotofácil R$ 3,50 · Quina R$ 3,00 · Lotomania R$ 3,00 · Dupla-Sena R$ 3,00 · Timemania R$ 3,50 · Dia de Sorte R$ 2,50 · Super Sete R$ 3,00 · +Milionária R$ 6,00. Duas correções vieram daí: Super Sete estava R$ 2,50 e Lotomania R$ 3,50 na configuração antiga.
+
+**Horários oficiais** (cronograma da Caixa, agosto/2026): segunda a sexta às 21h, domingo às 11h, sem sorteio aos sábados. Apostas encerram uma hora antes. Como o campo `dataProximoConcurso` da API fica desatualizado, o painel deduz o calendário real pelos dias da semana dos concursos recentes.
 
 **Integridade verificada.** 200 concursos da Lotofácil sorteados ao acaso foram reconferidos contra a API oficial: dos 118 que responderam, 118 conferiram exatamente. Uma varredura completa dos 25.718 concursos encontrou **um erro real** — o concurso 2373 da Dupla-Sena vinha do espelho comunitário com a dezena 34 duplicada e a 43 faltando. Foi corrigido pela API oficial. Hoje a base tem zero buracos, zero dezenas duplicadas, zero fora de faixa e zero concursos sem data.
 
@@ -72,18 +77,26 @@ Uma tarefa agendada roda a rotina toda segunda-feira às 11h e envia o relatóri
 
 ## O que o painel entrega
 
-- **Visão geral** — último concurso, situação de acumulação, prêmio estimado, e a leitura de oportunidade (prêmio ÷ ponto de equilíbrio).
+- **Visão geral** — último concurso, próximo sorteio com data, horário e contagem regressiva para encerrar as apostas, situação de acumulação, leitura de oportunidade e a tabela oficial de custo e probabilidade por quantidade de dezenas.
+- **Onde apostar** (primeiro item da linha de modalidades) — compara as nove entre si pelo índice CRIVO, com o veredito apostar / momento bom / melhor opção / só se for jogar / não apostar, e o prêmio de gatilho de cada uma.
+- **Minhas apostas** — registro das apostas reais. Cada uma ganha uma sombra aleatória do mesmo tamanho, e o painel confere as duas contra o resultado oficial. É a regra O do método em funcionamento.
 - **Volante** — mapa de calor das dezenas por frequência ou atraso.
 - **Mais & menos** — rankings com a data da última aparição, seletor de Top 10/20/30/todas, gráfico de dispersão (quando saiu × quantas vezes saiu, com o tamanho da bolha pela frequência recente) e maiores atrasos.
 - **Conjuntos 2–6** — quais combinações mais e menos saíram juntas, e quantas nunca saíram.
 - **Meu jogo** — escolha as dezenas e veja, ao vivo: histórico de cada uma, matriz de co-ocorrência dos seus números, índice de exclusividade, sugestões de troca de 1 a 3 dezenas, comparação de custo entre "1 jogo de 7" e "3 de 6", e análise dos seus números favoritos.
-- **Gerador** — jogos anti-popularidade.
+- **Gerador** — dois modos: por orçamento (monta o plano de compra que cabe no valor) ou por composição (você escolhe o tamanho do jogo). Cada jogo gerado vem com a explicação do porquê daquelas dezenas.
 - **Receitas por combinações** (dentro de Meu jogo) — monta o jogo com blocos: 3 duplas que mais saíram, 2 trincas que menos saíram, e assim por diante. Para "menos saíram", busca blocos que **nunca** saíram juntos, não os que saíram uma vez.
 - **Nosso método** — o método CRIVO e a tabela comparativa com todos os modelos existentes.
-- **Evidências & testes** — os backtests walk-forward, o qui-quadrado com correção, o teste de estabilidade temporal e a prova brasileira da seleção consciente.
+- **Evidências & testes** — os backtests walk-forward, o qui-quadrado com correção, o teste de estabilidade temporal, a prova brasileira da seleção consciente e o backtest do próprio método contra uma carteira aleatória de controle, com retorno financeiro real.
 - **Evolução do método** — os gatilhos objetivos que dizem quando recalibrar, aperfeiçoar ou abandonar a metodologia, com base em revisão de literatura de 2024 a 2026.
 - **Financeiro** — carga da planilha oficial da Caixa para análise de arrecadação e rateios.
 - **Risco** — o que a matemática garante e as regras práticas.
+
+## Design system
+
+`dashboard/tokens.css` e `dashboard/components.css`, com `dashboard/styleguide.html` navegável nos dois temas. Três camadas — primitivas, semântica e componentes — com uma regra que sustenta tudo: nenhum componente escreve um hex ou um pixel.
+
+O sistema também está no Figma: **[Painel Loterias — Design System](https://www.figma.com/design/A9hm8FcF7ctUhve0KR2aM7)**, com 54 variáveis de cor (coleções Claro e Escuro), 12 de espaçamento, 6 de raio, 9 estilos de texto e 3 de elevação. Cada variável carrega o nome da variável CSS correspondente no code syntax, então a ponte entre Figma e código é direta.
 
 ## O achado principal
 
@@ -94,3 +107,7 @@ Detalhes completos em `METODOLOGIA.md`.
 ## Aviso
 
 Loteria não é investimento. O retorno esperado é negativo por lei (43,79% da arrecadação volta em prêmios, dos quais ainda se retém 30% de IR). Este projeto serve para decidir melhor um gasto de entretenimento e para não cair em quem vende método.
+
+## Novidades da v9
+
+Seleção única e compartilhada entre todas as abas, com desfazer e refazer; régua do gatilho abrindo a aba Onde apostar; painel de co-ocorrência que mostra quem sai junto com quem — e, principalmente, uma **correção no nosso próprio cálculo**: o esperado sob independência ignorava que o sorteio é sem reposição, o que empurrava todos os pares para o lado negativo. Corrigido por calibração empírica, o resultado é que nenhuma dupla de dezenas tem co-ocorrência anômala em nenhuma das nove modalidades. Detalhes na seção 14 de `METODOLOGIA.md`.

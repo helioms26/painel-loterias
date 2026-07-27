@@ -454,7 +454,35 @@ select:hover, input:hover { border-color: var(--border-default); }
               box-shadow var(--motion-fast) var(--ease-standard);
 }
 .cell small { font-weight: var(--weight-regular); font-size: var(--text-2xs); opacity: .85; }
-.cell[data-interactive]:hover { transform: scale(1.08); box-shadow: var(--elev-2); z-index: var(--z-base); }
+.cell[data-interactive]:hover { transform: scale(1.14); box-shadow: var(--elev-2); z-index: 2;
+  transition: transform var(--motion-fast) var(--ease-spring), box-shadow var(--motion-fast) var(--ease-standard); }
+.cell[data-interactive]:active { transform: scale(1.02); }
+.cell.sel { box-shadow: 0 0 0 2px var(--surface-raised), 0 0 0 4px var(--accent); z-index: 3; }
+.cell.apagada { opacity: .25; }
+
+/* ---- barra de seleção: a espinha do filtro cruzado ---- */
+.selbar { display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap;
+  padding:var(--space-4) var(--space-6); background:var(--surface-sunken);
+  border-bottom:1px solid var(--border-subtle); min-height:46px; }
+.selbar .eyebrow { font-size:var(--text-2xs); font-weight:var(--weight-semi);
+  letter-spacing:var(--track-wide); text-transform:uppercase; color:var(--ink-muted); white-space:nowrap; }
+.selbar .nada { font-size:var(--text-sm); color:var(--ink-muted); }
+.selbar .hist { margin-left:auto; display:flex; gap:var(--space-2); }
+.selchip { display:inline-flex; align-items:center; gap:var(--space-3); padding:4px 11px;
+  border-radius:var(--radius-full); border:1px solid var(--border-subtle); background:var(--surface-raised);
+  color:var(--ink-secondary); font-size:var(--text-xs); font-weight:var(--weight-medium);
+  cursor:pointer; font-family:inherit; white-space:nowrap;
+  animation:selEntra var(--motion-base) var(--ease-spring);
+  transition:background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard),
+             transform var(--motion-instant) var(--ease-standard); }
+.selchip:hover { background:var(--surface-hover); border-color:var(--border-default); }
+.selchip:active { transform:translateY(1px); }
+.selchip.forte { background:var(--accent); border-color:var(--accent); color:var(--ink-inverse); }
+.selchip.fantasma { background:transparent; border-color:transparent; color:var(--ink-muted); }
+.selchip.fantasma:hover { background:var(--surface-hover); }
+.selchip:disabled { opacity:.35; cursor:default; }
+@keyframes selEntra { from { transform:scale(.82); opacity:0 } to { transform:scale(1); opacity:1 } }
+@media (prefers-reduced-motion: reduce) { .selchip { animation:none } }
 
 /* ---------------------------------------------------------------------------
    TABELA
@@ -530,7 +558,21 @@ main   { padding: var(--space-6) var(--space-7) var(--space-12); max-width: 1180
 .controls label { color: var(--ink-secondary); }
 
 .tworow { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
-@media (max-width: 820px) { .tworow { grid-template-columns: 1fr; } }
+@media (max-width: 820px) {
+  .tworow { grid-template-columns: 1fr; }
+  /* nada de campo mais largo que a tela: select com min-width fixo era o que
+     empurrava a aba Gerador para fora do viewport do iPhone */
+  .controls { width: 100%; }
+  .controls select, .controls input, .controls button { max-width: 100%; min-width: 0; }
+  .controls select { flex: 1 1 100%; }
+  .controls label { flex: 0 0 auto; }
+  .selbar { padding: var(--space-4) var(--space-5); }
+  /* Tabela larga e volante de 10 colunas não cabem em 390px. Em vez de encolher
+     o número — que é o herói — deixo o painel rolar na horizontal. A página
+     inteira nunca rola de lado; só o bloco que precisa. */
+  .panel { overflow-x: auto; padding-left: var(--space-5); padding-right: var(--space-5); }
+  .panel > table, .panel > .grid-volante { min-width: max-content; }
+}
 
 /* Estados de página */
 .state-loading, .state-empty {
@@ -581,6 +623,7 @@ header .src { font-size: var(--text-xs); color: var(--ink-muted); }
   <button id="btnTheme" title="Alternar tema">◐</button>
 </header>
 <div class="chips" id="gameChips"></div>
+<div class="selbar" id="selbar"></div>
 <div class="tabs" id="tabs"></div>
 <main id="main"><div class="loading">Carregando base de dados…</div></main>
 <div id="tooltip"></div>
@@ -611,7 +654,59 @@ const GAMES = {
 const SEQ_BLUE = ['var(--seq-1)','var(--seq-2)','var(--seq-3)','var(--seq-4)','var(--seq-5)','var(--seq-6)','var(--seq-7)','var(--seq-8)'];
 const SEQ_ORANGE = ['var(--seq2-1)','var(--seq2-2)','var(--seq2-3)','var(--seq2-4)','var(--seq2-5)','var(--seq2-6)','var(--seq2-7)','var(--seq2-8)'];
 /* ================= STATE ================= */
-const state = { game:'megasena', tab:'visao', windowN:0, metric:'freq', comboK:2, comboDir:'top', topN:10 };
+const state = { game:'megasena', tab:'visao', windowN:0, metric:'freq', comboK:2, comboDir:'top', topN:10, dezenas:[] };
+
+/* ===== FILTRO CRUZADO =====
+   Uma seleção só, compartilhada por todas as abas: modalidade, janela e dezenas.
+   Cada refresh() grava uma posição na pilha, então desfazer e refazer funcionam
+   para qualquer mudança — inclusive troca de aba — sem precisar instrumentar
+   cada botão do painel. */
+const PILHA_SEL=[]; let PI_SEL=-1, navegandoSel=false;
+function _instantanea(){ return JSON.stringify({game:state.game,tab:state.tab,windowN:state.windowN,
+  metric:state.metric,comboK:state.comboK,comboDir:state.comboDir,topN:state.topN,dezenas:state.dezenas}); }
+function gravarSel(){
+  const s=_instantanea();
+  if(PI_SEL>=0 && PILHA_SEL[PI_SEL]===s) return;
+  PILHA_SEL.splice(PI_SEL+1); PILHA_SEL.push(s); PI_SEL=PILHA_SEL.length-1;
+  if(PILHA_SEL.length>80){ PILHA_SEL.shift(); PI_SEL--; }
+}
+function _irPara(i){ navegandoSel=true; PI_SEL=i; Object.assign(state,JSON.parse(PILHA_SEL[i])); refresh().finally(()=>{navegandoSel=false;}); }
+function voltarSel(){ if(PI_SEL>0) _irPara(PI_SEL-1); }
+function avancarSel(){ if(PI_SEL<PILHA_SEL.length-1) _irPara(PI_SEL+1); }
+function alternarDezena(n){
+  state.dezenas = state.dezenas.includes(n) ? state.dezenas.filter(x=>x!==n) : [...state.dezenas, n];
+  refresh();
+}
+function limparSel(){ state.dezenas=[]; state.windowN=0; refresh(); }
+function renderSelbar(){
+  const b=$('#selbar'); if(!b) return; b.innerHTML='';
+  b.appendChild(el('span',{class:'eyebrow'},'Seleção'));
+  const cm=el('button',{class:'selchip forte'}, GAMES[state.game].label);
+  cm.onclick=()=>{ state.tab='comparar'; refresh(); };
+  cm.title='Ver como esta modalidade se compara às outras oito';
+  b.appendChild(cm);
+  if(state.windowN>0){
+    const c=el('button',{class:'selchip'},'últimos '+fmtInt(state.windowN)+' concursos <span aria-hidden="true">✕</span>');
+    c.onclick=()=>{ state.windowN=0; refresh(); };
+    b.appendChild(c);
+  }
+  const dz=[...state.dezenas].sort((a,b2)=>a-b2);
+  for(const d of dz){
+    const c=el('button',{class:'selchip'},'dezena '+pad(d,state.game)+' <span aria-hidden="true">✕</span>');
+    c.onclick=()=>alternarDezena(d);
+    b.appendChild(c);
+  }
+  if(!dz.length && !state.windowN)
+    b.appendChild(el('span',{class:'nada'},'clique em qualquer dezena do volante ou da dispersão para cruzar as abas'));
+  const h=el('div',{class:'hist'});
+  const bv=el('button',{class:'selchip fantasma',title:'Desfazer'},'↩ desfazer');
+  bv.disabled = PI_SEL<=0; bv.onclick=voltarSel;
+  const ba=el('button',{class:'selchip fantasma',title:'Refazer'},'↪ refazer');
+  ba.disabled = PI_SEL>=PILHA_SEL.length-1; ba.onclick=avancarSel;
+  const bl=el('button',{class:'selchip fantasma',title:'Limpar dezenas e janela'},'⌫ limpar');
+  bl.disabled = !dz.length && !state.windowN; bl.onclick=limparSel;
+  h.append(bv,ba,bl); b.appendChild(h);
+}
 const DB = {};        // game -> {draws:[{n, sets:[[..]], extra}], byN: Map}
 let STATUS = {};      // status.json
 const cacheCombos = {}; // key game|window|k -> {map, totalDraws}
@@ -767,7 +862,7 @@ function renderChips(){
   for(const g in GAMES){
     const ativo = state.game===g && state.tab!=='comparar';
     const b=el('button',{class:'chip'+(ativo?' on':'')},GAMES[g].label);
-    b.onclick=()=>{ state.game=g; if(state.tab==='comparar') state.tab='visao'; refresh(); };
+    b.onclick=()=>{ state.game=g; state.dezenas=[]; if(state.tab==='comparar') state.tab='visao'; refresh(); };
     c.appendChild(b);
   }
 }
@@ -788,10 +883,11 @@ function srcInfo(){
   $('#srcInfo').textContent = 'Fonte: API Loterias Caixa · '+GAMES[state.game].label+' até concurso '+d.last.n+(st&&st.data?' ('+st.data+')':'');
 }
 async function refresh(){
-  renderChips(); renderTabs();
+  if(!navegandoSel) gravarSel();
+  renderChips(); renderTabs(); renderSelbar();
   const m=$('#main'); m.innerHTML='<div class="loading">Processando…</div>';
   try{ await loadGame(state.game); }catch(e){ m.innerHTML='<div class="warnbox">Erro ao carregar dados: '+e.message+'</div>'; return; }
-  srcInfo();
+  srcInfo(); renderSelbar();
   m.innerHTML='';
   const fn={visao:renderVisao, comparar:renderComparar, registro:renderRegistro, volante:renderVolante, ranking:renderRanking, combos:renderCombos, meujogo:renderMeuJogo, gerador:renderGerador, metodo:renderMetodo, evidencia:renderEvidencia, evolucao:renderEvolucao, financeiro:renderFinanceiro, risco:renderRisco}[state.tab];
   await fn(m);
@@ -929,7 +1025,61 @@ async function renderComparar(m){
     'A régua é a regra <b>V</b> do método: quanto uma aposta simples devolve, na média matemática, dividido pelo que ela custa. '+
     'Conta as faixas menores (medidas no histórico real) e desconta tanto o imposto quanto a chance de dividir o prêmio.</p>'+
     '<p class="note" style="margin-bottom:0">Nenhuma modalidade fica matematicamente favorável na prática. O que esta tabela responde não é "vale a pena apostar?", e sim: <b>se você já decidiu gastar, onde o mesmo dinheiro rende mais.</b></p>'));
+  m.appendChild(painelRegua());
   m.appendChild(comparativoModalidades());
+}
+
+/* ===== RÉGUA DO GATILHO =====
+   Uma linha só, de 0 a 1,10, com as nove modalidades posicionadas pelo índice CRIVO
+   e a marca de break-even em 1,00. É a resposta visual imediata para "vale hoje?".
+   Clicar em um ponto trava a seleção naquela modalidade. */
+function painelRegua(){
+  const linhas=indiceCrivo();
+  const p=el('div',{class:'panel'});
+  if(!linhas.length){ p.appendChild(el('p',{class:'note'},'Sem estimativa de prêmio disponível agora.')); return p; }
+  const melhor=linhas[0], cruzou=linhas.some(l=>l.indice>=1);
+  const ESC=1.10, pct=v=>Math.max(0,Math.min(100, v/ESC*100));
+
+  const topo=el('div',{style:'display:flex;flex-wrap:wrap;gap:var(--space-8);align-items:flex-end;margin-bottom:var(--space-6)'});
+  topo.innerHTML=
+   '<div><div style="font-size:var(--text-3xl);font-weight:var(--weight-bold);letter-spacing:var(--track-tight);line-height:1.05">'+
+     melhor.indice.toFixed(2).replace('.',',')+'</div>'+
+     '<div class="note" style="margin:0">índice CRIVO da '+melhor.label+', a melhor opção de hoje</div></div>'+
+   '<div style="flex:1;min-width:280px"><p style="margin:0;color:var(--ink-secondary)">'+
+     (cruzou
+       ? '<b>'+melhor.label+' cruzou o gatilho.</b> O retorno esperado passou a cobrir o custo — situação rara, criada por acumulação alta. Continua sendo um bilhete de chance desprezível, não um investimento.'
+       : '<b>Nenhuma das nove cruza o gatilho hoje — e isso é o normal.</b> A '+melhor.label+' devolve '+
+         Math.round(melhor.indice*100)+' centavos por real. Para chegar a 1,00 o prêmio dela precisaria ser de '+
+         fmtBRL(melhor.gatilho)+', contra os '+fmtBRL(melhor.bruto)+' de agora — '+
+         (melhor.gatilho/melhor.bruto).toLocaleString('pt-BR',{maximumFractionDigits:1})+'× o valor atual.')+
+     '</p></div>';
+  p.appendChild(topo);
+
+  const r=el('div',{style:'position:relative;height:112px;margin-bottom:var(--space-4)'});
+  let ht='<div style="position:absolute;left:0;right:0;top:54px;height:8px;border-radius:var(--radius-xs);background:var(--surface-sunken);border:1px solid var(--border-subtle)"></div>'+
+    '<div style="position:absolute;left:0;top:54px;height:8px;width:'+pct(melhor.indice)+'%;border-radius:var(--radius-xs);background:var(--accent);opacity:.85"></div>'+
+    '<div style="position:absolute;left:'+pct(1)+'%;top:26px;width:2px;height:50px;background:var(--status-good)"></div>'+
+    '<span style="position:absolute;left:'+pct(1)+'%;top:6px;transform:translateX(-50%);font-size:var(--text-2xs);'+
+      'font-weight:var(--weight-semi);letter-spacing:var(--track-wide);color:var(--status-good-ink);white-space:nowrap">GATILHO 1,00</span>';
+  for(const v of [0,.25,.5,.75,1]) ht+='<span style="position:absolute;left:'+pct(v)+'%;top:68px;transform:translateX(-50%);'+
+    'font-size:var(--text-2xs);color:var(--ink-muted)">'+v.toFixed(2).replace('.',',')+'</span>';
+  ht+='<span style="position:absolute;left:'+pct(melhor.indice)+'%;top:22px;transform:translateX(-50%);'+
+    'font-size:var(--text-md);font-weight:var(--weight-semi);white-space:nowrap">'+melhor.label+' '+melhor.indice.toFixed(2).replace('.',',')+'</span>';
+  r.innerHTML=ht;
+  for(const l of linhas){
+    const forte = l.g===melhor.g;
+    const b=el('button',{title:l.label+' · índice '+l.indice.toFixed(3).replace('.',',')+' · gatilho '+fmtBRL(l.gatilho),
+      style:'position:absolute;left:'+pct(l.indice)+'%;top:44px;width:28px;height:28px;margin-left:-14px;'+
+        'border:0;background:none;padding:0;cursor:pointer;border-radius:var(--radius-full)'},
+      '<span style="display:block;width:'+(forte?16:11)+'px;height:'+(forte?16:11)+'px;margin:'+(forte?6:8)+'px auto;'+
+       'border-radius:var(--radius-full);background:'+(forte?'var(--accent)':'var(--ink-muted)')+
+       (forte?';box-shadow:0 0 0 3px var(--surface-raised)':'')+'"></span>');
+    b.onclick=()=>{ state.game=l.g; state.dezenas=[]; state.tab='visao'; refresh(); };
+    r.appendChild(b);
+  }
+  p.appendChild(r);
+  p.appendChild(el('p',{class:'note'},'Cada ponto é uma modalidade, posicionada pelo que devolve. Clique em um deles para abrir a análise completa dessa modalidade — a seleção fica travada nela nas outras abas.'));
+  return p;
 }
 
 
@@ -1427,7 +1577,7 @@ function renderVolante(m){
     const vals=Object.values(data).filter(v=>isFinite(v));
     const mx=Math.max(...vals,1), mn=Math.min(...vals);
     for(let i=cfg.min;i<=cfg.max;i++){
-      grid.appendChild(cellNode(pad(i,g), data[i], mn, mx, ramp, 'Dezena '+pad(i,g), label));
+      grid.appendChild(cellNode(pad(i,g), data[i], mn, mx, ramp, 'Dezena '+pad(i,g), label, i));
     }
     p.appendChild(grid);
   }
@@ -1446,14 +1596,18 @@ function temaEscuro(){
   if(t) return t==='dark';
   return matchMedia('(prefers-color-scheme: dark)').matches;
 }
-function cellNode(lbl, val, mn, mx, ramp, tipLabel, unit){
+function cellNode(lbl, val, mn, mx, ramp, tipLabel, unit, dezena){
   const t = mx>mn ? (val-mn)/(mx-mn) : .5;
   const color = ramp[Math.min(7,Math.max(0,Math.round(t*7)))];
   const swatchEscuro = temaEscuro() ? t<0.55 : t>0.45;
-  const cell=el('div',{class:'cell','data-interactive':'1',
-    style:'background:'+color+';color:'+(swatchEscuro?'#ffffff':'#0b0b0b')});
+  const marcada = dezena!=null && state.dezenas.includes(dezena);
+  const cell=el(dezena!=null?'button':'div',{class:'cell'+(marcada?' sel':''),'data-interactive':'1',
+    style:'background:'+color+';color:'+(swatchEscuro?'#ffffff':'#0b0b0b')+
+      (dezena!=null?';border:0;font-family:inherit;cursor:pointer':'')});
   cell.innerHTML=lbl+'<small>'+(isFinite(val)?fmtInt(val):'—')+'</small>';
-  attachTip(cell,()=> '<b>'+tipLabel+'</b><br>'+(isFinite(val)?fmtInt(val)+' '+(unit||''):'nunca saiu'));
+  attachTip(cell,()=> '<b>'+tipLabel+'</b><br>'+(isFinite(val)?fmtInt(val)+' '+(unit||''):'nunca saiu')+
+    (dezena!=null?'<br><span style="opacity:.75">clique para '+(state.dezenas.includes(dezena)?'tirar da':'somar à')+' seleção</span>':''));
+  if(dezena!=null) cell.onclick=()=>alternarDezena(dezena);
   return cell;
 }
 function renderExtraFreq(){
@@ -1487,6 +1641,109 @@ function renderTrevos(){
 }
 /* ================= RENDER: RANKING ================= */
 /* perfil completo por dezena: frequência, última e primeira aparição, atraso, frequência recente */
+/* ===== CO-OCORRÊNCIA · quem sai junto com quem =====
+   Comparação contra a independência: se as dezenas fossem independentes, o número
+   de concursos em que i e j aparecem juntas seria freq(i)·freq(j)/total. O desvio
+   é medido em sigmas de Poisson. É o teste honesto — e quase sempre dá ruído, que
+   é exatamente o que o método afirma. */
+const _cacheCo={};
+function matrizCo(g){
+  const key=g+'|'+state.windowN;
+  if(_cacheCo[key]) return _cacheCo[key];
+  const cfg=GAMES[g], draws=windowDraws(g), N=cfg.max-cfg.min+1;
+  const freq=new Array(N).fill(0);
+  const co=Array.from({length:N},()=>new Array(N).fill(0));
+  for(const d of draws){
+    const s=[]; const vis=new Set();
+    for(const st of d.sets) for(const v of st)
+      if(v>=cfg.min&&v<=cfg.max&&!vis.has(v)){ vis.add(v); s.push(v); }
+    for(const v of s) freq[v-cfg.min]++;
+    for(let a=0;a<s.length;a++) for(let b=a+1;b<s.length;b++){
+      const i=s[a]-cfg.min, j=s[b]-cfg.min; co[i][j]++; co[j][i]++;
+    }
+  }
+  /* Correção de escala — sem ela a análise mente.
+     freq(i)·freq(j)/total supõe sorteio COM reposição. Como a Caixa sorteia sem
+     reposição, a probabilidade real de duas dezenas caírem no mesmo concurso é
+     k(k−1)/(N(N−1)), menor que (k/N)². Usar o esperado ingênuo jogaria TODOS os
+     pares para o lado negativo e faria qualquer combinação parecer "pouco
+     trilhada". Em vez de assumir a fórmula (que muda na Dupla-Sena e na
+     Timemania), calibro a escala nos próprios dados: o esperado total passa a
+     bater com o observado total, e aí só o desvio relativo sobra. */
+  let obsTot=0, espTot=0;
+  for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+    obsTot+=co[i][j]; espTot+=freq[i]*freq[j]/(draws.length||1);
+  }
+  const escala = espTot>0 ? obsTot/espTot : 1;
+  return _cacheCo[key]={co,freq,total:draws.length,min:cfg.min,escala};
+}
+/* desvio médio, em sigmas, entre a co-ocorrência observada dos pares do jogo e a
+   que a independência preveria. Negativo = combinação pouco trilhada. */
+function zMedioPares(g,nums){
+  const M=matrizCo(g); if(!M.total) return 0;
+  let z=0,np=0;
+  for(let a=0;a<nums.length;a++) for(let b=a+1;b<nums.length;b++){
+    const i=nums[a]-M.min, j=nums[b]-M.min;
+    if(i<0||j<0||!M.co[i]||!M.co[j]) continue;
+    const esp=M.freq[i]*M.freq[j]/M.total*M.escala;
+    if(esp>5){ z+=(M.co[i][j]-esp)/Math.sqrt(esp); np++; }
+  }
+  return np? z/np : 0;
+}
+function companheiras(g, alvo){
+  const cfg=GAMES[g], M=matrizCo(g), total=M.total, i0=alvo-cfg.min;
+  if(!total || !M.co[i0]) return {linhas:[], total, freqAlvo:0};
+  const linhas=[];
+  for(let i=cfg.min;i<=cfg.max;i++){
+    if(i===alvo) continue;
+    const j=i-cfg.min;
+    const esp=M.freq[i0]*M.freq[j]/total*M.escala;
+    if(esp<5) continue;
+    linhas.push({n:i, obs:M.co[i0][j], esp, z:(M.co[i0][j]-esp)/Math.sqrt(esp)});
+  }
+  linhas.sort((a,b)=>b.z-a.z);
+  return {linhas, total, freqAlvo:M.freq[i0]};
+}
+function painelCompanheiras(g){
+  const alvo=state.dezenas[state.dezenas.length-1];
+  const {linhas,total,freqAlvo}=companheiras(g,alvo);
+  const p=el('div',{class:'panel'});
+  p.appendChild(el('h3',null,'Quem sai junto com a '+pad(alvo,g)));
+  if(!linhas.length){ p.appendChild(el('p',{class:'note'},'Base pequena demais nesta janela para comparar pares.')); return p; }
+  p.appendChild(el('p',{class:'note'},'A dezena '+pad(alvo,g)+' saiu '+fmtInt(freqAlvo)+' vezes em '+fmtInt(total)+
+    ' concursos da janela. O esperado parte de (vezes da '+pad(alvo,g)+' × vezes da outra) ÷ '+fmtInt(total)+
+    ', com a escala calibrada nos próprios dados — porque o sorteio é sem reposição, e o cálculo ingênuo jogaria todos os pares para o lado negativo.'));
+  const zmax=Math.max(...linhas.map(l=>Math.abs(l.z)));
+  const bloco=(titulo, arr, cor)=>{
+    const d=el('div');
+    d.appendChild(el('div',{class:'t-label',style:'margin-bottom:var(--space-4)'},titulo));
+    let ht='<table><tbody>';
+    for(const l of arr){
+      ht+='<tr data-n="'+l.n+'" style="cursor:pointer"><td style="width:46px"><span class="ball mini">'+pad(l.n,g)+'</span></td>'+
+        '<td class="num">'+fmtInt(l.obs)+'</td>'+
+        '<td class="num" style="color:var(--ink-muted)">esp. '+l.esp.toFixed(0)+'</td>'+
+        '<td class="num" style="color:'+cor+';font-weight:var(--weight-semi)">'+(l.z>0?'+':'')+l.z.toFixed(1).replace('.',',')+'σ</td></tr>';
+    }
+    d.innerHTML+=ht+'</tbody></table>';
+    d.querySelectorAll('tr[data-n]').forEach(tr=>{ tr.onclick=()=>alternarDezena(+tr.dataset.n); });
+    return d;
+  };
+  const w=el('div',{class:'tworow'});
+  w.appendChild(bloco('Saíram junto MAIS que o esperado', linhas.slice(0,8), 'var(--series-1)'));
+  w.appendChild(bloco('Saíram junto MENOS que o esperado', linhas.slice(-8).reverse(), 'var(--series-2)'));
+  p.appendChild(w);
+  const esperadoPorAcaso=Math.sqrt(2*Math.log(Math.max(2,linhas.length)));
+  const forte = zmax > esperadoPorAcaso + 1;
+  p.appendChild(el('div',{class:forte?'warnbox':'okbox'},
+    '<b>Leia com desconfiança.</b> O maior desvio aqui é de '+zmax.toFixed(1).replace('.',',')+'σ. '+
+    'Testando '+fmtInt(linhas.length)+' pares, o maior |z| que o puro acaso produz já fica perto de '+
+    esperadoPorAcaso.toFixed(1).replace('.',',')+'σ — sem nenhuma tendência real. '+
+    (forte
+      ? 'Este desvio passa dessa marca, então merece o teste de estabilidade temporal antes de qualquer conclusão: se ele não reaparecer nas três eras, era ruído.'
+      : 'Ou seja: está dentro do que o acaso gera sozinho. Nenhuma dupla aqui é sinal de coisa alguma.')+
+    ' Este painel existe para mostrar por que caçar número quente não leva a lugar nenhum — e por que o método olha para o rateio, não para a bola.'));
+  return p;
+}
 function perfilDezenas(g){
   const cfg=GAMES[g], draws=DB[g].draws, dts=DATES[g]||{};
   const {freq,total}=frequency(g);
@@ -1547,6 +1804,12 @@ function renderRanking(m){
   m.appendChild(wrap);
 
   m.appendChild(dispersaoPanel(g, arr, setMais, setMenos, total, REC));
+
+  if(state.dezenas.length) m.appendChild(painelCompanheiras(g));
+  else m.appendChild(el('div',{class:'okbox'},
+    '<b>Clique em uma dezena.</b> No volante ou na dispersão acima. Ela entra na barra de seleção no topo e aparece aqui '+
+    'quais outras dezenas saíram junto com ela mais e menos do que a independência prevê — com o desvio em sigmas e a régua '+
+    'do que o acaso produz sozinho. É onde o filtro cruzado deixa de ser enfeite e vira análise.'));
 
   const pa=el('div',{class:'panel'});
   pa.appendChild(el('h3',null,'Maiores atrasos'));
@@ -2618,8 +2881,13 @@ function renderGerador(m){
     for(const item of pl.itens){
       for(let k=0;k<item.q;k++){
         const alvo = cfg.colunas ? 7 : item.n;
+        /* Em vez de aceitar o primeiro sorteio que passa nos filtros, junto até 25
+           candidatos válidos e fico com o de menor co-ocorrência média. Todos têm
+           exatamente a mesma probabilidade de sair — o critério só separa o que é
+           menos trilhado por outros apostadores, que é onde o rateio melhora. */
+        const candidatos=[];
         let escolhido=null, tentativas=0;
-        while(!escolhido && tentativas<800){
+        while(candidatos.length<25 && tentativas<900){
           tentativas++;
           let pick;
           if(cfg.colunas){ pick=Array.from({length:7},()=>Math.floor(Math.random()*10)); }
@@ -2639,9 +2907,17 @@ function renderGerador(m){
               const ls=new Set(pick.map(v=>Math.floor((v-cfg.min)/cfg.cols)));
               if(ls.size < Math.min(3, Math.ceil(alvo/2))) continue; }
           }
-          escolhido=pick;
+          candidatos.push(pick);
+          if(cfg.colunas) break;
         }
-        if(escolhido) jogos.push({nums:escolhido, n:item.n, t:item.t, unit:item.unit});
+        if(candidatos.length){
+          if(cfg.colunas) escolhido=candidatos[0];
+          else {
+            let melhorZ=Infinity;
+            for(const c of candidatos){ const z=zMedioPares(g,c); if(z<melhorZ){ melhorZ=z; escolhido=c; } }
+          }
+        }
+        if(escolhido) jogos.push({nums:escolhido, n:item.n, t:item.t, unit:item.unit, candidatos:candidatos.length});
       }
     }
     out.innerHTML='';

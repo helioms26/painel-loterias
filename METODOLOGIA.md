@@ -268,6 +268,58 @@ O painel online tem o botão **Atualizar estatísticas**, que faz o mesmo pela A
 
 Uma tarefa agendada roda essa rotina toda segunda-feira às 11h e envia o relatório com o índice CRIVO por modalidade.
 
-## 10. Aviso
+---
+
+## 10. Registro de apostas — a regra O em funcionamento
+
+A quinta regra do método exige registrar toda aposta e comparar contra um baseline aleatório. Sem isso o CRIVO não é falseável na prática, só na teoria — e o gatilho X2, que aos três anos faz o teste decisivo da regra R, nunca poderia disparar.
+
+A aba **Minhas apostas** implementa isso. Toda aposta registrada ganha uma **sombra**: um jogo do mesmo tamanho, sorteado ao acaso no mesmo instante, sem nenhum filtro. As duas carteiras correm juntas e o painel confere as duas contra o resultado oficial assim que o concurso sai. O registro fica salvo no navegador e pode ser exportado em JSON.
+
+Um caso de borda que o painel trata explicitamente: se a sua aposta cai numa faixa que **acumulou** naquele concurso, o rateio registrado é zero — porque ninguém acertou. O painel mostra "acumulou" em vez de R$ 0 e explica que, se você tivesse mesmo aquele bilhete, teria sido o único ganhador. Não coloco um valor ali porque o prêmio de um ganhador que não existiu não é um dado, é uma hipótese.
+
+Enquanto houver menos de 30 apostas conferidas, o painel avisa que o placar não deve ser lido: um único prêmio de faixa alta vira o resultado inteiro.
+
+## 11. O backtest do próprio método
+
+O teste que pode nos refutar, na aba Evidências. Para cada concurso de um período, gera jogos pelo CRIVO usando **apenas o que se sabia até o concurso anterior**, compara com uma carteira aleatória de tamanho idêntico, e calcula o retorno usando o **rateio realmente pago** em cada concurso.
+
+Resultado com 100 concursos e 10 jogos por concurso: as duas carteiras perdem, e perdem quase o mesmo. Na Mega-Sena ambas terminaram em zero — ninguém fez quadra em mil jogos. Na Lotofácil, 25,6% contra 27,4%. Na Quina, 4,2% contra 10,3%, com a diferença inteira vindo de dois prêmios de faixa alta.
+
+**É exatamente o previsto.** Se este teste mostrasse o CRIVO ganhando de forma consistente, a conclusão certa seria que há erro no teste, não que descobrimos algo.
+
+Dois aprendizados de construção que valem registro. O filtro de "sem 3 dezenas consecutivas" é **impossível na Lotofácil** — marcando 15 de 25, três seguidas são inevitáveis; os limites agora se ajustam à densidade da aposta. E o retorno observado fica **sistematicamente abaixo** do RTP de longo prazo, porque a maior parte daquele percentual está em faixas raríssimas que uma amostra pequena nunca alcança. A média do jogo é uma miragem que só se materializa numa quantidade astronômica de apostas.
+
+## 12. Por que algumas lotéricas acertam várias vezes
+
+Pergunta frequente, com resposta inteiramente estatística — e mensurável.
+
+Os 979 ganhadores da sena na história da Mega-Sena, com a cidade extraída da planilha oficial, distribuem-se assim: SP com 27,5% dos ganhadores para 21,6% da população, RJ 10,6% para 8,1%, MG 11,3% para 10,0%, RS 5,1% para 5,3%, SC 3,5% para 3,8%. A razão orbita 1 — onde tem mais gente, saem mais prêmios, na proporção.
+
+A conta que fecha a questão: com 979 bilhetes vencedores distribuídos entre cerca de 13 mil lotéricas, mesmo que todas vendessem o mesmo volume seriam esperadas **35 lotéricas com dois ou mais prêmios**. Como o volume é desigual, se 10% das casas concentram 60% das vendas o esperado sobe para **99 com dois prêmios e 14 com três ou mais**. A existência de dezenas de "lotéricas da sorte" não é curiosa — seria estranho se elas não existissem.
+
+O mecanismo é volume, não sorte. Uma casa que vende cem vezes mais bilhetes tem cem vezes mais chance de vender o vencedor, e lotéricas que organizam **bolões** concentram centenas de apostas numa compra só. Some-se o viés de sobrevivência (quem acerta pendura faixa; as 12.900 que nunca acertaram não anunciam nada) e o ciclo de retroalimentação: fama atrai movimento, movimento produz prêmios, prêmios confirmam a fama.
+
+É o mesmo erro do Teste 2b em outra roupa — um padrão que parece extraordinário até você contar quantas oportunidades existiam para ele aparecer.
+
+*Ressalva: o número de 13 mil lotéricas vem de reportagem, não de dado oficial da Caixa. Os 979 ganhadores, as cidades e a população são dado oficial.*
+
+## 13. Aviso
 
 Aposta de loteria não é investimento nem fonte de renda. O retorno esperado é estruturalmente negativo por lei. Este projeto serve para tomar decisões informadas sobre um gasto de entretenimento, e para não ser enganado por quem vende método. Se o jogo deixar de ser diversão, procure o programa Jogo Responsável da Caixa.
+
+## 14. Filtro cruzado, régua do gatilho e a correção de co-ocorrência (v9)
+
+Três mudanças na versão 9, sendo a terceira uma correção de um erro que estava no nosso próprio cálculo.
+
+**A seleção passou a ser única e compartilhada.** Modalidade, janela de concursos e dezenas escolhidas ficam numa barra fixa no topo, e valem para todas as abas ao mesmo tempo. Cada mudança grava uma posição numa pilha, então desfazer e refazer funcionam para qualquer passo — inclusive troca de aba — sem precisar instrumentar botão por botão. Clicar numa dezena do volante ou da dispersão a joga na seleção; clicar de novo tira.
+
+**A régua do gatilho** abre a aba Onde apostar. É uma linha de 0 a 1,10 com as nove modalidades posicionadas pelo índice CRIVO e a marca de break-even em 1,00. Responde de olhada a única pergunta que importa antes de apostar, e clicar num ponto abre a análise completa daquela modalidade.
+
+**A correção que importa.** O painel novo mostra, para uma dezena selecionada, quais outras saíram junto com ela mais e menos do que o esperado. O esperado natural seria `freq(i) × freq(j) ÷ total` — mas essa fórmula supõe sorteio **com reposição**. Como a Caixa sorteia sem reposição, a probabilidade real de duas dezenas caírem no mesmo concurso é `k(k−1) / (N(N−1))`, e não `(k/N)²`. Na Mega-Sena a diferença é de 18%, o suficiente para empurrar **todos** os pares para o lado negativo e fazer qualquer combinação parecer "pouco trilhada". Seria um erro do mesmo tipo que este projeto critica nos outros: um artefato do cálculo apresentado como descoberta.
+
+Em vez de assumir a fórmula fechada — que muda na Dupla-Sena, com dois sorteios por concurso, e na Timemania — calibramos a escala nos próprios dados: o total esperado é forçado a bater com o total observado, e só o desvio relativo sobra. A calibração empírica reencontrou o valor teórico com quatro casas: Mega-Sena 0,8475 contra 300/354 = 0,84746; Quina 0,8102 contra 320/395 = 0,81013; Lotofácil 0,9722 contra 350/360 = 0,97222; Timemania 0,8680 contra 480/553 = 0,86799. Na Dupla-Sena deu 0,9345, para a qual não há fórmula simples — que é justamente por que a calibração empírica foi a escolha certa.
+
+Com a escala corrigida, o desvio médio passa a ser praticamente zero em todas as modalidades e os extremos ficam entre −2,2σ e +2,8σ. Testando 59 a 79 pares, o maior |z| que o acaso puro produz já fica perto de 2,9σ. **Ou seja: não há nenhuma dupla de dezenas com co-ocorrência anômala em nenhuma das nove modalidades.** O painel diz isso em voz alta, porque esse é o resultado.
+
+**O gerador passou a otimizar, não só relatar.** Antes ele aceitava o primeiro sorteio que passasse nos filtros. Agora junta até 25 candidatos válidos e fica com o de menor co-ocorrência média. Todos têm exatamente a mesma probabilidade de sair — o critério só separa o que é menos trilhado por outros apostadores. Medido sobre 200 rodadas na Mega-Sena, o z médio dos pares cai de −0,85 para −1,23 (na escala não calibrada usada no teste). É ganho de rateio, nunca de chance.

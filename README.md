@@ -4,13 +4,13 @@ Dashboard estatístico das 9 loterias da Caixa, com base oficial completa e meto
 
 ## Como usar
 
-**Opção 1 — arquivo único, dois cliques (mais simples)**
-Abra `painel-loterias-offline.html`. Todos os dados estão embutidos; funciona sem internet e sem servidor, em qualquer navegador de computador.
+**No celular ou em qualquer navegador — link público:**
 
-**Opção 2 — versão para hospedar (GitHub Pages, Netlify, Vercel)**
-A pasta `dashboard/` contém `index.html` + `data/`. Suba a pasta inteira em qualquer hospedagem estática e você terá uma URL pública que abre no iPhone e em qualquer navegador.
+### https://helioms26.github.io/painel-loterias/
 
-> Atenção: a versão da pasta `dashboard/` **não funciona** abrindo o `index.html` direto do disco (`file://`) — o Chrome bloqueia a leitura dos arquivos de dados por segurança. Para uso local, use o arquivo único da Opção 1.
+**No computador, sem internet:** abra `painel-loterias-offline.html`. Todos os dados estão embutidos; funciona com dois cliques.
+
+> A versão da pasta `dashboard/` **não funciona** abrindo o `index.html` direto do disco (`file://`) — o Chrome bloqueia a leitura dos arquivos de dados. Para uso local, use o arquivo único.
 
 ## Estrutura
 
@@ -48,30 +48,40 @@ Histórico oficial completo, coletado da API `servicebus2.caixa.gov.br/portaldel
 | Super Sete | 877 | 24/07/2026 |
 | +Milionária | 374 | 22/07/2026 |
 
-**Integridade verificada:** 200 concursos da Lotofácil sorteados ao acaso foram reconferidos contra a API oficial. Dos 118 que responderam, 118 conferiram exatamente — zero divergências.
+**Integridade verificada.** 200 concursos da Lotofácil sorteados ao acaso foram reconferidos contra a API oficial: dos 118 que responderam, 118 conferiram exatamente. Uma varredura completa dos 25.718 concursos encontrou **um erro real** — o concurso 2373 da Dupla-Sena vinha do espelho comunitário com a dezena 34 duplicada e a 43 faltando. Foi corrigido pela API oficial. Hoje a base tem zero buracos, zero dezenas duplicadas, zero fora de faixa e zero concursos sem data.
 
 ## Para atualizar a base
 
-No PowerShell, dentro da pasta `dashboard`:
+Um comando só, no PowerShell dentro da pasta `dashboard`:
 
 ```powershell
-.\update_base.ps1      # resultados novos de todos os jogos
-.\fetch_dates.ps1      # datas dos concursos
-.\fetch_premios.ps1    # ganhadores, rateio e arrecadação
+.\atualizar_tudo.ps1
 ```
 
-Depois de atualizar, regenere o arquivo único (o script de build está descrito em METODOLOGIA.md; na prática é embutir os JSONs de `data/` numa tag `<script>window.EMBEDDED_DATA={...}</script>` antes do script principal do `index.html`).
+Ele executa nesta ordem: baixa os concursos novos dos 9 jogos → repara automaticamente qualquer concurso inconsistente → **verifica** a base inteira → **só então** refaz o backup único em `data_backup/` → regera o `bundle.json`.
+
+Se a verificação falhar, o backup anterior é preservado e o log avisa. Log em `dashboard/data/atualizacao_log.txt`.
+
+O painel online também tem o botão **Atualizar estatísticas**, que busca os concursos novos direto da API da Caixa, guarda no próprio navegador e roda a verificação de integridade ao final.
+
+Uma tarefa agendada roda a rotina toda segunda-feira às 11h e envia o relatório com o índice CRIVO por modalidade.
+
+## Backup
+
+`dashboard/data_backup/` guarda **um único backup**, sobrescrito a cada atualização que passa na verificação. Para restaurar, copie tudo de `data_backup/` para `data/`.
 
 ## O que o painel entrega
 
 - **Visão geral** — último concurso, situação de acumulação, prêmio estimado, e a leitura de oportunidade (prêmio ÷ ponto de equilíbrio).
 - **Volante** — mapa de calor das dezenas por frequência ou atraso.
-- **Mais & menos** — rankings e maiores atrasos.
+- **Mais & menos** — rankings com a data da última aparição, seletor de Top 10/20/30/todas, gráfico de dispersão (quando saiu × quantas vezes saiu, com o tamanho da bolha pela frequência recente) e maiores atrasos.
 - **Conjuntos 2–6** — quais combinações mais e menos saíram juntas, e quantas nunca saíram.
 - **Meu jogo** — escolha as dezenas e veja, ao vivo: histórico de cada uma, matriz de co-ocorrência dos seus números, índice de exclusividade, sugestões de troca de 1 a 3 dezenas, comparação de custo entre "1 jogo de 7" e "3 de 6", e análise dos seus números favoritos.
 - **Gerador** — jogos anti-popularidade.
+- **Receitas por combinações** (dentro de Meu jogo) — monta o jogo com blocos: 3 duplas que mais saíram, 2 trincas que menos saíram, e assim por diante. Para "menos saíram", busca blocos que **nunca** saíram juntos, não os que saíram uma vez.
 - **Nosso método** — o método CRIVO e a tabela comparativa com todos os modelos existentes.
 - **Evidências & testes** — os backtests walk-forward, o qui-quadrado com correção, o teste de estabilidade temporal e a prova brasileira da seleção consciente.
+- **Evolução do método** — os gatilhos objetivos que dizem quando recalibrar, aperfeiçoar ou abandonar a metodologia, com base em revisão de literatura de 2024 a 2026.
 - **Financeiro** — carga da planilha oficial da Caixa para análise de arrecadação e rateios.
 - **Risco** — o que a matemática garante e as regras práticas.
 

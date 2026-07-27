@@ -183,6 +183,91 @@ A pergunta certa não é "dá para prever?", é "**por que dá em uns e não em 
 - Procon/MS (2022) — apuração sobre 15 sites e apps não autorizados a pedido da Caixa.
 - Aos Fatos e Agência Lupa (dez/2024) — sites falsos de bolão da Mega da Virada.
 
-## 7. Aviso
+---
+
+## 8. Quando o método precisa mudar — gatilhos de revisão
+
+Um método que nunca muda é dogma; um método que muda por qualquer motivo é perseguição de ruído. A saída é definir **antes** quais evidências obrigariam a mudar. Revisão de literatura de 2024 a 2026.
+
+### A descoberta que organiza tudo
+
+O método tem dois objetos com naturezas opostas:
+
+| Objeto | Propriedade | Sofre deriva? |
+|---|---|---|
+| **O sorteio** (quais dezenas saem) | Aleatório, estacionário | **Não.** Se sofrer, é fraude, não oportunidade. |
+| **A popularidade das dezenas** (o que as pessoas escolhem) | Comportamental, dinâmica, sensível a mídia | **Sim, e já sofreu comprovadamente.** |
+
+Portanto **a regra R é a única exposta a envelhecimento**. As regras C, I e V só mudam se a regra do jogo mudar.
+
+### Recalibrar — ajustar parâmetros, manter o método
+
+| # | Gatilho | Dispara quando |
+|---|---|---|
+| R1 | Mudança de matriz, preço ou percentual de premiação | Qualquer alteração em fonte oficial |
+| R2 | Deriva do mapa de popularidade | A cada 12 meses, ou imediato se um evento nacional se associar a uma dezena |
+| R3 | Expansão ou contração do público | Nova jurisdição no mesmo pool, ou variação sustentada acima de 20% no volume |
+| R4 | Correção monetária do custo-teto | Preço da aposta subir 10% ou mais, ou anualmente |
+| R5 | Recalibrar o ponto ótimo de valor esperado | Sempre que R1 ou R3 disparar |
+
+Precedente de R1: em 08/04/2025 a Mega Millions passou de US$ 2 para US$ 5 (+150%) melhorando as odds em apenas 4%. Precedente de R2: a escolha do número 19 despencou na Bélgica depois que a OMS nomeou a COVID-19. Precedente de R4: o reajuste da Caixa de 09/07/2025 (~21,7% médio) fez um teto fixo em reais comprar ~17% menos apostas.
+
+### Aperfeiçoar — o método está certo, mas incompleto
+
+| # | Gatilho | Dispara quando |
+|---|---|---|
+| A1 | Medir a diluição por surpresinha com dado próprio | Se em 12 meses não tivermos estimativa própria |
+| A2 | Segmentar popularidade por tipo de concurso | Ao ter dados de concursos comuns × de pico |
+| A3 | Tornar o custo-teto fisicamente vinculante | **Imediato — já disparado** |
+| A4 | Formalizar a métrica de auditoria | Antes do próximo ciclo |
+
+A métrica certa não é "ganhei ou não" (ruído puro), e sim prêmio médio por acerto ÷ prêmio médio de carteira aleatória simulada, com intervalo de confiança.
+
+### Abandonar ou substituir — o método deixou de valer
+
+| # | Gatilho | Dispara quando |
+|---|---|---|
+| X1 | Migração de prêmio rateado para prêmio fixo | Qualquer modalidade jogada adotar prêmio fixo |
+| X2 | Efeito de rateio indistinguível de zero | Após 3 anos, se o IC 95% contiver 1,0 e o efeito for menor que 3% |
+| X3 | Valor esperado negativo mesmo no melhor cenário | Por 12 meses seguidos |
+| X4 | O teto de custo foi rompido | 2 ciclos seguidos, ou 1 estouro acima de 50% |
+| X5 | Evidência revisada por pares de viés no sorteio | Publicação com método replicável |
+| X6 | Modelo preditivo validado independentemente | Replicação revisada por pares, fora da amostra |
+
+X4 não é gatilho estatístico, é de segurança: romper o teto sinaliza que a moldura racional deixou de governar o comportamento, e a resposta certa é parar, não recalibrar.
+
+### O que a revisão 2024–2026 já mudou na prática
+
+**Confirmado.** A regra I sai reforçada: o teste formal mais recente de aleatoriedade (2.706 sorteios da 6/49 romena, 1993–2024, qui-quadrado + Monte Carlo) não rejeitou a hipótese nula. Nenhum trabalho revisado por pares mostra ML batendo o acaso.
+
+**Refinado — muda a prática.** O prêmio máximo *não* é o melhor momento. A demanda tem elasticidade de ~1,7 ao tamanho do prêmio contra ~0,5 ao preço; acumulações recordes atraem uma multidão que dilui o rateio. O ponto ótimo é uma acumulação boa *antes* de virar manchete nacional.
+
+**Refinado.** O viés de datas é heterogêneo: mais forte em quem preenche um único bilhete e some a partir do segundo jogo na mesma sessão. Fugir de datas rende mais justamente nos concursos de pico, cheios de apostadores ocasionais.
+
+**Reforçado com urgência.** A regra C precisa virar limite fisicamente vinculante — dinheiro separado antes, não valor anotado. Limites intransponíveis reduzem o gasto mais que limites voluntários, e entender de estatística não protege: campanhas educativas se mostraram ineficazes.
+
+**Nada foi refutado.** Nenhum achado de 2024 a 2026 contradiz qualquer das cinco regras.
+
+**Lacunas honestas.** Ninguém mediu o efeito da surpresinha em loterias grandes; nenhuma evidência nova de viés físico; nenhuma refutação metodológica formal de ML em loteria.
+
+---
+
+## 9. Operação — atualizar, verificar e fazer backup
+
+O script `dashboard\atualizar_tudo.ps1` executa, nesta ordem:
+
+1. baixa os concursos novos dos 9 jogos na API oficial
+2. repara automaticamente qualquer concurso inconsistente (reconsulta a API)
+3. **verifica** a base inteira: buracos na sequência, dezenas duplicadas, fora de faixa, datas faltando
+4. **só então** refaz o backup único em `data_backup\`
+5. regera o `bundle.json` que alimenta o painel
+
+Se a verificação falhar, o backup anterior é preservado e o log avisa. É um backup só, sobrescrito a cada atualização bem-sucedida. Para restaurar, copie tudo de `data_backup\` para `data\`.
+
+O painel online tem o botão **Atualizar estatísticas**, que faz o mesmo pela API direto do navegador (a Caixa envia `Access-Control-Allow-Origin: *`), guarda o delta no próprio navegador e roda a verificação de integridade ao final, invalidando todos os caches para nenhuma aba trabalhar com número velho.
+
+Uma tarefa agendada roda essa rotina toda segunda-feira às 11h e envia o relatório com o índice CRIVO por modalidade.
+
+## 10. Aviso
 
 Aposta de loteria não é investimento nem fonte de renda. O retorno esperado é estruturalmente negativo por lei. Este projeto serve para tomar decisões informadas sobre um gasto de entretenimento, e para não ser enganado por quem vende método. Se o jogo deixar de ser diversão, procure o programa Jogo Responsável da Caixa.

@@ -748,7 +748,7 @@ function neverDrawn(g,k,map,limit){ // enumerate only when feasible
 }
 /* ================= RENDER: SHELL ================= */
 const TABS = [
-  ['visao','Visão geral'],['volante','Volante'],['ranking','Mais & menos'],
+  ['visao','Visão geral'],['registro','Minhas apostas'],['volante','Volante'],['ranking','Mais & menos'],
   ['combos','Conjuntos 2–6'],['meujogo','Meu jogo'],['gerador','Gerador de jogos'],
   ['metodo','Nosso método'],['evidencia','Evidências & testes'],['evolucao','Evolução do método'],['financeiro','Financeiro'],['risco','Risco']
 ];
@@ -793,7 +793,7 @@ async function refresh(){
   try{ await loadGame(state.game); }catch(e){ m.innerHTML='<div class="warnbox">Erro ao carregar dados: '+e.message+'</div>'; return; }
   srcInfo();
   m.innerHTML='';
-  const fn={visao:renderVisao, comparar:renderComparar, volante:renderVolante, ranking:renderRanking, combos:renderCombos, meujogo:renderMeuJogo, gerador:renderGerador, metodo:renderMetodo, evidencia:renderEvidencia, evolucao:renderEvolucao, financeiro:renderFinanceiro, risco:renderRisco}[state.tab];
+  const fn={visao:renderVisao, comparar:renderComparar, registro:renderRegistro, volante:renderVolante, ranking:renderRanking, combos:renderCombos, meujogo:renderMeuJogo, gerador:renderGerador, metodo:renderMetodo, evidencia:renderEvidencia, evolucao:renderEvolucao, financeiro:renderFinanceiro, risco:renderRisco}[state.tab];
   await fn(m);
 }
 function windowSelector(){
@@ -3360,6 +3360,283 @@ function renderEvidencia(m){
     '<p><b>Teste 3 → regra R, calibrada com dado brasileiro.</b> É o único teste que pode dar positivo — e se der, ele quantifica o tamanho do prêmio por fugir das datas.</p>'+
     '<div class="warnbox" style="margin-top:var(--space-5)"><b>Cuidado com o próprio viés.</b> Rodamos poucos testes, escolhidos antes de ver os resultados, e reportamos todos — inclusive os que dão contra a nossa tese. Se você rodar cem variações e publicar só a que deu certo, você reinventou exatamente o que os vendedores fazem.</div>'));
 }
+
+/* ================= REGISTRO DE APOSTAS · a regra O do método =================
+   O método exige registrar toda aposta e comparar contra um baseline aleatório.
+   Sem isso ele não é falseável na prática — só na teoria. Aqui cada aposta
+   registrada ganha uma "sombra": um jogo do mesmo tamanho, sorteado ao acaso no
+   mesmo instante, sem nenhum filtro. As duas carteiras correm juntas, e o placar
+   entre elas é o único juiz honesto do método ao longo do tempo. */
+const LS_APOSTAS='lot_apostas_v1';
+function lerApostas(){ try{ const v=localStorage.getItem(LS_APOSTAS); return v?JSON.parse(v):[]; }catch(e){ return []; } }
+function salvarApostas(a){ try{ localStorage.setItem(LS_APOSTAS, JSON.stringify(a)); return true; }catch(e){ return false; } }
+function novoId(){ return 'a'+(lerApostas().reduce((m,x)=>Math.max(m,+String(x.id).slice(1)||0),0)+1); }
+function sorteioAleatorio(g, quantas, sementeTxt){
+  const cfg=GAMES[g], N=cfg.max-cfg.min+1;
+  let s=0; for(let i=0;i<sementeTxt.length;i++) s=(s*31+sementeTxt.charCodeAt(i))>>>0;
+  const r=rng(s||1);
+  const pool=Array.from({length:N},(_,i)=>i+cfg.min), out=[];
+  while(out.length<quantas) out.push(pool.splice(Math.floor(r()*pool.length),1)[0]);
+  return out.sort((a,b)=>a-b);
+}
+function faixaValor(g, conc, hits){
+  const cfg=GAMES[g], pr=PREMIOS[g];
+  if(!pr) return null;
+  const p=pr[String(conc)];
+  if(!p||!p.f||!p.f.length) return null;
+  let idx=cfg.pick-hits;
+  if(g==='lotomania' && hits===0) idx=p.f.length-1;
+  if(idx<0||idx>=p.f.length) return 0;
+  return p.f[idx][1]||0;
+}
+/* Uma faixa com prêmio zero pode significar duas coisas muito diferentes:
+   ninguém acertou (a faixa acumulou) ou o jogo não paga aquela faixa. Distinguir
+   importa: se você tivesse o bilhete numa faixa que acumulou, teria sido o único
+   ganhador — e o prêmio real seria o acumulado, não zero. */
+function faixaAcumulou(g, conc, hits){
+  const cfg=GAMES[g], pr=PREMIOS[g];
+  if(!pr) return false;
+  const p=pr[String(conc)];
+  if(!p||!p.f||!p.f.length) return false;
+  let idx=cfg.pick-hits;
+  if(g==='lotomania' && hits===0) idx=p.f.length-1;
+  if(idx<0||idx>=p.f.length) return false;
+  return (p.f[idx][0]||0)===0 && (p.f[idx][1]||0)===0;
+}
+/* Confere uma aposta contra o resultado, se o concurso já saiu. */
+function conferir(ap){
+  const g=ap.jogo, cfg=GAMES[g];
+  const d=(DB[g]?DB[g].draws:[]).find(x=>x.n===ap.conc);
+  if(!d) return {estado:'aguardando'};
+  const res={estado:'conferida', sorteio:d.sets[0]};
+  const contar=(nums)=>{
+    // jogo com mais dezenas equivale a várias apostas simples: contamos o melhor acerto
+    const hits=nums.filter(v=>d.sets[0].includes(v)).length;
+    return Math.min(hits, cfg.pick);
+  };
+  res.hits=contar(ap.nums);
+  res.premio=faixaValor(g, ap.conc, res.hits);
+  res.acumulouNaFaixa = res.hits>=cfg.pick-1 && faixaAcumulou(g, ap.conc, res.hits);
+  // jogo com dezenas extras contém várias apostas simples premiadas na mesma faixa
+  if(ap.nums.length>cfg.pick && res.premio>0){
+    const acertos=res.hits, extras=ap.nums.length-cfg.pick;
+    const bilhetes=C(acertos, cfg.pick)*C(ap.nums.length-acertos, 0);
+    res.premio = res.premio * Math.max(1, bilhetes);
+    res.bilhetesPremiados=Math.max(1,bilhetes);
+  }
+  if(ap.sombra){
+    res.hitsS=contar(ap.sombra);
+    res.premioS=faixaValor(g, ap.conc, res.hitsS);
+    if(ap.sombra.length>cfg.pick && res.premioS>0){
+      const b=C(res.hitsS, cfg.pick);
+      res.premioS=res.premioS*Math.max(1,b);
+    }
+  }
+  return res;
+}
+function renderRegistro(m){
+  const g=state.game, cfg=GAMES[g], ap=APOSTAS[g];
+  let apostas=lerApostas();
+
+  m.appendChild(el('div',{class:'panel'},
+    '<h3>Minhas apostas · a regra O em funcionamento</h3>'+
+    '<p>O método só vale se puder ser refutado. Toda aposta que você registrar aqui ganha uma <b>sombra</b>: um jogo do mesmo tamanho, sorteado ao acaso no mesmo instante, sem nenhum filtro. '+
+    'As duas carteiras correm juntas e o painel confere as duas contra o resultado oficial assim que o concurso sai.</p>'+
+    '<p class="note" style="margin-bottom:0">Se ao longo de centenas de apostas a sua carteira não se separar da sombra, o método não entrega vantagem de acerto — e nunca prometeu entregar. O que ele promete está no rateio, e isso só se mede quando você ganha de verdade.</p>'));
+
+  // ---------- formulário ----------
+  const pf=el('div',{class:'panel'});
+  pf.appendChild(el('h3',null,'Registrar uma aposta'));
+  const f1=el('div',{class:'controls'});
+  f1.appendChild(el('label',null,'Jogo:'));
+  const selJogo=el('select');
+  for(const k in GAMES) selJogo.appendChild(el('option',{value:k},GAMES[k].label));
+  selJogo.value=g;
+  selJogo.onchange=()=>{ state.game=selJogo.value; refresh(); };
+  f1.appendChild(selJogo);
+  f1.appendChild(el('label',null,'Concurso:'));
+  const proximo=(DB[g]?DB[g].last.n:0)+1;
+  const inConc=el('input',{type:'number',min:1,value:proximo,style:'width:110px'});
+  f1.appendChild(inConc);
+  f1.appendChild(el('label',null,'Data:'));
+  const inData=el('input',{type:'date',value:new Date().toISOString().slice(0,10)});
+  f1.appendChild(inData);
+  pf.appendChild(f1);
+
+  const f2=el('div',{class:'controls'});
+  f2.appendChild(el('label',null,'Dezenas (separadas por espaço ou vírgula):'));
+  const inNums=el('input',{type:'text',placeholder:'ex: 05 12 23 34 45 56',style:'flex:1;min-width:240px'});
+  f2.appendChild(inNums);
+  const btnDoMeuJogo=el('button',null,'Puxar do "Meu jogo"');
+  btnDoMeuJogo.onclick=()=>{
+    const sel=(state.pick&&state.pick[g])?[...state.pick[g]].sort((a,b)=>a-b):[];
+    if(!sel.length){ inNums.value=''; alert('Nenhuma dezena selecionada na aba "Meu jogo".'); return; }
+    inNums.value=sel.map(v=>pad(v,g)).join(' ');
+    atualizaPrevia();
+  };
+  f2.appendChild(btnDoMeuJogo);
+  pf.appendChild(f2);
+
+  const previa=el('div',{style:'margin:var(--space-4) 0'});
+  pf.appendChild(previa);
+  const btnReg=el('button',{class:'primary'},'Registrar aposta');
+  pf.appendChild(btnReg);
+  m.appendChild(pf);
+
+  function lerNums(){
+    return [...new Set(String(inNums.value).split(/[^0-9]+/).filter(Boolean).map(Number))]
+      .filter(v=>v>=cfg.min&&v<=cfg.max).sort((a,b)=>a-b);
+  }
+  function atualizaPrevia(){
+    const nums=lerNums();
+    if(nums.length<cfg.pick){
+      previa.innerHTML='<p class="note">Faltam dezenas: são pelo menos '+cfg.pick+' para a '+cfg.label+
+        (nums.length?' (você marcou '+nums.length+')':'')+'.</p>';
+      return;
+    }
+    const custo=custoAposta(g, nums.length, cfg.trevos?ap.trevoMin:undefined);
+    const perf=perfilJogo(g, nums);
+    previa.innerHTML='<div class="okbox" style="margin:0">'+
+      '<b>'+nums.length+' dezenas · '+fmtInt(qtdApostas(g,nums.length))+' aposta(s) simples · R$ '+
+      custo.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</b> · chance 1 em '+
+      fmtInt(Math.round(oddsCom(g,nums.length)))+'<br>'+chipPerfil(perf)+' '+
+      perf.alertas.map(a=>(a.nivel==='bom'?'✓ ':'▲ ')+a.txt).join(' · ')+'</div>';
+  }
+  inNums.oninput=atualizaPrevia; atualizaPrevia();
+
+  btnReg.onclick=()=>{
+    const nums=lerNums();
+    if(nums.length<cfg.pick){ alert('Marque pelo menos '+cfg.pick+' dezenas.'); return; }
+    const id=novoId();
+    const item={id, jogo:g, conc:+inConc.value||proximo, data:inData.value,
+                nums, custo:custoAposta(g,nums.length,cfg.trevos?ap.trevoMin:undefined),
+                sombra:sorteioAleatorio(g, nums.length, id+'|'+g+'|'+inConc.value+'|'+Date.now())};
+    apostas=lerApostas(); apostas.push(item);
+    if(!salvarApostas(apostas)) alert('Não consegui salvar no navegador — a aposta vale só nesta sessão.');
+    inNums.value=''; refresh();
+  };
+
+  // ---------- placar ----------
+  const minhas=apostas.filter(x=>DB[x.jogo]);
+  if(!minhas.length){
+    m.appendChild(el('div',{class:'panel'},'<div class="state-empty">Nenhuma aposta registrada ainda.<br>'+
+      'Registre a primeira acima — ou monte na aba "Meu jogo" e use o botão de puxar.</div>'));
+    return;
+  }
+  let gasto=0, ganho=0, ganhoS=0, conferidas=0, premiadas=0, premiadasS=0, aguardando=0, acumuladas=0;
+  const linhas=[];
+  for(const x of minhas){
+    gasto+=x.custo||0;
+    const c=conferir(x);
+    if(c.estado==='aguardando'){ aguardando++; }
+    else {
+      conferidas++;
+      if(c.premio>0){ ganho+=c.premio; premiadas++; }
+      if(c.premioS>0){ ganhoS+=c.premioS; premiadasS++; }
+      if(c.acumulouNaFaixa) acumuladas++;
+    }
+    linhas.push({x,c});
+  }
+  const cards=el('div',{class:'cards'});
+  cards.appendChild(cardHtml('Apostas registradas', fmtInt(minhas.length), conferidas+' conferidas · '+aguardando+' aguardando'));
+  cards.appendChild(cardHtml('Total apostado', fmtBRL(gasto), 'soma do custo real'));
+  cards.appendChild(cardHtml('Total ganho', fmtBRL(ganho), premiadas+' aposta(s) premiada(s)'));
+  const saldo=ganho-gasto;
+  cards.appendChild(cardHtml('Saldo', fmtBRL(saldo), (gasto? (ganho/gasto*100).toFixed(1).replace('.',',')+'% de retorno':'')));
+  m.appendChild(cards);
+
+  const pp=el('div',{class:'panel'});
+  pp.appendChild(el('h3',null,'Você × a sombra aleatória'));
+  pp.appendChild(el('p',{class:'note'},'A sombra comprou exatamente a mesma quantidade de dezenas, nos mesmos concursos, pelo mesmo preço — só que sem nenhum critério. É o juiz do método.'));
+  pp.innerHTML+='<table><tr><th>Carteira</th><th class="num">Gasto</th><th class="num">Ganho</th><th class="num">Saldo</th><th class="num">Prêmios</th></tr>'+
+    '<tr><td><b>Suas apostas</b></td><td class="num">'+fmtBRL(gasto)+'</td><td class="num">'+fmtBRL(ganho)+
+      '</td><td class="num" style="color:'+(saldo>=0?'var(--status-good-ink)':'var(--status-critical)')+'"><b>'+fmtBRL(saldo)+'</b></td>'+
+      '<td class="num">'+premiadas+'</td></tr>'+
+    '<tr><td>Sombra aleatória</td><td class="num">'+fmtBRL(gasto)+'</td><td class="num">'+fmtBRL(ganhoS)+
+      '</td><td class="num" style="color:'+((ganhoS-gasto)>=0?'var(--status-good-ink)':'var(--status-critical)')+'">'+fmtBRL(ganhoS-gasto)+'</td>'+
+      '<td class="num">'+premiadasS+'</td></tr></table>';
+  if(acumuladas>0){
+    pp.appendChild(el('div',{class:'warnbox'},
+      '<b>'+acumuladas+' aposta(s) caíram numa faixa que acumulou.</b> Naquele concurso ninguém acertou essa faixa, então não existe rateio registrado e o painel mostra R$ 0. '+
+      'Na prática, se você tivesse mesmo aquele bilhete, teria sido o único ganhador e levado o prêmio acumulado inteiro. '+
+      'Não coloco um valor aí porque seria inventar: o prêmio de um ganhador que não existiu não é um dado, é uma hipótese.'));
+  }
+  if(conferidas<30){
+    pp.appendChild(el('div',{class:'warnbox'},
+      '<b>Ainda é cedo para ler este placar.</b> Com '+conferidas+' aposta(s) conferida(s), qualquer diferença entre as duas carteiras é ruído — '+
+      'um único prêmio de faixa alta vira o placar inteiro. O gatilho X2 do método prevê avaliação formal só depois de <b>três anos de registro</b>. '+
+      'Até lá, o valor deste quadro é o hábito de registrar, não o número.'));
+  } else {
+    pp.appendChild(el('div',{class:'okbox'},
+      'Com '+conferidas+' apostas conferidas o placar começa a ter algum significado — mas continue lendo com desconfiança. '+
+      'A diferença precisa ser grande e persistente para significar alguma coisa.'));
+  }
+  m.appendChild(pp);
+
+  // ---------- tabela ----------
+  const pt=el('div',{class:'panel'});
+  pt.appendChild(el('h3',null,'Histórico'));
+  let ht='<div style="overflow-x:auto"><table style="min-width:840px"><tr>'+
+    '<th>Data</th><th>Jogo</th><th class="num">Conc.</th><th>Suas dezenas</th>'+
+    '<th class="num">Custo</th><th class="num">Acertos</th><th class="num">Prêmio</th>'+
+    '<th class="num">Sombra</th><th></th></tr>';
+  for(const {x,c} of [...linhas].reverse()){
+    const gg=x.jogo;
+    const bolas=(nums,cor)=>nums.map(v=>'<span class="ball mini" style="background:'+cor+';width:20px;height:20px;font-size:var(--text-2xs)">'+pad(v,gg)+'</span>').join('');
+    const acertou=c.estado==='conferida';
+    ht+='<tr>'+
+      '<td style="white-space:nowrap">'+(x.data||'—').split('-').reverse().join('/')+'</td>'+
+      '<td style="white-space:nowrap">'+GAMES[gg].label+'</td>'+
+      '<td class="num">'+fmtInt(x.conc)+'</td>'+
+      '<td><div class="balls" style="gap:3px">'+bolas(x.nums,'var(--series-1)')+'</div></td>'+
+      '<td class="num" style="white-space:nowrap">R$ '+(x.custo||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
+      '<td class="num">'+(acertou? c.hits : '<span class="t-note">aguardando</span>')+'</td>'+
+      '<td class="num" style="white-space:nowrap;color:'+(acertou&&c.premio>0?'var(--status-good-ink)':(c.acumulouNaFaixa?'var(--status-warning)':'var(--ink-muted)'))+'">'+
+        (acertou? (c.premio>0? fmtBRL(c.premio)
+                             : (c.acumulouNaFaixa? '<span title="ninguém acertou essa faixa nesse concurso — ela acumulou">acumulou</span>' : '—')) : '')+'</td>'+
+      '<td class="num" style="white-space:nowrap;color:var(--ink-muted)">'+
+        (acertou? c.hitsS+' ac.'+(c.premioS>0? ' · '+fmtBRL(c.premioS):'') : '')+'</td>'+
+      '<td><button class="ghost" data-del="'+x.id+'" title="remover" style="padding:2px 8px">✕</button></td></tr>';
+  }
+  ht+='</table></div>';
+  pt.innerHTML+=ht;
+  pt.querySelectorAll('[data-del]').forEach(b=>{
+    b.onclick=()=>{ const id=b.getAttribute('data-del');
+      if(!confirm('Remover esta aposta do registro?')) return;
+      salvarApostas(lerApostas().filter(x=>x.id!==id)); refresh(); };
+  });
+  m.appendChild(pt);
+
+  // ---------- exportar / importar ----------
+  const pe=el('div',{class:'panel'});
+  pe.appendChild(el('h3',null,'Guardar o registro'));
+  pe.appendChild(el('p',{class:'note'},'O registro fica salvo no navegador. Se você limpar os dados do site, ele se perde — por isso vale exportar de vez em quando.'));
+  const ce=el('div',{class:'controls'});
+  const bExp=el('button',null,'Exportar registro');
+  bExp.onclick=()=>{
+    const blob=new Blob([JSON.stringify(lerApostas(),null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='minhas-apostas-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  };
+  ce.appendChild(bExp);
+  const inImp=el('input',{type:'file',accept:'.json',style:'max-width:230px'});
+  inImp.onchange=async e=>{
+    const f=e.target.files[0]; if(!f) return;
+    try{
+      const arr=JSON.parse(await f.text());
+      if(!Array.isArray(arr)) throw new Error('formato inesperado');
+      const atual=lerApostas(), ids=new Set(atual.map(x=>x.id));
+      let add=0;
+      for(const x of arr) if(!ids.has(x.id)){ atual.push(x); add++; }
+      salvarApostas(atual);
+      alert(add+' aposta(s) importada(s).'); refresh();
+    }catch(err){ alert('Não consegui ler o arquivo: '+err.message); }
+  };
+  ce.appendChild(inImp);
+  pe.appendChild(ce);
+  m.appendChild(pe);
+}
+
 /* ================= RENDER: EVOLUÇÃO DO MÉTODO ================= */
 const GATILHOS = {
   recalibrar:[

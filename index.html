@@ -1776,6 +1776,21 @@ function vereditoChip(v){
          'border-radius:var(--radius-full);background:'+est.bg+';border-left:3px solid '+est.bd+';cursor:help">'+
          '<span aria-hidden="true">'+est.ic+'</span>'+v.txt+'</span>';
 }
+/* Marcar uma dezena a mais equivale a C(n+1, pick) apostas simples, e a Caixa
+   paga cada combinação vencedora separadamente. Valor esperado e custo sobem
+   pelo MESMO fator — por linearidade da esperança, já que cada combinação do
+   desdobramento é, ela própria, uma aposta simples válida. O índice, que é a
+   razão entre os dois, fica idêntico. A coluna existe para mostrar isso. */
+function comMaisUmaDezena(g){
+  const cfg=GAMES[g], a=APOSTAS[g];
+  if(!a || a.fixo) return null;
+  const n=a.minN+1;
+  if(n>a.maxN) return null;
+  /* No Super Sete "uma a mais" significa marcar dois dígitos em uma das colunas:
+     o custo é o produto das escolhas, então dobra. A conclusão é a mesma. */
+  const q = a.colunas ? qtdApostas(g,n) : (cfg.trevos ? C(n,cfg.pick)*C(a.trevoMin,2) : C(n,cfg.pick));
+  return {n, apostas:q, custo:q*cfg.price, unidade: a.colunas?'dígitos':'dezenas'};
+}
 function comparativoModalidades(){
   const linhas=indiceCrivo();
   const p=el('div',{class:'panel'});
@@ -1786,6 +1801,13 @@ function comparativoModalidades(){
   }
   p.appendChild(el('p',{class:'note'},'<b>Índice = retorno esperado de uma aposta simples ÷ custo dela.</b> Break-even em 1,00: abaixo disso a aposta é desfavorável. '+
     'O <b>prêmio de gatilho</b> é o valor que o prêmio precisaria alcançar para o índice bater 1,00 naquele jogo.'));
+  p.appendChild(el('div',{class:'okbox'},
+    '<b>As duas colunas de índice são iguais de propósito — e a igualdade é a resposta.</b> '+
+    'Marcar uma dezena a mais equivale exatamente a comprar várias apostas simples, e a Caixa paga cada combinação vencedora separadamente. '+
+    'Custo e retorno esperado sobem pelo mesmo fator, então a razão entre os dois não se move. '+
+    'Repare no custo embaixo de cada número: na Mega-Sena a aposta vai de R$ 6,00 para R$ 42,00 e o índice fica no mesmo lugar. '+
+    '<b>Não existe desconto por volume na sorte.</b> O que muda ao desdobrar é o formato do risco, e a aba Visão geral mostra que muda para pior '+
+    'se o critério for a frequência de prêmios.'));
 
   const melhor=linhas[0];
   const cards=el('div',{class:'cards'});
@@ -1798,7 +1820,9 @@ function comparativoModalidades(){
   const maxIdx=Math.max(...linhas.map(l=>l.indice));
   let h='<div style="overflow-x:auto"><table style="min-width:1080px"><tr>'+
     '<th>#</th><th>Modalidade</th><th class="num">Prêmio estimado</th><th class="num">Chance (1 em)</th>'+
-    '<th class="num">Aposta</th><th class="num">Prêmio de gatilho</th><th class="num">Índice CRIVO</th><th>Vale a pena?</th><th>Próximo sorteio</th></tr>';
+    '<th class="num">Aposta mínima</th><th class="num">Prêmio de gatilho</th>'+
+    '<th class="num">Índice · mínima</th><th class="num">Índice · +1 dezena</th>'+
+    '<th>Vale a pena?</th><th>Próximo sorteio</th></tr>';
   linhas.forEach((l,i)=>{
     const bar=Math.max(2,Math.round(l.indice/maxIdx*100));
     const destaque = i===0;
@@ -1812,6 +1836,12 @@ function comparativoModalidades(){
       '<td class="num"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">'+
         '<div style="width:56px;height:9px;background:var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden"><div style="height:100%;width:'+bar+'%;background:'+(destaque?'var(--series-1)':'var(--ink-muted)')+';border-radius:0 var(--radius-xs) var(--radius-xs) 0"></div></div>'+
         '<b>'+l.indice.toFixed(3).replace('.',',')+'</b></div></td>'+
+      (function(){
+        const m=comMaisUmaDezena(l.g);
+        if(!m) return '<td class="num" style="color:var(--ink-muted)">—<br><span class="t-label">aposta de tamanho fixo</span></td>';
+        return '<td class="num" style="white-space:nowrap"><b>'+l.indice.toFixed(3).replace('.',',')+'</b>'+
+          '<br><span class="t-label">'+m.n+' '+m.unidade+' · R$ '+m.custo.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span></td>';
+      })()+
       '<td>'+vereditoChip(l.veredito)+'</td>'+
       '<td class="proxcel" data-aviso="'+(l.proxInfo.aviso?l.proxInfo.aviso.replace(/"/g,'&quot;'):'')+'" '+
         'style="font-size:var(--text-sm);white-space:nowrap;color:'+

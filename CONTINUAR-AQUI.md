@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **14.0**, publicada em 27/07/2026.
+Última versão: **15.0**, publicada em 27/07/2026.
 
 ---
 
@@ -149,6 +149,12 @@ A regra que sustenta o painel inteiro aparece aqui de forma explícita: **cada b
 Duas ideias intuitivas ficaram de fora, com o motivo escrito: "nunca saiu" não filtra nada (99,9939% das combinações da Mega-Sena nunca saíram) e "as que mais saíram" piora o rateio, porque é o que faz quem joga estatística.
 
 Se for acrescentar bandeira nova, mantenha a disciplina: ou tem número medido ao lado, ou está escrito que é raciocínio.
+
+## O que a v15 mudou
+
+A tabela de Onde apostar tem duas colunas de índice — mínima e +1 dezena — mostrando o mesmo número. Não é bug: `comMaisUmaDezena` existe para tornar a igualdade visível, com o custo embaixo de cada valor. Sete vezes o preço na Mega-Sena, o mesmo 0,376.
+
+Se alguém "consertar" essa duplicação achando que é erro, terá removido justamente o que a coluna prova.
 
 ---
 

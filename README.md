@@ -131,3 +131,7 @@ Conjuntos passaram a mostrar quando saíram pela última vez e o maior intervalo
 ## Novidades da v14
 
 Bandeiras de exclusividade em "Meu jogo", com um botão que completa o jogo fugindo dos padrões que a multidão joga — preservando as dezenas que você já escolheu. Cada bandeira declara a própria força: fugir de datas tem efeito medido de 1,96× na Mega-Sena; evitar dezenas quentes tem efeito medido, mas dez vezes menor (1,12× na Lotofácil, onde não há efeito de data para confundir); as demais são raciocínio declarado, sem medição. E o painel explica por que duas ideias intuitivas não entraram: "nunca saiu" não filtra nada (99,99% das combinações nunca saíram) e "as que mais saíram" piora o rateio em vez de melhorar. Seção 19 de `METODOLOGIA.md`.
+
+## Novidades da v15
+
+A tabela de Onde apostar ganhou duas colunas de índice — aposta mínima e com uma dezena a mais — e elas mostram o mesmo número de propósito. Sete vezes o preço na Mega-Sena, o mesmo 0,376. Verificado recalculando o índice do desdobramento do zero: iguais até a sexta casa decimal. Seção 20 de `METODOLOGIA.md`.

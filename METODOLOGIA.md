@@ -570,3 +570,25 @@ E um botão, **Completar fugindo da multidão**, que preenche as dezenas que fal
 Verificado sobre 32 gerações na Mega-Sena: média de 1,66 dezenas ≤ 31 contra 3,10 esperadas por acaso, nenhuma geração passando de 2, e sequência máxima de 2.
 
 A separação entre "medido" e "raciocínio" fica na tela, ao lado de cada bandeira. É a mesma regra usada nos critérios do Super Sete: quando não há medição, o painel diz que não há.
+
+## 20. A coluna que prova a igualdade (v15)
+
+Pedido: mostrar, na aba Onde apostar, qual seria o índice CRIVO ao marcar uma dezena a mais em cada modalidade. A tabela ganhou duas colunas de índice, **mínima** e **+1 dezena**, e elas exibem exatamente o mesmo número.
+
+A igualdade é a resposta, e a coluna existe para torná-la visível em vez de argumentável. Marcar n+1 dezenas equivale a comprar C(n+1, pick) apostas simples, e a Caixa paga cada combinação vencedora separadamente. Por linearidade da esperança — cada combinação do desdobramento é, ela própria, uma aposta simples válida — o retorno esperado total é exatamente C(n+1, pick) vezes o de uma aposta simples. O custo sobe pelo mesmo fator. A razão entre os dois não se move.
+
+O que a coluna deixa visível é o preço embaixo de cada número:
+
+| Modalidade | Aposta mínima | Índice | Com +1 | Índice |
+|---|---|---|---|---|
+| Lotofácil | R$ 3,50 | 0,632 | 16 dezenas — R$ 56,00 | 0,632 |
+| Quina | R$ 3,00 | 0,469 | 6 dezenas — R$ 18,00 | 0,469 |
+| Mega-Sena | R$ 6,00 | 0,376 | 7 dezenas — R$ 42,00 | 0,376 |
+| Super Sete | R$ 3,00 | 0,331 | 8 dígitos — R$ 6,00 | 0,331 |
+| Dia de Sorte | R$ 2,50 | 0,287 | 8 dezenas — R$ 20,00 | 0,287 |
+
+Sete vezes o preço na Mega-Sena, o mesmo índice. A verificação foi feita recalculando o índice do desdobramento do zero — retorno esperado total dividido por custo total — e comparando com o da aposta mínima: iguais até a sexta casa decimal em todas as modalidades onde o desdobramento existe.
+
+Lotomania e Timemania aparecem com travessão: nelas a aposta tem tamanho fixo, 50 e 10 dezenas, e não há o que desdobrar. O Super Sete tem tratamento próprio — "uma a mais" ali significa marcar dois dígitos em uma das sete colunas, o que dobra o custo pelo produto das escolhas, e o índice também não muda.
+
+Esta seção e a 18 dizem a mesma coisa por dois caminhos diferentes, o que é proposital: uma pela aritmética do custo por unidade de chance, outra pela tabela lado a lado. **Não existe desconto por volume na sorte.**

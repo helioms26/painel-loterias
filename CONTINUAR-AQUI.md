@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.0**, publicada em 27/07/2026 (segunda publicação do dia).
+Última versão: **19.2**, 28/07/2026.
 
 ---
 
@@ -278,3 +278,47 @@ Na v18 o defeito foi teste que não clicava nos botões. Na v19 foi teste que n�
 ### Aposta real registrada
 
 Em 27/07/2026 o Hélio fez duas apostas na Lotofácil para o concurso 3746 (prêmio estimado R$ 9 milhões, índice CRIVO 0,487, percentil 98,9 da história da modalidade, gatilho R$ 31,7 milhões). Os jogos sugeridos e a comparação entre desdobramento e jogos separados estão em `jogos-3746.md`. **Quando sair o resultado, vale conferir — não para validar o método, que não prevê sorteio nenhum, mas porque um registro honesto de apostas reais é o único jeito de o painel não virar autoelogio.**
+
+
+## O que a v19.1 mudou
+
+### O histórico de apostas sumia ao trocar de versão
+
+O registro mora no `localStorage`. Em páginas abertas por `file://` o Chrome guarda um baú **por arquivo**: `painel-loterias-offline_7.html` e `_8.html` não enxergam o mesmo armazenamento. Baixar a versão nova parecia apagar o histórico — ele continuava preso no arquivo anterior.
+
+Três defesas, nesta ordem, e a ordem importa:
+
+1. **Semente versionada** em `site/data/apostas.json`. O `bundle.py` embute como qualquer outro dado, então toda versão nova já nasce com o histórico dentro.
+2. **Exportar / importar JSON** no topo da aba, para o histórico ser um arquivo do usuário e não um detalhe do navegador.
+3. **Mesclagem por chave estável** (`jogo|concurso|dezenas`), nunca sobrescrita — o que já está no navegador tem prioridade sobre a semente.
+
+A versão anterior tinha exportar/importar escondido no rodapé da aba e deduplicava por `id`, que é regerado a cada mesclagem: importar o mesmo arquivo duas vezes duplicava tudo. O painel antigo foi removido para não haver dois widgets concorrentes.
+
+**A semente não traz sombra pronta, e isso é deliberado.** A sombra aleatória nasce no instante do registro e se perde junto com o armazenamento. Inventar números seria fabricar dado num painel cujo argumento inteiro é não fabricar dado. Ela é regerada de forma determinística a partir da chave da aposta, e marcada com `sombraRegerada` para ninguém confundir com a original.
+
+**Ao adicionar uma aposta nova, atualize `site/data/apostas.json`.** É ele que sobrevive à troca de arquivo.
+
+### Placar escondia apostas
+
+O placar filtrava por `DB[x.jogo]` e ignorava, sem avisar, as apostas de modalidades ainda não carregadas em memória — o total apostado saía menor que o real. Agora a aba carrega toda modalidade presente no histórico e avisa se alguma ficar de fora.
+
+### Primeiro resultado real
+
+Lotofácil 3746, 27/07/2026: `01 03 04 06 07 08 09 10 14 15 17 18 21 22 24`, acumulou. A aposta do Hélio (16 dezenas, R$ 56) fez 8 acertos, sem prêmio; a sombra fez 10, também sem prêmio. A Quina 7076 fez 0 de 5.
+
+O sorteio caiu num perfil que o método classifica como pouco disputado — sequência máxima 5, soma 179 — e as quatro faixas premiadas vieram **todas abaixo do esperado, num gradiente monótono**: 0,90 na faixa de 11 acertos, 0,88 na de 12, 0,87 na de 13, 0,82 na de 14, e zero na de 15 contra 3,79 esperados. É a assinatura de um sorteio impopular. Seção 24.4 de `METODOLOGIA.md`, **com o aviso de que um concurso não valida nada** — está registrado porque é o primeiro ponto fora da amostra que gerou os coeficientes, e porque registro que só guarda o que dá certo não vale nada.
+
+### Base de dados
+
+Atualizada até 27/07/2026: Lotofácil 3746, Quina 7076, Dupla-Sena 2988, Lotomania 2955, Dia de Sorte 1256, Super Sete 878. Mega-Sena, Timemania e +Milionária não tiveram sorteio nesse dia. Integridade conferida: nenhum concurso faltando, tamanhos de sorteio consistentes nas nove modalidades.
+
+**Atenção para quem for reconstruir na máquina do Hélio:** em 28/07/2026 a pasta `site/data/` local tinha só 3 dos 29 arquivos. O painel de arquivo único não sofre com isso porque os dados estão embutidos, mas `site/index.html` não roda sem eles. Se for editar a fonte, confira a pasta antes.
+
+
+## O que a v19.2 mudou
+
+Botões `↻` e `↻+` em cada linha do histórico. O primeiro repete as mesmas dezenas no próximo concurso da modalidade; o segundo mantém tamanho e custo e procura dezenas novas com perfil de rateio melhor.
+
+Duas recusas deliberadas no `↻+`: ele **só troca com melhora estrita** — empate não é melhora, e trocar por fator idêntico jogaria fora a estrutura escolhida sem ganho nenhum; e em modalidade sem medição de popularidade ele **se recusa a trocar** e explica que seria sorteio no escuro.
+
+A análise que motivou tudo isso está na seção 24.6 de `METODOLOGIA.md`, e ela vale como regra geral: **um desdobramento vale o que valem os seus piores subconjuntos, não o conjunto inteiro.** O que se procura não é um conjunto bom, é um conjunto cujo subconjunto mais fraco ainda seja bom — o que favorece estruturas redundantes, com mais de um padrão anti-multidão, para que nenhuma remoção isolada destrua todos de uma vez.

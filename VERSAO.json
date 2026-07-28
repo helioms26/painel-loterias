@@ -1,5 +1,5 @@
 {
-  "versao": "19.0",
+  "versao": "19.2",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -371,6 +371,19 @@
       "Card de custo do painel de favoritos usava o preco da aposta simples para qualquer tamanho.",
       "Tabela dos tres eixos passa a ser ordenavel por coluna.",
       "numDaCelula nao ordenava colunas escritas como 1 em N (devolvia sempre 1); valia para todas as tabelas ordenaveis."
+    ],
+    "19.1": [
+      "Historico de apostas sumia ao trocar de arquivo (localStorage do Chrome e por arquivo em file://). Semente versionada em data/apostas.json + exportar/importar + mesclagem por chave estavel.",
+      "Placar ignorava em silencio apostas de modalidades nao carregadas; agora carrega todas e avisa.",
+      "Deduplicacao de importacao era por id regerado (importar duas vezes duplicava tudo).",
+      "Dados atualizados ate 27/07/2026: lotofacil 3746, quina 7076, duplasena 2988, lotomania 2955, diadesorte 1256, supersete 878.",
+      "Primeiro resultado real registrado e analisado (secao 24.4)."
+    ],
+    "19.2": [
+      "Botoes de repetir aposta no historico: acumula repete as mesmas dezenas; mais procura dezenas de perfil medido melhor.",
+      "O botao de dezenas novas so troca com melhora estrita; empate nao e melhora.",
+      "Em modalidade sem medicao o botao se recusa a trocar e explica.",
+      "Analise: desdobramento vale o que valem seus piores subconjuntos (secao 24.6)."
     ]
   },
   "apostasReais": [
@@ -383,7 +396,68 @@
       "indiceCrivo": 0.4871,
       "percentilHistorico": 98.9,
       "gatilho": 31739231,
-      "resultado": "pendente"
+      "resultado": "sem premio",
+      "acertos": 8,
+      "dezenas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        10,
+        11,
+        14,
+        16,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "sorteio": [
+        1,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        14,
+        15,
+        17,
+        18,
+        21,
+        22,
+        24
+      ],
+      "premio": 0
+    },
+    {
+      "data": "27/07/2026",
+      "modalidade": "quina",
+      "concurso": 7076,
+      "apostas": 1,
+      "custo": 3,
+      "dezenas": [
+        12,
+        15,
+        32,
+        65,
+        75
+      ],
+      "sorteio": [
+        1,
+        18,
+        22,
+        35,
+        41
+      ],
+      "acertos": 0,
+      "premio": 0,
+      "resultado": "sem premio"
     }
   ],
   "commit": "e1a554990337dcb331edd4905b4f11efc0fa142c",

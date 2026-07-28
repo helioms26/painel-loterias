@@ -887,3 +887,86 @@ denominador, e menor = melhor. Células sem dado ("—") vão para o fim nos doi
 em vez de serem tratadas como o menor valor possível.
 
 O defeito valia para **todas** as tabelas ordenáveis do painel, não só a dos três eixos.
+
+### 24.4 Primeiro resultado real registrado — concurso 3746
+
+Sorteio de 27/07/2026: `01 03 04 06 07 08 09 10 14 15 17 18 21 22 24`. Acumulou.
+
+O sorteio caiu num perfil que o método classifica como **pouco disputado**: maior
+sequência 5 (fator 0,83×) e soma 179, abaixo de 185 (0,90×). A previsão, portanto, era
+de *menos* ganhadores que o esperado. Com R$ 43.366.662,50 arrecadados, ou 12.390.475
+combinações de 15 a R$ 3,50, o esperado por faixa e o observado foram:
+
+| faixa | esperado | observado | obs/esp |
+|---|---|---|---|
+| 11 acertos | 1.086.551 | 977.773 | 0,90 |
+| 12 acertos | 206.963 | 181.576 | 0,88 |
+| 13 acertos | 17.910 | 15.510 | 0,87 |
+| 14 acertos | 569 | 464 | 0,82 |
+| 15 acertos | 3,79 | **0** | — |
+
+O gradiente é monótono: **quanto mais parecida com o sorteio, mais a faixa fica abaixo
+do esperado.** É a assinatura exata de um sorteio impopular — a preferência da multidão
+morde mais forte justamente onde a aposta se aproxima do resultado.
+
+**Isto é um concurso, não uma validação.** A direção bate com o efeito medido na seção
+24, mas um único sorteio não distingue efeito de ruído, e o zero na faixa de 15 tem
+probabilidade nada extraordinária (~2% sob Poisson, mais que isso com superdispersão).
+Registrado aqui porque é o primeiro ponto fora da amostra que gerou os coeficientes —
+e porque um registro que só guardasse os concursos favoráveis não valeria nada.
+
+### 24.5 O histórico de apostas sumia ao trocar de versão
+
+O registro mora no `localStorage`. Em páginas abertas por `file://`, o Chrome mantém um
+baú **por arquivo**: `painel-loterias-offline_7.html` e `_8.html` não enxergam o mesmo
+armazenamento. Baixar a versão nova parecia apagar o histórico; ele continuava preso no
+arquivo anterior. Três defesas, nesta ordem:
+
+1. **Semente versionada** em `site/data/apostas.json`, embutida pelo `bundle.py` como
+   qualquer outro dado — entra automaticamente em todo arquivo novo.
+2. **Exportar / importar JSON**, para o histórico ser um arquivo do usuário.
+3. **Mesclagem por chave estável** (`jogo|concurso|dezenas`), nunca sobrescrita: o que
+   já está no navegador tem prioridade sobre a semente. A versão anterior deduplicava
+   por `id`, que é regerado — importar duas vezes duplicava tudo.
+
+A semente **não** traz a sombra aleatória pronta. A sombra nasce no instante do registro
+e se perde junto com o armazenamento; inventar números seria fabricar dado. Ela é
+regerada de forma determinística a partir da chave da aposta e marcada como regerada.
+
+Junto saiu outro defeito silencioso: o placar filtrava por `DB[x.jogo]` e ignorava, sem
+avisar, as apostas de modalidades ainda não carregadas — o total apostado saía menor que
+o real. Agora a aba carrega toda modalidade presente no histórico, e avisa se alguma
+ficar de fora.
+
+### 24.6 Repetir a mesma aposta — e por que o desdobramento do Hélio é melhor que o nosso
+
+Repetir dezenas ou trocá-las **não muda nada** na chance: o sorteio não tem memória, e
+toda combinação de 15 vale 1 em 3.268.760 sempre. A pergunta só tem conteúdo no eixo do
+rateio, e aí ela tem uma resposta clara.
+
+O jogo registrado — `01 02 03 04 05 10 11 14 16 19 20 21 22 23 24 25` — mede **0,70×
+em todos os 16 desdobramentos**: média 0,70, mínimo 0,70, máximo 0,70. O conjunto que
+eu tinha proposto (`02 04 06 07 08 10 13 14 15 16 17 18 21 23 24 25`) mede 0,70× como
+conjunto, mas seus desdobramentos variam de 0,70× a **2,20×**, com média 1,02×.
+
+A causa é estrutural. O jogo do Hélio tem **duas linhas inteiras do volante** (01–05 e
+21–25, fator medido 0,72×) e duas sequências longas separadas por um miolo esparso.
+Tirar qualquer uma das 16 dezenas não consegue derrubar a maior sequência abaixo de 4
+nem quebrar as duas linhas ao mesmo tempo. O meu tinha um único bloco de seis (13–18):
+tirar o 15 ou o 16 parte esse bloco em 13-14 e 17-18, a maior sequência cai para 3 e o
+subconjunto despenca no perfil mais jogado do país.
+
+**A regra geral que sai daqui: um desdobramento vale o que valem os seus PIORES
+subconjuntos, não o conjunto inteiro.** O que se procura não é um conjunto bom, é um
+conjunto cujo subconjunto mais fraco ainda seja bom — e isso favorece estruturas
+redundantes, com mais de um padrão anti-multidão, para que nenhuma remoção isolada
+destrua todos.
+
+Efeito no índice para o concurso 3747 (prêmio estimado R$ 15.000.000): 0,625 no perfil
+médio contra **0,747** no perfil 0,70× — R$ 41,83 de retorno esperado sobre R$ 56 em vez
+de R$ 35,01.
+
+Os botões `↻` e `↻+` no histórico repetem uma aposta e procuram dezenas de perfil melhor.
+O `↻+` **só troca se conseguir melhora estrita**; empate não é melhora, e trocar por um
+fator idêntico jogaria fora a estrutura escolhida sem ganho nenhum. Em modalidade sem
+medição ele se recusa a trocar e diz por quê.

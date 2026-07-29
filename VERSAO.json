@@ -1,5 +1,5 @@
 {
-  "versao": "19.2",
+  "versao": "19.3",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -384,6 +384,12 @@
       "O botao de dezenas novas so troca com melhora estrita; empate nao e melhora.",
       "Em modalidade sem medicao o botao se recusa a trocar e explica.",
       "Analise: desdobramento vale o que valem seus piores subconjuntos (secao 24.6)."
+    ],
+    "19.3": [
+      "Base ate 28/07/2026: lotofacil 3747, megasena 3037, quina 7077, timemania 2421, diadesorte 1257.",
+      "Diario fora da amostra na aba Evidencias: recalcula sozinho a cada atualizacao e registra acertos e erros do coeficiente contra concursos posteriores a medicao.",
+      "Concurso sem padrao medido entra marcado e fora da conta, em vez de contar como acerto.",
+      "Lotofacil 3747 teve 6 ganhadores de 15 (R$ 2.125.438,65 cada) e nao acumulou."
     ]
   },
   "apostasReais": [

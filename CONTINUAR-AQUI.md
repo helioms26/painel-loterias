@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.2**, 28/07/2026.
+Última versão: **19.3**, 29/07/2026.
 
 ---
 
@@ -322,3 +322,14 @@ Botões `↻` e `↻+` em cada linha do histórico. O primeiro repete as mesmas 
 Duas recusas deliberadas no `↻+`: ele **só troca com melhora estrita** — empate não é melhora, e trocar por fator idêntico jogaria fora a estrutura escolhida sem ganho nenhum; e em modalidade sem medição de popularidade ele **se recusa a trocar** e explica que seria sorteio no escuro.
 
 A análise que motivou tudo isso está na seção 24.6 de `METODOLOGIA.md`, e ela vale como regra geral: **um desdobramento vale o que valem os seus piores subconjuntos, não o conjunto inteiro.** O que se procura não é um conjunto bom, é um conjunto cujo subconjunto mais fraco ainda seja bom — o que favorece estruturas redundantes, com mais de um padrão anti-multidão, para que nenhuma remoção isolada destrua todos de uma vez.
+
+
+## O que a v19.3 mudou
+
+Base até 28/07/2026 (Lotofácil 3747, Mega-Sena 3037, Quina 7077, Timemania 2421, Dia de Sorte 1257), integridade conferida nas nove.
+
+E um painel novo que talvez seja o mais importante do projeto: o **diário fora da amostra**, na aba Evidências. Os coeficientes de popularidade foram medidos numa base que terminava na Lotofácil 3745 e na Mega-Sena 3036; tudo depois é teste cego. O painel recalcula sozinho a cada atualização, registra acerto e erro com o mesmo destaque, e ninguém consegue escolher quais concursos entram.
+
+Os dois primeiros da Lotofácil vieram na direção prevista com gradientes monótonos e opostos entre si — 3746 previsto 0,54× e observado caindo de 0,90 a 0,00 conforme a faixa sobe; 3747 previsto 1,72× e observado subindo de 0,99 a 1,25. A Mega-Sena 3037 **errou**: previsto 1,41×, observado 0,59 na faixa de 5. Placar 2 de 3, que não é evidência de nada — está tudo escrito na seção 24.7 de `METODOLOGIA.md`, inclusive o cálculo de que acertar 2 de 3 por acaso tem probabilidade 3/8.
+
+Detalhe que vale preservar: quando nenhum padrão medido aparece no sorteio, o fator fica em 1,00 e **não há previsão**. Esse concurso entra marcado e fora da conta. Contar fator 1,00 como acerto seria inflar o placar de graça; contar como erro, o contrário. A Quina não tem diário porque foi medida e deu nulo — sem coeficiente não há o que testar.

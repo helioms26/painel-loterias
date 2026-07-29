@@ -970,3 +970,43 @@ Os botões `↻` e `↻+` no histórico repetem uma aposta e procuram dezenas de
 O `↻+` **só troca se conseguir melhora estrita**; empate não é melhora, e trocar por um
 fator idêntico jogaria fora a estrutura escolhida sem ganho nenhum. Em modalidade sem
 medição ele se recusa a trocar e diz por quê.
+
+### 24.7 Diário fora da amostra — os dois primeiros concursos cegos
+
+Os coeficientes da seção 24 foram medidos numa base que terminava na Lotofácil 3745 e na
+Mega-Sena 3036. Tudo depois disso é teste cego: o número já estava escrito quando a bola
+saiu. O painel agora mantém esse diário sozinho, na aba Evidências — recalcula a cada
+atualização da base, e ninguém escolhe quais concursos entram.
+
+**Lotofácil 3746** (27/07), `01 03 04 06 07 08 09 10 14 15 17 18 21 22 24`: maior
+sequência 5, soma 179, linha 06–10 inteira. Fator previsto **0,54×** — pouco disputado.
+
+**Lotofácil 3747** (28/07), `01 02 04 05 06 08 09 11 12 13 18 19 21 24 25`: maior
+sequência 3, soma 178. Fator previsto **1,72×** — muito disputado.
+
+| faixa | 3746 (previsto 0,54×) | 3747 (previsto 1,72×) |
+|---|---|---|
+| 11 acertos | 0,90 | 0,99 |
+| 12 acertos | 0,88 | 1,03 |
+| 13 acertos | 0,87 | 1,04 |
+| 14 acertos | 0,82 | 1,04 |
+| 15 acertos | 0,00 (0 de 3,79 esperados) | **1,25** (6 de 4,81) |
+
+Dois sorteios seguidos, perfis opostos, **gradientes opostos e monótonos**: no impopular
+a razão cai conforme a faixa sobe; no popular, sobe. É a forma que a teoria prevê —
+a preferência da multidão morde mais forte justamente onde a aposta se aproxima do
+resultado — e não é uma forma que ruído produza com facilidade.
+
+**Mega-Sena 3037** (28/07), `02 11 22 30 51 54`: nenhuma consecutiva, fator previsto
+**1,41×**. Observado 0,80 na faixa de 4 acertos e 0,59 na de 5. **Errou.** Fica
+registrado com o mesmo destaque dos acertos, porque é para isso que o diário existe.
+
+**Placar: 2 de 3.** Isso não é evidência de nada. Com três concursos, acertar dois por
+acaso tem probabilidade 3/8. O valor do quadro hoje é existir, crescer sozinho e
+registrar os erros — um teste de sinal só começa a dizer algo perto de vinte concursos.
+
+Detalhe de honestidade no código: quando nenhum padrão medido aparece no sorteio, o
+fator fica colado em 1,00 e **não há previsão**. Esses concursos entram na tabela
+marcados e ficam fora da conta; contar fator 1,00 como acerto ou erro seria fraude de
+placar nos dois sentidos. A Quina, medida e nula em tudo, não tem diário — sem
+coeficiente não há o que testar.

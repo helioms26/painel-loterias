@@ -1,5 +1,5 @@
 {
-  "versao": "19.7",
+  "versao": "19.7.1",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -417,6 +417,9 @@
       "Conferencia de taxa: cotas x valor da cota contra o custo real do bilhete, com o percentual da diferenca.",
       "Regra das consecutivas da Mega-Sena so codificava o lado popular (1,41x); o lado 0,71x estava faltando.",
       "Registrados dois boloes da Mega-Sena 3039 (R$ 14,00 e R$ 12,60)."
+    ],
+    "19.7.1": [
+      "Correcao no registro: segundo jogo do bolao 1 e 07 10 14 17 19 26 43 (estava 11 no lugar do 10)."
     ]
   },
   "apostasReais": [

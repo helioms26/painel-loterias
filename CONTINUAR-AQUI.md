@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.6**, 01/08/2026.
+Última versão: **19.7**, 01/08/2026.
 
 ---
 
@@ -367,3 +367,18 @@ A reescrita foi **validada contra o arquivo antigo antes de substituí-lo** e re
 Base atual: **4.642 sorteios com prêmio principal observado, 5 cruzaram 1,00** — quatro deles em sorteios especiais.
 
 **Dois detalhes que vale não repetir.** A aferição do preço reconstruído — aquela que valida a varredura sozinha — precisa de janela por **data**, não por contagem. "Últimos 60 sorteios com ganhador" atravessa cinco anos no Super Sete e acusa 12% de erro sem nada estar errado; "de 2025 em diante" atravessa o último aumento de preço na Lotofácil. Doze meses corridos resolve os dois, e onde a amostra fica pequena demais (Super Sete, n=4) isso é dito em vez de virar alarme falso. E o `_meta` do arquivo passou a ser **calculado**: antes trazia "4.635 sorteios" escrito à mão, número que o painel exibe em texto corrido e que teria envelhecido em silêncio a cada coleta.
+
+
+## O que a v19.7 mudou — bolão
+
+Bolão virou modalidade de registro, e ele quebra três coisas do modelo antigo de uma vez: são **vários jogos no mesmo bilhete**, o que você paga (a cota) **não é** o que o bilhete custa, e o prêmio que chega até você é uma **fração** do que o bilhete ganhou.
+
+Modelar como "várias apostas simples separadas" erraria nos três — perderia o vínculo entre os jogos, inflaria o gasto em até doze vezes e pagaria o prêmio integral a quem tem uma cota. Então a aposta passou a ter uma **lista** de jogos (`jogos`), e o bolão carrega `valorCota`, `totalCotas` e `cotas`. `custo` é o seu desembolso, `custoTotal` é o bilhete, participação é `cotas ÷ totalCotas`.
+
+A **sombra** de um bolão tem o mesmo formato: um jogo aleatório para cada jogo do bilhete. Sombra de um jogo só compararia coisas diferentes e daria vantagem ao bolão de graça.
+
+**A conferência que ninguém faz na lotérica** está no formulário: cotas × valor da cota contra o custo real do bilhete. Se sobrar, é taxa de serviço — pode ser combinada, mas sai do seu bolso e agora aparece com o percentual.
+
+O `↻+` **se recusa a agir num bolão**. As dezenas foram escolhidas por quem montou o bilhete; trocá-las criaria um registro que não corresponde ao que foi comprado.
+
+**E apareceu um lado faltando na medição.** A regra das consecutivas da Mega-Sena só codificava o lado popular — "nenhuma colada = 1,41×". O jogo COM coladas caía no neutro 1,00, quando a medição diz **0,71×**. Metade do efeito estava escondida, justamente a metade que favorece quem joga colado. Agora é faixa com os dois lados, como já era na Lotofácil. Vale a lição geral: **quando uma medição tem dois lados, os dois entram no modelo** — codificar só um transforma o neutro em referência errada.

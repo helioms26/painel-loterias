@@ -1,5 +1,5 @@
 {
-  "versao": "19.6",
+  "versao": "19.7",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -409,6 +409,14 @@
       "historico_crivo.json regerado com a base ate 31/07/2026: 4.642 sorteios avaliados, 5 cruzaram 1,00.",
       "_meta do arquivo passou a ser calculado; antes trazia 4.635 escrito a mao e envelhecia em silencio.",
       "Afericao do preco reconstruido passou a usar janela de 12 meses por data, com amostra pequena sinalizada."
+    ],
+    "19.7": [
+      "Bolao vira modalidade de registro: lista de jogos, valor da cota, total de cotas, cotas compradas.",
+      "Custo registrado passa a ser o seu desembolso e o premio conferido e a sua fracao; custoTotal guarda o bilhete inteiro.",
+      "Sombra de bolao tem o mesmo formato: um jogo aleatorio para cada jogo do bilhete.",
+      "Conferencia de taxa: cotas x valor da cota contra o custo real do bilhete, com o percentual da diferenca.",
+      "Regra das consecutivas da Mega-Sena so codificava o lado popular (1,41x); o lado 0,71x estava faltando.",
+      "Registrados dois boloes da Mega-Sena 3039 (R$ 14,00 e R$ 12,60)."
     ]
   },
   "apostasReais": [
@@ -483,6 +491,16 @@
       "acertos": 0,
       "premio": 0,
       "resultado": "sem premio"
+    },
+    {
+      "data": "01/08/2026",
+      "modalidade": "megasena",
+      "concurso": 3039,
+      "tipo": "bolao",
+      "apostas": 2,
+      "custo": 26.6,
+      "detalhe": "cota R$14 de 12 (4 jogos de 7) + cota R$12,60 de 10 (3 jogos de 7)",
+      "resultado": "pendente"
     }
   ],
   "commit": "e1a554990337dcb331edd4905b4f11efc0fa142c",

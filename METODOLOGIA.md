@@ -1109,3 +1109,40 @@ registrar porque errei duas vezes:
 E o `_meta` do arquivo passou a ser **calculado**. Antes trazia "4.635 sorteios" escrito
 à mão, número que o painel exibe em texto corrido — ele teria envelhecido em silêncio a
 cada coleta, e ninguém perceberia.
+
+### 24.11 Bolão, e as três coisas que ele quebra no modelo (v19.7)
+
+Até aqui uma aposta tinha **um** conjunto de dezenas, o custo registrado era o preço do
+bilhete e o prêmio conferido era o prêmio inteiro. Bolão quebra os três de uma vez:
+
+1. são **vários jogos no mesmo bilhete**, e eles não são apostas independentes — quem
+   escolheu foi quem montou;
+2. o que você paga (**a cota**) não é o que o bilhete custa;
+3. o prêmio que chega até você é uma **fração** do que o bilhete ganhou.
+
+Modelar bolão como "várias apostas simples separadas" erraria nos três: perderia o
+vínculo entre os jogos, inflaria o gasto registrado em até doze vezes e pagaria o prêmio
+integral a quem tem uma cota. Por isso a aposta passou a ter uma **lista** de jogos, e o
+bolão carrega `valorCota`, `totalCotas` e `cotas`. `custo` é o seu desembolso,
+`custoTotal` é o bilhete inteiro, e a participação é `cotas ÷ totalCotas`.
+
+A **sombra aleatória** de um bolão tem o mesmo formato: um jogo sorteado para cada jogo
+do bilhete, do mesmo tamanho. Uma sombra de um jogo só compararia coisas diferentes e
+favoreceria o bolão de graça.
+
+**A conferência que ninguém faz na lotérica.** O painel multiplica cotas × valor da cota
+e compara com o custo real do bilhete. Se sobrar, a diferença é taxa de serviço — pode
+ser perfeitamente combinada, mas sai do seu bolso e agora aparece escrita, com o
+percentual. Nos dois bolões registrados em 01/08/2026 a conta fechou exata: 12 × R$ 14,00
+= R$ 168,00 = 4 jogos de 7 dezenas; 10 × R$ 12,60 = R$ 126,00 = 3 jogos de 7 dezenas.
+Sem taxa embutida.
+
+**Um lado da medição estava faltando.** Ao analisar esses bolões apareceu que a regra das
+consecutivas da Mega-Sena só codificava o lado popular: "nenhuma colada = 1,41×". O jogo
+COM coladas caía no neutro 1,00, quando a medição diz **0,71×**. O painel escondia metade
+do efeito — justamente a metade que favorece quem joga colado. Agora a regra é uma faixa
+com os dois lados, como já era na Lotofácil.
+
+O botão de trocar dezenas (`↻+`) **se recusa a agir num bolão**: as dezenas foram
+escolhidas por quem montou o bilhete, e trocá-las produziria um registro que não
+corresponde ao que foi comprado.

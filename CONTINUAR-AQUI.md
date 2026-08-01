@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.3**, 29/07/2026.
+Última versão: **19.6**, 01/08/2026.
 
 ---
 
@@ -30,6 +30,7 @@ Tudo em `C:\Users\hmsue\OneDrive\IA_meus projetos\13 - loteria`.
 | Planilhas oficiais baixadas | `planilhas_caixa/` |
 | Script de atualização | `dashboard/atualizar_tudo.ps1` |
 | Empacotador | `bundle.py` |
+| Varredura histórica do CRIVO | `gerar_historico_crivo.py` |
 
 A distinção que mais confunde: `site/index.html` é a **fonte** e busca os dados por `fetch`; `repo-github/index.html` é o **produto**, com `window.EMBEDDED_DATA` embutido. Nunca edite o segundo à mão — ele é gerado.
 
@@ -333,3 +334,36 @@ E um painel novo que talvez seja o mais importante do projeto: o **diário fora 
 Os dois primeiros da Lotofácil vieram na direção prevista com gradientes monótonos e opostos entre si — 3746 previsto 0,54× e observado caindo de 0,90 a 0,00 conforme a faixa sobe; 3747 previsto 1,72× e observado subindo de 0,99 a 1,25. A Mega-Sena 3037 **errou**: previsto 1,41×, observado 0,59 na faixa de 5. Placar 2 de 3, que não é evidência de nada — está tudo escrito na seção 24.7 de `METODOLOGIA.md`, inclusive o cálculo de que acertar 2 de 3 por acaso tem probabilidade 3/8.
 
 Detalhe que vale preservar: quando nenhum padrão medido aparece no sorteio, o fator fica em 1,00 e **não há previsão**. Esse concurso entra marcado e fora da conta. Contar fator 1,00 como acerto seria inflar o placar de graça; contar como erro, o contrário. A Quina não tem diário porque foi medida e deu nulo — sem coeficiente não há o que testar.
+
+
+## O que a v19.4 mudou
+
+**"Minhas apostas" mudou de lugar.** Saiu da fila de abas e virou um chip ao lado de "Onde apostar". O motivo não é estético: as abas trocam de conteúdo conforme a modalidade selecionada, e o registro não é uma visão *de* uma modalidade — é a carteira inteira, atravessando as nove. A fila de abas some quando ele está aberto, como já acontecia com "Onde apostar", e clicar numa modalidade sai do registro para a Visão geral.
+
+**Gráfico do histórico**, com dois modos pela mesma disciplina da aba "Onde apostar" — perguntas diferentes, gráficos diferentes. *Por modalidade*: barras horizontais de gasto e prêmio, escala do zero, valor escrito em cada barra. *No tempo*: saldo acumulado aposta a aposta, com a sombra aleatória tracejada.
+
+**O detalhe que vale guardar** é o de escala. Um prêmio de faixa alta é milhares de vezes o custo de uma aposta. No teste com R$ 2,1 milhão contra R$ 59,50 gastos, o eixo compartilhado achatou todas as barras de gasto a menos de um pixel — a comparação entre modalidades, razão de ser do gráfico, sumiu. A saída **não** foi escala logarítmica, que em dinheiro engana quem lê rápido: o gráfico detecta o caso (prêmio máximo acima de 4× o gasto máximo), dá um eixo para cada série e **diz na figura** que fez isso, com a razão entre os máximos escrita. Enquanto os valores forem comparáveis, o eixo continua sendo um só. Seção 24.8 de `METODOLOGIA.md`.
+
+
+## O que a v19.5 mudou
+
+Base até **31/07/2026**: Lotofácil 3750, Quina 7080, Mega-Sena 3038, Lotomania 2957, Dia de Sorte 1260, Super Sete 880, Timemania 2422, +Milionária 376. Integridade conferida nas nove — nenhum concurso faltando, tamanhos consistentes, datas e prêmios presentes, nenhuma repetição exata do último sorteio.
+
+**Uma lacuna declarada:** a Dupla-Sena 2989 (29/07) entrou, mas o **2990 (31/07) não foi publicado** em nenhuma das duas fontes consultadas no momento da coleta — o mirror devolveu 404 e o endpoint oficial devolveu 500. A base fica em 2989 e o concurso precisa ser buscado na próxima atualização. Não inventamos a linha.
+
+**Coleta pela nuvem.** A ponte com a máquina caiu e o PowerShell ficou indisponível, então os concursos vieram por requisição direta às APIs a partir do ambiente do Cowork, um concurso por vez, com a mesma varredura para a frente de sempre. Ficou registrado que o endpoint `/latest` do mirror estava **onze dias atrasado** na Dupla-Sena (devolvia o 2985, de 20/07) — a advertência de nunca confiar nele continua valendo, e agora tem um caso novo.
+
+**Diário fora da amostra: a Lotofácil está em 5 de 5.** Sob uma moeda honesta isso sai com probabilidade 1/32. Antes de comemorar, três ressalvas que estão escritas na seção 24.9 de `METODOLOGIA.md` e que precisam viajar junto com o número: quatro dos cinco sorteios caíram no mesmo perfil, então não são cinco testes independentes; a faixa de 15 acertos não acompanhou em dois deles, e é por isso que o placar usa a mediana das faixas; e a magnitude prevista (2,20×) é o dobro da observada (~1,15×) — a direção acerta, o tamanho não.
+
+
+## O que a v19.6 mudou
+
+**A lacuna da v19.5 fechou.** A Dupla-Sena 2990, de 31/07, apareceu nas fontes e entrou. Base completa até 31/07/2026 nas nove modalidades, sem concurso faltando.
+
+**A varredura histórica virou script.** Até agora o `historico_crivo.json` tinha sido gerado uma vez, num ambiente que não existe mais, e a seção 16 descrevia o procedimento em prosa. Uma varredura que ninguém consegue rodar de novo é uma afirmação, não uma medição. Agora é `gerar_historico_crivo.py`, na raiz do projeto — rode depois de cada coleta grande.
+
+A reescrita foi **validada contra o arquivo antigo antes de substituí-lo** e reproduz todos os máximos históricos: Mega-Sena 1,1549 (contra 1,1548 guardado, arredondamento na quarta casa), Lotofácil 0,6930, Quina 1,0219, Lotomania 1,3553, Timemania 1,0135, Dia de Sorte 0,8316, Dupla-Sena 0,7130, Super Sete 0,5892. Se um dia essa reprodução parar de bater, é sinal de que a base ou a fórmula quebrou.
+
+Base atual: **4.642 sorteios com prêmio principal observado, 5 cruzaram 1,00** — quatro deles em sorteios especiais.
+
+**Dois detalhes que vale não repetir.** A aferição do preço reconstruído — aquela que valida a varredura sozinha — precisa de janela por **data**, não por contagem. "Últimos 60 sorteios com ganhador" atravessa cinco anos no Super Sete e acusa 12% de erro sem nada estar errado; "de 2025 em diante" atravessa o último aumento de preço na Lotofácil. Doze meses corridos resolve os dois, e onde a amostra fica pequena demais (Super Sete, n=4) isso é dito em vez de virar alarme falso. E o `_meta` do arquivo passou a ser **calculado**: antes trazia "4.635 sorteios" escrito à mão, número que o painel exibe em texto corrido e que teria envelhecido em silêncio a cada coleta.

@@ -1,5 +1,5 @@
 {
-  "versao": "19.3",
+  "versao": "19.6",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -390,6 +390,25 @@
       "Diario fora da amostra na aba Evidencias: recalcula sozinho a cada atualizacao e registra acertos e erros do coeficiente contra concursos posteriores a medicao.",
       "Concurso sem padrao medido entra marcado e fora da conta, em vez de contar como acerto.",
       "Lotofacil 3747 teve 6 ganhadores de 15 (R$ 2.125.438,65 cada) e nao acumulou."
+    ],
+    "19.4": [
+      "Minhas apostas saiu da fila de abas e virou chip ao lado de Onde apostar: e carteira, nao visao de modalidade.",
+      "Grafico do historico: por modalidade (barras gasto x premio) e no tempo (saldo acumulado vs sombra).",
+      "Escala adaptativa: com premio muito maior que o gasto, cada serie ganha seu eixo e o grafico avisa. Sem log.",
+      "Rotulo na ponta da linha estourava o viewBox; virou legenda no topo."
+    ],
+    "19.5": [
+      "Base ate 31/07/2026: lotofacil 3750, quina 7080, megasena 3038, lotomania 2957, diadesorte 1260, supersete 880, timemania 2422, maismilionaria 376, duplasena 2989.",
+      "Dupla-Sena 2990 (31/07) nao foi publicada nas fontes consultadas; base fica em 2989.",
+      "Diario fora da amostra da Lotofacil em 5 de 5; ressalvas registradas na secao 24.9.",
+      "Coleta feita da nuvem por WebFetch: a ponte com a maquina do Helio caiu e o PowerShell ficou indisponivel."
+    ],
+    "19.6": [
+      "Dupla-Sena 2990 (31/07) recuperada: a lacuna declarada na v19.5 esta fechada.",
+      "Varredura historica do CRIVO virou script reproduzivel (gerar_historico_crivo.py), validado contra o arquivo antigo antes de substituir.",
+      "historico_crivo.json regerado com a base ate 31/07/2026: 4.642 sorteios avaliados, 5 cruzaram 1,00.",
+      "_meta do arquivo passou a ser calculado; antes trazia 4.635 escrito a mao e envelhecia em silencio.",
+      "Afericao do preco reconstruido passou a usar janela de 12 meses por data, com amostra pequena sinalizada."
     ]
   },
   "apostasReais": [

@@ -1010,3 +1010,102 @@ fator fica colado em 1,00 e **não há previsão**. Esses concursos entram na ta
 marcados e ficam fora da conta; contar fator 1,00 como acerto ou erro seria fraude de
 placar nos dois sentidos. A Quina, medida e nula em tudo, não tem diário — sem
 coeficiente não há o que testar.
+
+### 24.8 O histórico em gráfico, e a escala que mentiria
+
+"Minhas apostas" saiu da fila de abas e virou um chip ao lado de "Onde apostar". O
+motivo não é estético: as abas trocam de conteúdo conforme a modalidade selecionada, e
+o registro não é uma visão *de* uma modalidade — é a carteira inteira, atravessando as
+nove. Ficar entre elas dava a impressão errada de que o histórico era por jogo.
+
+O painel novo tem dois gráficos, pela mesma disciplina da aba "Onde apostar": perguntas
+diferentes, gráficos diferentes.
+
+**Por modalidade** responde "onde meu dinheiro foi e o que voltou" — comparação entre
+categorias, barra horizontal, escala começando em zero, valor escrito em cada barra.
+
+**No tempo** responde "como estou indo" — série acumulada, com a sombra aleatória
+tracejada por cima, para a comparação ser visual em vez de aritmética.
+
+**O problema de escala que aparece assim que houver um prêmio.** Um prêmio de faixa alta
+é milhares de vezes o custo de uma aposta. No teste com um prêmio de R$ 2,1 milhão contra
+R$ 59,50 gastos, o eixo compartilhado achatou **todas** as barras de gasto a menos de um
+pixel: a comparação entre modalidades, que é a razão de o gráfico existir, desapareceu.
+
+A saída não é escala logarítmica — em dinheiro ela engana quem lê rápido. O gráfico
+detecta a situação (prêmio máximo acima de 4× o gasto máximo), dá **um eixo para cada
+série** e diz na própria figura que fez isso, com a razão entre os dois máximos escrita.
+Enquanto os valores forem comparáveis, o eixo continua sendo um só, que é a leitura mais
+honesta. A comparação entre gasto e prêmio fica na coluna Saldo da tabela, onde é
+aritmética e não visual.
+
+Detalhe menor, mesmo princípio: o rótulo na ponta da linha do gráfico no tempo estourava
+o `viewBox` quando o valor era grande. Virou legenda no topo, que não depende do
+comprimento do texto.
+
+### 24.9 Diário fora da amostra — cinco concursos de Lotofácil
+
+Base atualizada até 31/07/2026. O diário da Lotofácil agora tem cinco entradas, todas
+posteriores ao corte da medição (3745):
+
+| concurso | perfil do sorteio | previsto | mediana observada | direção |
+|---|---|---|---|---|
+| 3746 · 27/07 | seq 5, soma 179, linha cheia | 0,54× | 0,866 | ✓ menos |
+| 3747 · 28/07 | seq 3, soma 178 | 1,72× | 1,035 | ✓ mais |
+| 3748 · 29/07 | seq 3, soma miolo | 2,20× | 1,179 | ✓ mais |
+| 3749 · 30/07 | seq 3, soma miolo | 2,20× | 1,169 | ✓ mais |
+| 3750 · 31/07 | seq 3, soma miolo | 2,20× | 1,014 | ✓ mais |
+
+**Cinco de cinco.** Sob uma moeda honesta isso sai com probabilidade 1/32, ou 3,1% —
+baixo o bastante para ser interessante, alto o bastante para não ser conclusão. E há
+três ressalvas que precisam vir junto:
+
+Primeiro, **quatro dos cinco sorteios caíram no mesmo perfil** (sequência curta, soma no
+miolo). Não são cinco testes independentes da regra inteira; são um teste repetido da
+mesma célula, mais um da célula oposta. A Lotofácil vinha sorteando conjuntos espalhados
+quatro dias seguidos, o que é só acaso.
+
+Segundo, **a faixa de 15 acertos não acompanhou** em 3749 (0,59) e 3750 (0,82), enquanto
+as faixas de 11 a 14 ficaram todas acima de 1. É a faixa mais ruidosa — meia dúzia de
+ganhadores esperados, um a mais ou a menos vira 20% de diferença. Por isso o placar usa
+a **mediana** das faixas e não a faixa máxima.
+
+Terceiro, **a magnitude não bate**. Previsto 2,20×, observado perto de 1,15×. A direção
+acerta, o tamanho não — coerente com o viés conservador declarado na seção 24, mas
+também compatível com um coeficiente simplesmente exagerado. Só mais concursos separam
+as duas explicações.
+
+**Mega-Sena continua em 0 de 1.** O 3038 (30/07) não acionou nenhuma regra medida —
+fator 1,00, **sem previsão** — e entrou marcado, fora da conta, como manda a regra.
+
+### 24.10 A varredura histórica virou script (v19.6)
+
+Até aqui, o `historico_crivo.json` tinha sido gerado uma vez, num ambiente que não
+existe mais, e a seção 16 descrevia o procedimento em prosa. Isso significa que a
+varredura **não era reproduzível** — e uma varredura que ninguém consegue rodar de novo
+é uma afirmação, não uma medição. Agora ela é `gerar_historico_crivo.py`, no repositório.
+
+A reescrita foi validada contra o arquivo antigo antes de substituí-lo, e reproduz todos
+os números: Mega-Sena 435 sorteios e máximo 1,1549 (contra 1,1548 guardado — diferença de
+arredondamento na quarta casa), Lotofácil máximo 0,6930, Quina 1,0219, Lotomania 1,3553,
+Timemania 1,0135, Dia de Sorte 0,8316, Dupla-Sena 0,7130, Super Sete 0,5892. As contagens
+subiram só onde a base cresceu.
+
+Com a base até 31/07/2026: **4.642 sorteios com prêmio principal observado, 5 cruzaram
+1,00.** Quatro deles em sorteios especiais.
+
+**A aferição do preço reconstruído ganhou uma janela por data**, e o caminho até lá vale
+registrar porque errei duas vezes:
+
+- *"Últimos 60 sorteios com ganhador"* — no Super Sete isso pega cinco anos, porque ele
+  só tem 33 sorteios com ganhador na base inteira, e mistura a época em que a aposta
+  custava R$ 2,50. Acusava 12% de erro sem nada estar errado.
+- *"De 2025 em diante"* — na Lotofácil isso pega 367 sorteios e atravessa o último
+  aumento de preço, empurrando o estimado para R$ 3,32 contra R$ 3,50.
+- *Doze meses corridos* — resolve os dois. Mega-Sena 1,1% de erro, Lotofácil 0,7%,
+  Dia de Sorte 0,3%. O Super Sete fica com quatro pontos e é marcado como **amostra
+  pequena** em vez de FORA, porque com n=4 a mediana não sustenta veredito.
+
+E o `_meta` do arquivo passou a ser **calculado**. Antes trazia "4.635 sorteios" escrito
+à mão, número que o painel exibe em texto corrido — ele teria envelhecido em silêncio a
+cada coleta, e ninguém perceberia.

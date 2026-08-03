@@ -1,5 +1,5 @@
 {
-  "versao": "19.8",
+  "versao": "19.9",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -427,6 +427,10 @@
       "historico_crivo regerado: 4.644 sorteios avaliados.",
       "Diario fora da amostra em 6 de 9; Lotofacil errou pela primeira vez (3751) e Mega-Sena 3038 virou acerto pela correcao da v19.7.",
       "Boloes da Mega-Sena 3039 conferidos: 1 acerto em cada um dos sete jogos, sem premio."
+    ],
+    "19.9": [
+      "O arquivo-fonte aberto solto mostrava Failed to fetch cru; agora explica que e a fonte, por que falhou e qual arquivo abrir.",
+      "Entregas passam a ser: no chat so o offline e o link; o resto vai para versoes/ na pasta, mantendo as duas ultimas."
     ]
   },
   "apostasReais": [

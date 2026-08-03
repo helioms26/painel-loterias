@@ -1010,7 +1010,25 @@ async function refresh(){
   if(!navegandoSel) gravarSel();
   renderChips(); renderTabs(); renderSelbar();
   const m=$('#main'); m.innerHTML='<div class="loading">Processando…</div>';
-  try{ await loadGame(state.game); }catch(e){ m.innerHTML='<div class="warnbox">Erro ao carregar dados: '+e.message+'</div>'; return; }
+  try{ await loadGame(state.game); }
+  catch(e){
+    /* Este é o erro que o Hélio viu ao abrir o arquivo-FONTE direto da pasta de
+       downloads. site/index.html busca os dados por fetch('data/*.json'); sem a
+       pasta data ao lado, o navegador devolve "Failed to fetch" e a mensagem
+       antiga não dizia nada sobre a causa nem sobre a saída. Um erro técnico
+       repassado cru é um erro que o usuário não consegue resolver. */
+    const semDados = !EMB && /fetch|NetworkError|Failed|carregar/i.test(String(e.message||''));
+    m.innerHTML = semDados
+      ? '<div class="warnbox"><b>Este arquivo é a fonte do painel, não o painel pronto.</b><br>'+
+        'Ele busca os dados na pasta <code>data/</code> ao lado dele, e ela não está aqui — por isso o navegador respondeu '+
+        '<code>'+esc(e.message)+'</code>.<br><br>'+
+        'Para usar o painel offline, abra o arquivo <b>painel-loterias-offline.html</b>, que já tem todos os dados embutidos e '+
+        'funciona sozinho em qualquer pasta. Para rodar a fonte, ela precisa estar na estrutura do projeto, '+
+        'com <code>site/index.html</code> e <code>site/data/</code>, servida por um servidor local — '+
+        'abrir por <code>file://</code> não funciona nem com a pasta no lugar, porque o navegador bloqueia o fetch.</div>'
+      : '<div class="warnbox">Erro ao carregar dados: '+esc(e.message)+'</div>';
+    return;
+  }
   srcInfo(); renderSelbar();
   m.innerHTML='';
   const fn={visao:renderVisao, comparar:renderComparar, registro:renderRegistro, ranking:renderRanking, combos:renderCombos, meujogo:renderJogo, gerador:renderJogo, metodo:renderMetodo, evidencia:renderEvidencia, evolucao:renderEvolucao, financeiro:renderFinanceiro, risco:renderRisco}[state.tab];

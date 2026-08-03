@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.8**, 03/08/2026.
+Última versão: **19.9**, 03/08/2026.
 
 ---
 
@@ -397,3 +397,10 @@ A Lotofácil **errou pela primeira vez**, no 3751: previsto 1,09×, observado 0,
 E a Mega-Sena **3038 virou acerto** — não porque o sorteio mudou, mas porque a correção da v19.7 deu ao lado "tem coladas" o fator medido 0,71× em vez do neutro 1,00. O sorteio tinha 38 e 39 coladas, previa menos ganhadores, e saiu 0,536. Era um acerto escondido pela metade faltante da medição. O 3039 errou.
 
 **As apostas do Hélio no 3039** (dois bolões, R$ 26,60): o sorteio saiu `14 16 21 39 53 58` e os sete jogos fizeram **1 acerto cada**. Sem prêmio.
+
+
+## O que a v19.9 mudou
+
+**O arquivo-fonte agora se explica.** Abrir `site/index.html` solto na pasta de downloads mostrava só `Erro ao carregar dados: Failed to fetch` — um erro técnico repassado cru, que não diz a causa nem a saída. Agora ele diz que é a fonte e não o painel pronto, que os dados moram em `data/` ao lado, e manda abrir o `painel-loterias-offline.html`. Também avisa que nem com a pasta no lugar a fonte roda por `file://`, porque o navegador bloqueia o fetch — precisa de servidor local.
+
+**Como as entregas passam a ser feitas.** No chat vão **só dois itens**: o `painel-loterias-offline.html` e o link publicado. Todo o resto — documentação, fonte, pacote de dados — vai para `versoes/vXX/` dentro da pasta do projeto, e as versões antigas são apagadas mantendo apenas **as duas últimas**. Quem retomar o projeto encontra a versão corrente na raiz e uma anterior para comparar, sem uma pilha de arquivos soltos em Downloads.

@@ -1146,3 +1146,28 @@ com os dois lados, como já era na Lotofácil.
 O botão de trocar dezenas (`↻+`) **se recusa a agir num bolão**: as dezenas foram
 escolhidas por quem montou o bilhete, e trocá-las produziria um registro que não
 corresponde ao que foi comprado.
+
+### 24.12 Diário fora da amostra — a Lotofácil errou pela primeira vez
+
+Base até 02/08/2026. O diário passou a ter nove entradas.
+
+**Lotofácil 3751** (02/08), `01 02 04 07 08 09 11 12 16 17 18 19 21 23 24`: maior
+sequência 4, soma 192. Fator previsto **1,09×** — levemente disputado. Mediana observada
+**0,962**. **Errou.** Placar da Lotofácil: **5 de 6**.
+
+Vale reparar em como o erro é: o fator previsto 1,09 é o mais próximo de 1,00 de toda a
+série, e a mediana observada 0,962 também. O modelo e a realidade discordaram do lado de
+uma linha que quase não separa nada. Um teste de sinal trata isso como erro cheio, o que
+está correto para não inflar o placar — mas quem lê a tabela deve ver que este ponto pesa
+menos que os extremos.
+
+**Mega-Sena 3038 e 3039.** O 3038 mudou de "sem previsão" para **acerto** — não porque o
+sorteio mudou, mas porque a correção da v19.7 deu ao lado "tem coladas" o fator medido
+0,71× em vez do neutro 1,00. O sorteio tinha 38 e 39 coladas, previa menos ganhadores, e
+saiu 0,536. **É um acerto que estava escondido pela metade faltante da medição.**
+
+O 3039 (02/08), `14 16 21 39 53 58`, sem nenhuma consecutiva, previa 1,41× — e saiu
+0,804. **Errou.** Mega-Sena: **1 de 3**.
+
+Somando as duas modalidades: **6 de 9**. Continua sem valor estatístico — 6 de 9 por
+acaso tem probabilidade 25% — e continua registrando os erros com o mesmo destaque.

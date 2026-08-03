@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.7**, 01/08/2026.
+Última versão: **19.8**, 03/08/2026.
 
 ---
 
@@ -382,3 +382,18 @@ A **sombra** de um bolão tem o mesmo formato: um jogo aleatório para cada jogo
 O `↻+` **se recusa a agir num bolão**. As dezenas foram escolhidas por quem montou o bilhete; trocá-las criaria um registro que não corresponde ao que foi comprado.
 
 **E apareceu um lado faltando na medição.** A regra das consecutivas da Mega-Sena só codificava o lado popular — "nenhuma colada = 1,41×". O jogo COM coladas caía no neutro 1,00, quando a medição diz **0,71×**. Metade do efeito estava escondida, justamente a metade que favorece quem joga colado. Agora é faixa com os dois lados, como já era na Lotofácil. Vale a lição geral: **quando uma medição tem dois lados, os dois entram no modelo** — codificar só um transforma o neutro em referência errada.
+
+
+## O que a v19.8 mudou
+
+Base até **02/08/2026**: Mega-Sena 3039, Lotofácil 3751, Quina 7081, Timemania 2423, Dia de Sorte 1261. `historico_crivo.json` regerado — 4.644 sorteios avaliados, 5 cruzaram 1,00.
+
+**Uma lacuna declarada:** a +Milionária **377 (02/08) ficou de fora**. Nenhuma das duas fontes devolveu os trevos, e o formato guardado exige seis dezenas mais dois trevos. Inventar trevo não é opção. Enquanto isso, o card dela mostra a data do sorteio já passado, que é o comportamento honesto de `janelaAposta`.
+
+**O diário fora da amostra está em 6 de 9,** e as duas novidades importam mais que o placar.
+
+A Lotofácil **errou pela primeira vez**, no 3751: previsto 1,09×, observado 0,962. Repare em *como* é o erro — 1,09 é o fator mais próximo de 1,00 de toda a série, e 0,962 também. Modelo e realidade discordaram em cima de uma linha que quase não separa nada. O teste de sinal conta como erro cheio, o que está certo para não inflar o placar, mas quem lê a tabela precisa ver que este ponto pesa menos que os extremos.
+
+E a Mega-Sena **3038 virou acerto** — não porque o sorteio mudou, mas porque a correção da v19.7 deu ao lado "tem coladas" o fator medido 0,71× em vez do neutro 1,00. O sorteio tinha 38 e 39 coladas, previa menos ganhadores, e saiu 0,536. Era um acerto escondido pela metade faltante da medição. O 3039 errou.
+
+**As apostas do Hélio no 3039** (dois bolões, R$ 26,60): o sorteio saiu `14 16 21 39 53 58` e os sete jogos fizeram **1 acerto cada**. Sem prêmio.

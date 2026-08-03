@@ -1,5 +1,5 @@
 {
-  "versao": "19.7.1",
+  "versao": "19.8",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -420,6 +420,13 @@
     ],
     "19.7.1": [
       "Correcao no registro: segundo jogo do bolao 1 e 07 10 14 17 19 26 43 (estava 11 no lugar do 10)."
+    ],
+    "19.8": [
+      "Base ate 02/08/2026: megasena 3039, lotofacil 3751, quina 7081, timemania 2423, diadesorte 1261.",
+      "+Milionaria 377 (02/08) fica pendente: nenhuma das fontes devolveu os trevos, e o formato exige 6 dezenas + 2 trevos.",
+      "historico_crivo regerado: 4.644 sorteios avaliados.",
+      "Diario fora da amostra em 6 de 9; Lotofacil errou pela primeira vez (3751) e Mega-Sena 3038 virou acerto pela correcao da v19.7.",
+      "Boloes da Mega-Sena 3039 conferidos: 1 acerto em cada um dos sete jogos, sem premio."
     ]
   },
   "apostasReais": [
@@ -503,7 +510,17 @@
       "apostas": 2,
       "custo": 26.6,
       "detalhe": "cota R$14 de 12 (4 jogos de 7) + cota R$12,60 de 10 (3 jogos de 7)",
-      "resultado": "pendente"
+      "resultado": "sem premio",
+      "sorteio": [
+        14,
+        16,
+        21,
+        39,
+        53,
+        58
+      ],
+      "melhorAcerto": 1,
+      "premio": 0
     }
   ],
   "commit": "e1a554990337dcb331edd4905b4f11efc0fa142c",

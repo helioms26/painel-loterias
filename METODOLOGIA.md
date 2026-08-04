@@ -1171,3 +1171,22 @@ O 3039 (02/08), `14 16 21 39 53 58`, sem nenhuma consecutiva, previa 1,41× — 
 
 Somando as duas modalidades: **6 de 9**. Continua sem valor estatístico — 6 de 9 por
 acaso tem probabilidade 25% — e continua registrando os erros com o mesmo destaque.
+
+### 24.13 A coluna que faltava na matriz de decisão (v19.10)
+
+A matriz decide onde apostar e não mostrava **o prêmio**. É o número que a pessoa carrega
+na cabeça quando entra na lotérica, e ele estava fora justamente da tabela feita para
+decidir. Agora fica ao lado da modalidade — antes das quatro notas, porque é fato e não
+avaliação — com a data do próximo sorteio embaixo e o maior prêmio da rodada destacado.
+A coluna ordena como as outras.
+
+Ela também funciona como contraprova visual da tese do método. Quando a primeira colocada
+**não** é a de maior prêmio, o painel escreve isso na nota e diz de quem é o maior prêmio.
+Quando as duas coincidem — como em 03/08/2026, com a Mega-Sena em R$ 135 milhões — ele
+diz que coincidiu, e que **isso acontece às vezes e não é a regra**. Um painel que só
+comentasse o caso favorável à própria tese estaria fazendo seleção de evidência na cara
+do usuário.
+
+**+Milionária 377 entrou.** A lacuna declarada na v19.8 durou um dia: os trevos `4` e `6`
+apareceram no mirror e o concurso foi incorporado. As nove modalidades estão fechadas até
+02/08/2026, sem concurso faltando.

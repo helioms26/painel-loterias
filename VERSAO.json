@@ -1,5 +1,5 @@
 {
-  "versao": "19.9",
+  "versao": "19.10",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -431,6 +431,11 @@
     "19.9": [
       "O arquivo-fonte aberto solto mostrava Failed to fetch cru; agora explica que e a fonte, por que falhou e qual arquivo abrir.",
       "Entregas passam a ser: no chat so o offline e o link; o resto vai para versoes/ na pasta, mantendo as duas ultimas."
+    ],
+    "19.10": [
+      "Matriz de decisao ganha a coluna do premio estimado, com data do sorteio e destaque do maior premio da rodada; ordenavel como as outras.",
+      "A nota da matriz compara a primeira colocada com a de maior premio, e diz quando as duas coincidem em vez de comentar so o caso favoravel a tese.",
+      "+Milionaria 377 entrou: os trevos apareceram e a lacuna da v19.8 fechou. Nove modalidades ate 02/08/2026."
     ]
   },
   "apostasReais": [

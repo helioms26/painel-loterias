@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.9**, 03/08/2026.
+Última versão: **19.10**, 03/08/2026.
 
 ---
 
@@ -404,3 +404,12 @@ E a Mega-Sena **3038 virou acerto** — não porque o sorteio mudou, mas porque 
 **O arquivo-fonte agora se explica.** Abrir `site/index.html` solto na pasta de downloads mostrava só `Erro ao carregar dados: Failed to fetch` — um erro técnico repassado cru, que não diz a causa nem a saída. Agora ele diz que é a fonte e não o painel pronto, que os dados moram em `data/` ao lado, e manda abrir o `painel-loterias-offline.html`. Também avisa que nem com a pasta no lugar a fonte roda por `file://`, porque o navegador bloqueia o fetch — precisa de servidor local.
 
 **Como as entregas passam a ser feitas.** No chat vão **só dois itens**: o `painel-loterias-offline.html` e o link publicado. Todo o resto — documentação, fonte, pacote de dados — vai para `versoes/vXX/` dentro da pasta do projeto, e as versões antigas são apagadas mantendo apenas **as duas últimas**. Quem retomar o projeto encontra a versão corrente na raiz e uma anterior para comparar, sem uma pilha de arquivos soltos em Downloads.
+
+
+## O que a v19.10 mudou
+
+**A matriz de decisão ganhou a coluna do prêmio.** Ela decide onde apostar e não mostrava o valor — o número que a pessoa carrega na cabeça quando entra na lotérica estava fora justamente da tabela feita para decidir. Fica ao lado da modalidade, antes das quatro notas, porque é fato e não avaliação, com a data do próximo sorteio embaixo e o maior prêmio da rodada destacado. Ordena como as demais colunas.
+
+Ela serve também de contraprova visual da tese. Quando a primeira colocada **não** é a de maior prêmio, a nota escreve isso e diz de quem é o maior. Quando coincidem — como hoje, Mega-Sena com R$ 135 milhões liderando também o índice final — a nota diz que coincidiu e que **isso acontece às vezes e não é a regra**. Comentar só o caso que favorece a própria tese seria seleção de evidência na cara do usuário.
+
+**A lacuna da v19.8 fechou em um dia:** os trevos da +Milionária 377 apareceram no mirror (`4` e `6`) e o concurso entrou. As nove modalidades estão completas até 02/08/2026.

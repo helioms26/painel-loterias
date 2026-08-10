@@ -1333,3 +1333,49 @@ esses mesmos concursos como os últimos apurados: não houve sorteio novo para i
 aplicativo ("Valor atual do carrinho: R$ 10,50"), não de um comprovante pago. Ficam
 registradas com essa origem declarada no arquivo; se a compra não tiver sido concluída,
 elas precisam sair do histórico.
+
+### 25.3 Oito apostas que existiam só no bolso (v19.14)
+
+O Hélio disse que havia quadras da Mega que ele não estava vendo no painel. A primeira
+conferência não achou nada: o comprovante do bolão do 3042 tem uma página e dez jogos, o
+extrator independente (`pdftotext`, fora do navegador) confirmou o mesmo conteúdo que o
+parser do painel leu, e só o jogo 6 cruzava quatro dezenas. O registro estava certo — e
+incompleto, que é coisa diferente.
+
+Faltavam **oito apostas simples de Mega-Sena**, todas com comprovante oficial em PDF, todas
+compradas pelo aplicativo e nunca informadas ao painel:
+
+| concurso | dezenas | acertos | prêmio |
+|---|---|---|---|
+| 3040 | 09 19 31 40 50 52 | 0 | — |
+| 3040 | 08 10 19 38 41 44 | 0 | — |
+| 3041 | 02 05 10 13 41 53 | 0 | — |
+| 3041 | 01 03 12 15 21 55 | 1 | — |
+| 3041 | 02 06 24 33 36 50 | 1 | — |
+| **3042** | **02 05 10 13 41 53** | **4** | **R$ 706,56** |
+| 3042 | 01 03 12 15 21 55 | 0 | — |
+| 3042 | 02 06 24 33 36 50 | 1 | — |
+
+A quadra do 3042 tem prova documental separada: um *Comprovante de Pagamento de Prêmio*,
+com resgate em 09/08/2026 às 22:24 e NSU 208855923. Ele traz o campo **"Valor total
+líquido do prêmio: R$ 706,56"** — idêntico, ao centavo, ao rateio publicado pela Caixa para
+a faixa de 4 acertos daquele concurso. É a confirmação documental, e não mais argumentativa,
+da seção 17: **o valor divulgado já vem líquido, e descontar imposto sobre ele seria contar
+o desconto duas vezes**. Foi a primeira vez que um papel oficial fechou essa conta.
+
+**O que isso muda na carteira.** O registro passa de 8 para 16 apostas: R$ 172,45 gastos e
+R$ 759,55 recebidos. O saldo positivo vem de **um** acerto de faixa média em dezesseis
+apostas — não é evidência de método nenhum, e a amostra é pequena demais para significar
+qualquer coisa. Registrar o ganho com o mesmo cuidado com que se registra a perda é o
+mínimo; tratá-lo como sinal seria o erro simétrico.
+
+**O perfil dessas oito.** Todas medem **1,41×** — nenhuma tem dezenas coladas, e a medição
+diz que a multidão prefere exatamente esse desenho. Foram escolhidas fora do painel, e a
+coluna Perfil da v19.13 é o que torna isso visível sem precisar refazer conta nenhuma.
+
+**A causa raiz, que continua aberta.** As oito nunca chegaram ao registro versionado porque
+nunca passaram pelo painel. O `apostas.json` só sabe o que é escrito nele; uma aposta feita
+no aplicativo da Caixa é invisível até alguém digitar ou arrastar o comprovante. O painel
+não tem — e não deveria fingir ter — acesso à conta da Caixa. O que ele pode fazer é parar
+de dar a impressão de completude: a carteira apresenta "seu saldo" como se fosse o saldo,
+quando é o saldo *do que foi informado*.

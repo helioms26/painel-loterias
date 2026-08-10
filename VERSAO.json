@@ -1,8 +1,8 @@
 {
-  "versao": "19.13",
+  "versao": "19.14",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-08-10T15:45:00Z",
-  "geradoEmBrasilia": "2026-08-10 12:45",
+  "geradoEm": "2026-08-10T16:40:00Z",
+  "geradoEmBrasilia": "2026-08-10 13:40",
   "commitDoConteudo": "2238c96 — commit que publica o painel v19.13",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -82,7 +82,7 @@
       }
     },
     "arquivos": {
-      "apostas.json": 5872,
+      "apostas.json": 9084,
       "dates_diadesorte.json": 24234,
       "dates_duplasena.json": 58754,
       "dates_lotofacil.json": 74034,
@@ -195,10 +195,11 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Coluna Perfil no historico de apostas: o fator de rateio medido das dezenas que voce jogou.",
-    "Desdobramento entra pela media dos subconjuntos; bolao pela media dos jogos; modalidade sem medicao mostra traco.",
-    "Registradas 3 apostas de Lotofacil do concurso 3758 (R$ 3,50 cada). Uma delas mede 2,66x - o pior lado da medicao.",
-    "Base inalterada: a API oficial em 10/08/2026 devolveu os mesmos concursos ja presentes (fechada em 09/08/2026)."
+    "Registradas 8 apostas simples de Mega-Sena (3040, 3041, 3042) a partir dos comprovantes oficiais em PDF.",
+    "Uma delas, 02 05 10 13 41 53 no concurso 3042, fez 4 acertos: R$ 706,56, com comprovante de pagamento de premio.",
+    "O comprovante de pagamento diz 'valor total liquido' e bate com o rateio publicado - prova documental da secao 17 (sem IR).",
+    "Placar passa a avisar que cobre apenas o que foi registrado; aposta feita no app e invisivel ate ser informada.",
+    "Bolao do 3042 reconferido com extrator independente (pdftotext): 1 pagina, 10 jogos, sem truncamento. O parser estava certo."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -455,6 +456,13 @@
       "Desdobramento entra pela media dos subconjuntos; bolao pela media dos jogos; modalidade sem medicao mostra traco.",
       "Registradas 3 apostas de Lotofacil do concurso 3758 (R$ 3,50 cada). Uma delas mede 2,66x - o pior lado da medicao.",
       "Base inalterada: a API oficial em 10/08/2026 devolveu os mesmos concursos ja presentes (fechada em 09/08/2026)."
+    ],
+    "19.14": [
+      "Registradas 8 apostas simples de Mega-Sena (3040, 3041, 3042) a partir dos comprovantes oficiais em PDF.",
+      "Uma delas, 02 05 10 13 41 53 no concurso 3042, fez 4 acertos: R$ 706,56, com comprovante de pagamento de premio.",
+      "O comprovante de pagamento diz 'valor total liquido' e bate com o rateio publicado - prova documental da secao 17 (sem IR).",
+      "Placar passa a avisar que cobre apenas o que foi registrado; aposta feita no app e invisivel ate ser informada.",
+      "Bolao do 3042 reconferido com extrator independente (pdftotext): 1 pagina, 10 jogos, sem truncamento. O parser estava certo."
     ]
   },
   "apostasReais": [
@@ -580,8 +588,31 @@
       ],
       "resultado": "aguardando sorteio de 10/08/2026",
       "nota": "o terceiro jogo esta no pior lado da medicao (dezenas espalhadas + coluna inteira do volante)"
+    },
+    {
+      "data": "04 a 07/08/2026",
+      "modalidade": "megasena",
+      "concursos": [
+        3040,
+        3041,
+        3042
+      ],
+      "apostas": 8,
+      "custo": 48.0,
+      "origem": "comprovantes oficiais em PDF, apostas pelo app (IOS), codigo E. Loterico 04.025304-0",
+      "resultado": "1 quadra",
+      "premio": 706.56,
+      "detalhe": "02 05 10 13 41 53 no 3042 fez 4 acertos; resgate em 09/08/2026 22:24, NSU 208855923",
+      "nota": "as oito medem 1,41x - nenhuma tem dezenas coladas, o lado que a multidao prefere"
     }
   ],
   "commit": "2238c96",
-  "commitCurto": "2238c96"
+  "commitCurto": "2238c96",
+  "carteira": {
+    "apostas": 16,
+    "gasto": 172.45,
+    "ganho": 759.55,
+    "saldo": 587.1,
+    "ressalva": "saldo positivo vem de um unico premio de faixa media em 16 apostas; amostra pequena demais para significar qualquer coisa"
+  }
 }

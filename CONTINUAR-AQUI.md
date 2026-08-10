@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.13**, 10/08/2026.
+Última versão: **19.14**, 10/08/2026.
 
 ---
 
@@ -476,3 +476,30 @@ estavam na base — nada novo para incorporar. Fechada em 09/08/2026.
 **Pendência declarada:** as três apostas do 3758 vieram de um print do **carrinho** do app,
 não de comprovante pago. A origem está escrita em `site/data/apostas.json`. Se a compra não
 tiver sido concluída, os registros `a6`, `a7` e `a8` precisam sair.
+
+---
+
+## v19.14 — oito apostas que existiam só no bolso
+
+O Hélio apontou quadras da Mega que não apareciam. Não era bug: os comprovantes existiam,
+o painel nunca tinha visto. Entraram oito apostas simples de Mega-Sena (3040, 3041 e 3042),
+todas com PDF oficial. Uma delas, `02 05 10 13 41 53` no 3042, fez **4 acertos = R$ 706,56**,
+com comprovante de *pagamento de prêmio* e resgate registrado.
+
+Antes de concluir isso eu conferi o bolão com um extrator independente (`pdftotext`, fora
+do navegador) para descartar erro do parser do painel: uma página, dez jogos, mesmo conteúdo.
+**Faça isso sempre que o Hélio disser que falta alguma coisa** — separar "o painel leu errado"
+de "o dado nunca chegou" é a primeira bifurcação, e economiza o resto.
+
+O comprovante de pagamento traz "Valor total líquido do prêmio: R$ 706,56", idêntico ao
+rateio publicado. É prova documental da seção 17: **o valor da Caixa já vem líquido**. Guarde
+esse comprovante como evidência — é a primeira que não depende de argumento.
+
+Carteira agora: 16 apostas, R$ 172,45 gastos, R$ 759,55 recebidos. O saldo positivo vem de
+**um** prêmio de faixa média; não é evidência de método e o texto do painel não deixa parecer
+que é.
+
+**Mudança de tela:** o placar ganhou uma nota dizendo que cobre apenas o que foi registrado.
+Está logo abaixo dos quatro cards, em `renderRegistro`. A causa raiz continua aberta por
+construção — o painel não acessa a conta da Caixa —, então a defesa é a honestidade da tela
+mais o hábito de arrastar o PDF.

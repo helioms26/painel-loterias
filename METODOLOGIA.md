@@ -1190,3 +1190,65 @@ do usuário.
 **+Milionária 377 entrou.** A lacuna declarada na v19.8 durou um dia: os trevos `4` e `6`
 apareceram no mirror e o concurso foi incorporado. As nove modalidades estão fechadas até
 02/08/2026, sem concurso faltando.
+
+## 25. Um bolão premiado expôs um erro que pagava um sexto do prêmio (v19.11)
+
+O Hélio mandou o comprovante de um bolão da Mega-Sena 3042: 10 jogos de 8 dezenas,
+bilhete de R$ 1.680, 80 cotas de R$ 21,00, uma cota comprada. O sorteio saiu
+`02 05 10 35 40 53` e o **jogo 6** — `05 06 22 35 37 40 53 59` — fez **4 acertos**.
+
+Ao conferir, o painel pagou **uma** quadra. O certo são **seis**.
+
+### A conta que estava errada
+
+Um jogo de n dezenas contém C(n, pick) apostas simples, e elas caem em faixas
+**diferentes** ao mesmo tempo. O código fazia:
+
+```js
+bilhetes = C(acertos, pick)      // errado
+```
+
+Isso só funciona quando `acertos = pick`. Para 4 acertos numa aposta de 6, dá
+`C(4,6) = 0`, o `Math.max(1, …)` transformava em 1, e o painel pagava uma quadra
+solitária. A conta correta é combinatória elementar: para **h** acertos em **n**
+marcadas, o número de combinações de `pick` com **exatamente j** acertos é
+
+```
+C(h, j) × C(n − h, pick − j)
+```
+
+somado sobre todas as faixas premiadas. No caso do jogo 6: `C(4,4) × C(4,2) = 6`
+quadras, R$ 706,56 cada, **R$ 4.239,36** no bilhete em vez de R$ 706,56. O painel
+pagava um sexto.
+
+O erro cresce com o tamanho do jogo. Um jogo de 8 dezenas com 5 acertos leva
+`C(5,5)×C(3,1) = 3` quinas **e** `C(5,4)×C(3,2) = 15` quadras — o código antigo pagava
+uma quina e ignorava as quinze quadras.
+
+**Por que ninguém tinha visto.** Todos os registros anteriores eram apostas simples ou
+jogos com dezenas extras que não premiaram. O caminho do bug só é percorrido quando um
+jogo grande ganha, e isso levou três semanas para acontecer. Testar o caso premiado
+exigia inventar um resultado — foi o primeiro prêmio real que expôs a falha.
+
+### A tarifa de serviço, que também estava fora da conta
+
+O comprovante traz três valores: cota R$ 21,00, **tarifa de serviço R$ 7,35**, total
+R$ 28,35. A tarifa é exatamente 35% da cota — o teto que a Caixa permite — e **não compra
+combinação nenhuma**. Ela é 25,9% de tudo que o apostador desembolsou, e reduz o retorno
+esperado na mesma proporção.
+
+O modelo de bolão da v19.7 não tinha esse campo: o custo registrado seria R$ 21,00 e o
+painel diria que não havia taxa embutida, porque 80 × 21 fecha com o bilhete. E fecha
+mesmo — a tarifa é cobrada **por fora**, e é justamente por isso que passava despercebida.
+Agora há um campo próprio, o custo registrado é o desembolso real, e a prévia escreve
+quanto por cento do seu dinheiro nunca chega às urnas.
+
+### O resultado
+
+Bilhete: R$ 4.239,36. Cota de 1/80: **R$ 52,99**. Custo: R$ 28,35. **Saldo +R$ 24,64.**
+A sombra aleatória do mesmo bolão fez no máximo 3 acertos e não levou nada — a primeira
+vez em cinco apostas registradas que as duas carteiras se separam.
+
+**Isso não valida nada.** Cinco apostas é ruído puro, e um prêmio de faixa baixa numa
+carteira pequena vira o placar sozinho — exatamente o que o próprio painel avisa na caixa
+acima do quadro. O que vale registrar é o conserto, não a quadra.

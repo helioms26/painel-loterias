@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.10**, 03/08/2026.
+Última versão: **19.11**, 09/08/2026.
 
 ---
 
@@ -413,3 +413,20 @@ E a Mega-Sena **3038 virou acerto** — não porque o sorteio mudou, mas porque 
 Ela serve também de contraprova visual da tese. Quando a primeira colocada **não** é a de maior prêmio, a nota escreve isso e diz de quem é o maior. Quando coincidem — como hoje, Mega-Sena com R$ 135 milhões liderando também o índice final — a nota diz que coincidiu e que **isso acontece às vezes e não é a regra**. Comentar só o caso que favorece a própria tese seria seleção de evidência na cara do usuário.
 
 **A lacuna da v19.8 fechou em um dia:** os trevos da +Milionária 377 apareceram no mirror (`4` e `6`) e o concurso entrou. As nove modalidades estão completas até 02/08/2026.
+
+
+## O que a v19.11 mudou — um prêmio real expôs um erro grande
+
+O Hélio mandou o comprovante de um bolão da Mega-Sena 3042 e **ele ganhou**. Conferindo, o painel pagou **uma** quadra onde o certo eram **seis**.
+
+**A conta estava errada.** Um jogo de n dezenas contém C(n,pick) apostas simples que caem em faixas diferentes ao mesmo tempo. O código fazia `bilhetes = C(acertos, pick)`, que só funciona quando acertos = pick; para 4 acertos numa aposta de 6 dá `C(4,6)=0`, o `Math.max(1,…)` virava 1, e o painel pagava uma quadra solitária. O correto é `C(h,j) × C(n−h, pick−j)` somado sobre todas as faixas premiadas. No jogo dele: `C(4,4)×C(4,2) = 6` quadras. **O painel pagava um sexto do prêmio.**
+
+O erro cresce com o tamanho do jogo — 8 dezenas com 5 acertos levam 3 quinas **e** 15 quadras, e o código antigo pagava uma quina.
+
+**Por que ninguém tinha visto:** o caminho só é percorrido quando um jogo com dezenas extras GANHA. Todos os registros anteriores eram apostas simples ou jogos grandes que não premiaram. Levou três semanas até acontecer, e testar antes exigiria inventar um resultado. **Fica a lição: cobertura de teste em caminho de prêmio precisa de resultado sintético, não de espera.**
+
+**A tarifa de serviço também estava fora da conta.** O comprovante traz cota R$ 21,00 + tarifa R$ 7,35 = R$ 28,35. A tarifa é 35% da cota (o teto da Caixa), não compra combinação nenhuma e é 25,9% do desembolso. O modelo da v19.7 não tinha o campo, e o painel diria "sem taxa embutida" — porque 80 × 21 fecha com o bilhete e a tarifa é cobrada **por fora**. Agora tem campo próprio e a prévia escreve o percentual do dinheiro que nunca chega às urnas.
+
+**Resultado:** bilhete R$ 4.239,36, cota de 1/80 = R$ 52,99, custo R$ 28,35, saldo **+R$ 24,64**. A sombra fez no máximo 3 acertos e não levou nada — primeira vez que as carteiras se separam. Com cinco apostas isso é ruído, e o painel diz isso na tela.
+
+**Base até 09/08/2026** nas nove modalidades, 35 concursos novos, `historico_crivo` regerado com 4.651 sorteios.

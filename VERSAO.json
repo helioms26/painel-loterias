@@ -1,5 +1,5 @@
 {
-  "versao": "19.10",
+  "versao": "19.11",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -436,6 +436,12 @@
       "Matriz de decisao ganha a coluna do premio estimado, com data do sorteio e destaque do maior premio da rodada; ordenavel como as outras.",
       "A nota da matriz compara a primeira colocada com a de maior premio, e diz quando as duas coincidem em vez de comentar so o caso favoravel a tese.",
       "+Milionaria 377 entrou: os trevos apareceram e a lacuna da v19.8 fechou. Nove modalidades ate 02/08/2026."
+    ],
+    "19.11": [
+      "ERRO CORRIGIDO: jogo com dezenas extras pagava so a faixa do topo. C(acertos,pick) da zero quando acertos<pick. O certo e somar C(h,j)xC(n-h,pick-j) sobre todas as faixas premiadas. Um bolao real com 4 acertos em 8 dezenas recebia 1 quadra em vez de 6.",
+      "Bolao ganha campo de tarifa de servico: ela nao compra combinacao e reduz o retorno esperado na mesma proporcao. A previa mostra o percentual do desembolso.",
+      "Registrado o bolao da Mega-Sena 3042 (10 jogos de 8 dezenas, cota 1/80, R$ 28,35 com tarifa).",
+      "Base ate 09/08/2026 nas nove modalidades; historico_crivo regerado com 4.651 sorteios."
     ]
   },
   "apostasReais": [
@@ -530,6 +536,21 @@
       ],
       "melhorAcerto": 1,
       "premio": 0
+    },
+    {
+      "data": "07/08/2026",
+      "modalidade": "megasena",
+      "concurso": 3042,
+      "tipo": "bolao",
+      "cotas": "1/80",
+      "custo": 28.35,
+      "tarifa": 7.35,
+      "bilhete": 1680.0,
+      "resultado": "premiado",
+      "premioBilhete": 4239.36,
+      "premio": 52.99,
+      "saldo": 24.64,
+      "detalhe": "jogo 6 fez 4 acertos = 6 quadras"
     }
   ],
   "commit": "e1a554990337dcb331edd4905b4f11efc0fa142c",

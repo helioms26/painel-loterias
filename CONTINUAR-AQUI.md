@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.12**, 09/08/2026.
+Última versão: **19.13**, 10/08/2026.
 
 ---
 
@@ -24,7 +24,7 @@ Tudo em `C:\Users\hmsue\OneDrive\IA_meus projetos\13 - loteria`.
 | Painel publicado, arquivo único | `repo-github/index.html` |
 | Cópia offline idêntica | `painel-loterias-offline.html` |
 | Fonte do painel | `site/index.html` — sem dados embutidos |
-| Dados | `site/data/*.json` — 29 arquivos: sorteios, datas, prêmios, status e a varredura histórica do CRIVO |
+| Dados | `site/data/*.json` — 30 arquivos: sorteios, datas, prêmios, status e a varredura histórica do CRIVO |
 | Design system | `site/tokens.css`, `site/components.css`, `site/styleguide.html` |
 | Protótipo da v9 | `prototipo-v9.html` — navegável, serve de referência de interação |
 | Planilhas oficiais baixadas | `planilhas_caixa/` |
@@ -449,3 +449,30 @@ A ficha faz duas conferências que ninguém faz na lotérica: cotas × valor da 
 O EOL antes de `endstream` **não** faz parte do stream; incluí-lo dava *"Junk found after end of compressed data"*, mensagem que parece arquivo corrompido quando o problema era o recorte.
 
 `new Response(stream).arrayBuffer()` é o jeito curto de ler um `DecompressionStream` e **falha com "Failed to fetch" em `file://`** — justamente o modo em que este painel roda. Trocado por leitura direta pelo reader. Vale para qualquer coisa nova que use streams aqui.
+
+---
+
+## v19.13 — o histórico passou a mostrar o perfil de rateio
+
+Três apostas de Lotofácil do concurso 3758 entraram no registro e uma delas mede **2,66×**:
+dezenas espalhadas, soma no miolo e uma coluna inteira do volante — o perfil mais jogado do
+Brasil. Nada na tela dizia isso, porque o painel media o perfil na hora de **escolher** o
+jogo e esquecia na hora de **registrar**.
+
+A coluna `Perfil` no histórico de Minhas apostas fecha esse buraco. A função é
+`perfilDaAposta(x)`, logo acima de `ehBolao`. Ela reusa `fatorRateio` e `fatorDesdobramento`
+— nada de regra nova — e respeita as duas convenções que já valiam: desdobramento entra pela
+**média dos subconjuntos** e bolão pela **média dos jogos**. Modalidade sem padrão medido
+mostra traço, nunca 1,00×.
+
+Se for acrescentar coluna nessa tabela: ela é montada em string e injetada com
+`pt.innerHTML+=ht` **antes** de os listeners serem ligados; adicionar `<td>` é seguro, mexer
+na ordem dos `querySelectorAll('[data-rep]')` etc. não é. E lembre de subir o `min-width` da
+tabela junto (está em 920px).
+
+**Base:** consultei a API oficial em 10/08/2026 e ela devolveu exatamente os concursos que já
+estavam na base — nada novo para incorporar. Fechada em 09/08/2026.
+
+**Pendência declarada:** as três apostas do 3758 vieram de um print do **carrinho** do app,
+não de comprovante pago. A origem está escrita em `site/data/apostas.json`. Se a compra não
+tiver sido concluída, os registros `a6`, `a7` e `a8` precisam sair.

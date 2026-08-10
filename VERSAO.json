@@ -1,8 +1,8 @@
 {
-  "versao": "19.12",
+  "versao": "19.13",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-07-27T19:00:00Z",
-  "geradoEmBrasilia": "2026-07-27 16:00",
+  "geradoEm": "2026-08-10T15:45:00Z",
+  "geradoEmBrasilia": "2026-08-10 12:45",
   "commitDoConteudo": "preenchido pelo passo seguinte",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -15,103 +15,105 @@
     "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
   },
   "baseDeDados": {
-    "fechadaEm": "26/07/2026",
+    "fechadaEm": "09/08/2026",
     "concursosPorModalidade": {
       "timemania": {
-        "ultimoConcurso": 2420,
-        "data": "26/07/2026",
+        "ultimoConcurso": 2426,
+        "data": "09/08/2026",
         "acumulado": true,
-        "proximoSorteio": "28/07/2026",
-        "estimativa": 5500000.0
+        "proximoSorteio": "11/08/2026",
+        "estimativa": 7500000.0
       },
       "diadesorte": {
-        "ultimoConcurso": 1255,
-        "data": "26/07/2026",
+        "ultimoConcurso": 1267,
+        "data": "09/08/2026",
         "acumulado": true,
-        "proximoSorteio": "27/07/2026",
-        "estimativa": 500000.0
+        "proximoSorteio": "10/08/2026",
+        "estimativa": 650000.0
       },
       "quina": {
-        "ultimoConcurso": 7075,
-        "data": "26/07/2026",
+        "ultimoConcurso": 7087,
+        "data": "09/08/2026",
         "acumulado": true,
-        "proximoSorteio": "27/07/2026",
-        "estimativa": 23000000.0
+        "proximoSorteio": "10/08/2026",
+        "estimativa": 2300000.0
       },
       "duplasena": {
-        "ultimoConcurso": 2987,
-        "data": "24/07/2026",
+        "ultimoConcurso": 2993,
+        "data": "07/08/2026",
         "acumulado": true,
-        "proximoSorteio": "27/07/2026",
-        "estimativa": 2000000.0
+        "proximoSorteio": "10/08/2026",
+        "estimativa": 1000000.0
       },
       "lotofacil": {
-        "ultimoConcurso": 3745,
-        "data": "26/07/2026",
+        "ultimoConcurso": 3757,
+        "data": "09/08/2026",
         "acumulado": true,
-        "proximoSorteio": "27/07/2026",
-        "estimativa": 9000000.0
+        "proximoSorteio": "10/08/2026",
+        "estimativa": 5000000.0
       },
       "maismilionaria": {
-        "ultimoConcurso": 375,
-        "data": "26/07/2026",
+        "ultimoConcurso": 379,
+        "data": "09/08/2026",
         "acumulado": true,
-        "proximoSorteio": "29/07/2026",
-        "estimativa": 77000000.0
+        "proximoSorteio": "12/08/2026",
+        "estimativa": 82000000.0
       },
       "lotomania": {
-        "ultimoConcurso": 2954,
-        "data": "24/07/2026",
+        "ultimoConcurso": 2960,
+        "data": "07/08/2026",
         "acumulado": true,
-        "proximoSorteio": "27/07/2026",
-        "estimativa": 3600000.0
+        "proximoSorteio": "10/08/2026",
+        "estimativa": 9300000.0
       },
       "megasena": {
-        "ultimoConcurso": 3036,
-        "data": "26/07/2026",
-        "acumulado": true,
-        "proximoSorteio": "28/07/2026",
-        "estimativa": 78000000.0
+        "ultimoConcurso": 3042,
+        "data": "09/08/2026",
+        "acumulado": false,
+        "proximoSorteio": "11/08/2026",
+        "estimativa": 3500000.0
       },
       "supersete": {
-        "ultimoConcurso": 877,
-        "data": "24/07/2026",
+        "ultimoConcurso": 883,
+        "data": "07/08/2026",
         "acumulado": true,
-        "proximoSorteio": "27/07/2026",
-        "estimativa": 4100000.0
+        "proximoSorteio": "10/08/2026",
+        "estimativa": 5000000.0
       }
     },
     "arquivos": {
-      "dates_diadesorte.json": 23994,
-      "dates_duplasena.json": 58634,
-      "dates_lotofacil.json": 73794,
-      "dates_lotomania.json": 57974,
-      "dates_maismilionaria.json": 7018,
-      "dates_megasena.json": 59614,
-      "dates_quina.json": 140394,
-      "dates_supersete.json": 16556,
-      "dates_timemania.json": 47294,
-      "diadesorte.json": 66115,
-      "duplasena.json": 204997,
-      "lotofacil.json": 313474,
-      "lotomania.json": 320880,
-      "maismilionaria.json": 17541,
-      "megasena.json": 117298,
-      "premios_diadesorte.json": 108881,
-      "premios_duplasena.json": 337641,
-      "premios_lotofacil.json": 359110,
-      "premios_lotomania.json": 323044,
-      "premios_maismilionaria.json": 53984,
-      "premios_megasena.json": 197806,
-      "premios_quina.json": 530446,
-      "premios_supersete.json": 71957,
-      "premios_timemania.json": 234245,
-      "quina.json": 239444,
-      "status.json": 1300,
-      "supersete.json": 31465,
-      "timemania.json": 145425
+      "apostas.json": 5872,
+      "dates_diadesorte.json": 24234,
+      "dates_duplasena.json": 58754,
+      "dates_lotofacil.json": 74034,
+      "dates_lotomania.json": 58094,
+      "dates_maismilionaria.json": 7094,
+      "dates_megasena.json": 59734,
+      "dates_quina.json": 140634,
+      "dates_supersete.json": 16670,
+      "dates_timemania.json": 47414,
+      "diadesorte.json": 66746,
+      "duplasena.json": 205411,
+      "historico_crivo.json": 43738,
+      "lotofacil.json": 314482,
+      "lotomania.json": 321534,
+      "maismilionaria.json": 17725,
+      "megasena.json": 117532,
+      "premios_diadesorte.json": 109920,
+      "premios_duplasena.json": 338362,
+      "premios_lotofacil.json": 360249,
+      "premios_lotomania.json": 323703,
+      "premios_maismilionaria.json": 54559,
+      "premios_megasena.json": 198210,
+      "premios_quina.json": 531389,
+      "premios_supersete.json": 72458,
+      "premios_timemania.json": 234830,
+      "quina.json": 239852,
+      "status.json": 1550,
+      "supersete.json": 31681,
+      "timemania.json": 145784
     },
-    "totalArquivos": 28
+    "totalArquivos": 30
   },
   "indiceCrivoNaPublicacao": [
     {
@@ -193,11 +195,10 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "BUG: botoes de perfil da matriz nao respondiam — innerHTML += descarta listeners; corrigido com htmlBloco()",
-    "Teste novo varre todo botao de toda aba e verifica se tem onclick ligado, mais clique funcional nos 4 perfis",
-    "BUG: limite de tamanho de conjunto era constante chutada; passa a ser calculado pelo custo medido",
-    "Lotofacil 3->5, Lotomania 2->3, Timemania 3->6, Dia de Sorte 4->6, Dupla-Sena 4->6, +Milionaria 4->6",
-    "Seletor avisa quando a opcao e lenta: \"5 dezenas · leva ~3s\""
+    "Coluna Perfil no historico de apostas: o fator de rateio medido das dezenas que voce jogou.",
+    "Desdobramento entra pela media dos subconjuntos; bolao pela media dos jogos; modalidade sem medicao mostra traco.",
+    "Registradas 3 apostas de Lotofacil do concurso 3758 (R$ 3,50 cada). Uma delas mede 2,66x - o pior lado da medicao.",
+    "Base inalterada: a API oficial em 10/08/2026 devolveu os mesmos concursos ja presentes (fechada em 09/08/2026)."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -212,7 +213,7 @@
     "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)"
   ],
   "varreduraHistorica": {
-    "sorteiosMedidos": 4635,
+    "sorteiosMedidos": 4651,
     "cruzaram1": 5,
     "cruzamentos": [
       {
@@ -448,6 +449,12 @@
       "O parser NUNCA salva sozinho: monta uma ficha com tudo o que leu, aponta o que nao fechou e espera confirmacao.",
       "A ficha confere cotas x valor da cota contra o custo dos jogos, e cota + tarifa contra o total pago, com centavos.",
       "Tres defeitos achados no caminho: endstream contem stream; o EOL antes de endstream nao faz parte do stream; new Response(stream) falha em file://."
+    ],
+    "19.13": [
+      "Coluna Perfil no historico de apostas: o fator de rateio medido das dezenas que voce jogou.",
+      "Desdobramento entra pela media dos subconjuntos; bolao pela media dos jogos; modalidade sem medicao mostra traco.",
+      "Registradas 3 apostas de Lotofacil do concurso 3758 (R$ 3,50 cada). Uma delas mede 2,66x - o pior lado da medicao.",
+      "Base inalterada: a API oficial em 10/08/2026 devolveu os mesmos concursos ja presentes (fechada em 09/08/2026)."
     ]
   },
   "apostasReais": [
@@ -557,6 +564,22 @@
       "premio": 52.99,
       "saldo": 24.64,
       "detalhe": "jogo 6 fez 4 acertos = 6 quadras"
+    },
+    {
+      "data": "10/08/2026",
+      "modalidade": "lotofacil",
+      "concurso": 3758,
+      "apostas": 3,
+      "custo": 10.5,
+      "origem": "print do CARRINHO do app da Caixa, nao comprovante pago - confirmar a compra",
+      "premioEstimado": 5000000,
+      "fatoresMedidos": [
+        0.824,
+        0.92,
+        2.664
+      ],
+      "resultado": "aguardando sorteio de 10/08/2026",
+      "nota": "o terceiro jogo esta no pior lado da medicao (dezenas espalhadas + coluna inteira do volante)"
     }
   ],
   "commit": "e1a554990337dcb331edd4905b4f11efc0fa142c",

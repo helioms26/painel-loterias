@@ -1289,3 +1289,47 @@ E um terceiro, de ambiente: a primeira versão usava `new Response(stream).array
 que é mais curto e falha com *"Failed to fetch"* quando a página está aberta por
 `file://` — justamente o modo em que este painel é usado. Trocado por leitura direta pelo
 reader.
+
+### 25.2 A coluna que faltava no próprio histórico (v19.13)
+
+Três apostas de Lotofácil registradas para o concurso 3758, R$ 3,50 cada, escolhidas
+fora do painel. Ao registrá-las, o fator medido de cada uma:
+
+| jogo | dezenas | maior sequência | soma | linha/coluna cheia | fator |
+|---|---|---|---|---|---|
+| 1 | 02 04 05 09 10 11 12 13 14 15 16 18 20 24 25 | 8 (0,823×) | 198 (1,149×) | linha 3 (0,720×) e coluna 5 (1,210×) | **0,82×** |
+| 2 | 01 04 05 06 07 08 09 13 15 16 17 18 21 23 24 | 6 (0,801×) | 187 (1,149×) | nenhuma | **0,92×** |
+| 3 | 02 03 05 06 08 09 11 13 15 18 19 20 22 23 25 | 3 (1,916×) | 199 (1,149×) | coluna 3 (1,210×) | **2,66×** |
+
+O terceiro jogo está no pior lado de tudo o que foi medido: dezenas espalhadas, soma no
+miolo, uma coluna inteira do volante. É exatamente o perfil que a v18 recomendava, antes
+da correção de sinal da seção 24. A chance de acertar é a mesma dos outros dois — 1 em
+3.268.760 — mas, acertando, ele divide com cerca de três vezes mais gente.
+
+Isso não apareceu em lugar nenhum da tela. O painel media o perfil na hora de **escolher**
+o jogo e esquecia na hora de **registrar**: o histórico trazia custo, acertos, prêmio e
+sombra, mas não a única grandeza que o método afirma controlar. Dava para apostar contra
+a própria medição e nunca ver.
+
+A v19.13 acrescenta a coluna **Perfil** ao histórico de apostas. Regras de cálculo, que
+não são novas — são as mesmas de quem escolhe:
+
+- jogo com dezenas extras vale a **média dos seus subconjuntos**, não o conjunto grande
+  (seção 24.6);
+- bolão vale a **média dos seus jogos**, porque a cota participa de todos;
+- modalidade sem padrão medido (Quina, hoje) mostra traço, não 1,00× — ausência de
+  medição não é medição de ausência.
+
+Vale registrar o limite: a coluna descreve o que foi jogado, não corrige nada. Ela existe
+para que o backtest do método possa um dia ser feito contra as apostas reais do Hélio, e
+não só contra concursos.
+
+**Base inalterada.** As nove modalidades continuam fechadas em 09/08/2026 (Mega-Sena 3042,
+Lotofácil 3757, Quina 7087, Lotomania 2960, Timemania 2426, Dupla-Sena 2993, Dia de Sorte
+1267, Super Sete 883, +Milionária 379). A consulta à API oficial em 10/08/2026 devolveu
+esses mesmos concursos como os últimos apurados: não houve sorteio novo para incorporar.
+
+**Ressalva sobre o registro.** As três apostas vieram de um print do **carrinho** do
+aplicativo ("Valor atual do carrinho: R$ 10,50"), não de um comprovante pago. Ficam
+registradas com essa origem declarada no arquivo; se a compra não tiver sido concluída,
+elas precisam sair do histórico.

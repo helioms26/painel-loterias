@@ -3,7 +3,7 @@
   "nome": "Painel Loterias",
   "geradoEm": "2026-08-10T16:40:00Z",
   "geradoEmBrasilia": "2026-08-10 13:40",
-  "commitDoConteudo": "2238c96 — commit que publica o painel v19.13",
+  "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
     "arquivo": "https://www.figma.com/design/A9hm8FcF7ctUhve0KR2aM7",
@@ -606,8 +606,8 @@
       "nota": "as oito medem 1,41x - nenhuma tem dezenas coladas, o lado que a multidao prefere"
     }
   ],
-  "commit": "2238c96",
-  "commitCurto": "2238c96",
+  "commit": "96e3b34",
+  "commitCurto": "96e3b34",
   "carteira": {
     "apostas": 16,
     "gasto": 172.45,

@@ -3,7 +3,7 @@
   "nome": "Painel Loterias",
   "geradoEm": "2026-08-10T15:45:00Z",
   "geradoEmBrasilia": "2026-08-10 12:45",
-  "commitDoConteudo": "preenchido pelo passo seguinte",
+  "commitDoConteudo": "2238c96 — commit que publica o painel v19.13",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
     "arquivo": "https://www.figma.com/design/A9hm8FcF7ctUhve0KR2aM7",
@@ -582,6 +582,6 @@
       "nota": "o terceiro jogo esta no pior lado da medicao (dezenas espalhadas + coluna inteira do volante)"
     }
   ],
-  "commit": "e1a554990337dcb331edd4905b4f11efc0fa142c",
-  "commitCurto": "e1a5549"
+  "commit": "2238c96",
+  "commitCurto": "2238c96"
 }

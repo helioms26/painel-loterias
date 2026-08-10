@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.11**, 09/08/2026.
+Última versão: **19.12**, 09/08/2026.
 
 ---
 
@@ -430,3 +430,22 @@ O erro cresce com o tamanho do jogo — 8 dezenas com 5 acertos levam 3 quinas *
 **Resultado:** bilhete R$ 4.239,36, cota de 1/80 = R$ 52,99, custo R$ 28,35, saldo **+R$ 24,64**. A sombra fez no máximo 3 acertos e não levou nada — primeira vez que as carteiras se separam. Com cinco apostas isso é ruído, e o painel diz isso na tela.
 
 **Base até 09/08/2026** nas nove modalidades, 35 concursos novos, `historico_crivo` regerado com 4.651 sorteios.
+
+
+## O que a v19.12 mudou — arrastar o comprovante da Caixa
+
+Em "Minhas apostas" há uma área de arrastar-e-soltar. Joga o PDF do comprovante ali — bolão ou aposta comum, vários de uma vez — e o painel lê dezenas, concurso, data, valor da cota e tarifa de serviço.
+
+**Sem biblioteca externa e funcionando offline.** O comprovante da Caixa é PDF gerado, não digitalizado: o texto está em streams FlateDecode, cada campo num `(…)Tj`. `DecompressionStream('deflate')` é nativo do navegador. Embutir um PDF.js de 1 MB seria trocar a regra do offline por conveniência.
+
+**Ele não salva sozinho, e isso é decisão de projeto.** Lê, monta uma ficha com tudo o que entendeu, aponta o que não fechou, e espera confirmação. Parser que escreve direto no registro financeiro erra em silêncio, e este painel já achou erro demais tarde.
+
+A ficha faz duas conferências que ninguém faz na lotérica: cotas × valor da cota contra o custo real dos jogos, e cota + tarifa contra o total pago. Com centavos, ao contrário do resto do painel — aqui a conferência é centavo a centavo.
+
+**Três defeitos achados fazendo isso, e vale guardar os três:**
+
+`"endstream"` contém `"stream"` — sem guarda, metade dos streams era pulada e o PDF parecia vazio.
+
+O EOL antes de `endstream` **não** faz parte do stream; incluí-lo dava *"Junk found after end of compressed data"*, mensagem que parece arquivo corrompido quando o problema era o recorte.
+
+`new Response(stream).arrayBuffer()` é o jeito curto de ler um `DecompressionStream` e **falha com "Failed to fetch" em `file://`** — justamente o modo em que este painel roda. Trocado por leitura direta pelo reader. Vale para qualquer coisa nova que use streams aqui.

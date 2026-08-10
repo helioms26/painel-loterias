@@ -1252,3 +1252,40 @@ vez em cinco apostas registradas que as duas carteiras se separam.
 **Isso não valida nada.** Cinco apostas é ruído puro, e um prêmio de faixa baixa numa
 carteira pequena vira o placar sozinho — exatamente o que o próprio painel avisa na caixa
 acima do quadro. O que vale registrar é o conserto, não a quadra.
+
+### 25.1 Ler o comprovante da Caixa dentro do navegador (v19.12)
+
+O comprovante de bolão que a Caixa envia é um PDF **gerado**, não digitalizado: o texto
+está em streams FlateDecode, cada campo num operador `(…)Tj` separado. Dá para ler no
+navegador sem biblioteca nenhuma — `DecompressionStream('deflate')` é nativo, e o painel
+continua funcionando offline, que é regra do projeto. Embutir um PDF.js de 1 MB por causa
+disso seria trocar a regra por conveniência.
+
+O caminho: recortar os streams, inflar, decodificar em windows-1252, extrair `Tj` e `TJ`,
+e casar rótulo com valor. O layout quebra rótulos longos em duas linhas ("Valor tarifa
+de" / "serviço:"), então a busca olha até três pedaços à frente do rótulo.
+
+**O que ele não faz, de propósito: salvar sozinho.** Lê, monta uma ficha com tudo o que
+entendeu, aponta o que não fechou, e espera confirmação. Escrever no registro financeiro
+de alguém a partir de um parser sem que a pessoa veja é automação que erra em silêncio —
+e este painel já achou erro demais tarde para inaugurar mais um.
+
+A ficha confere sozinha duas contas que ninguém faz na lotérica: **cotas × valor da cota
+contra o custo real dos jogos**, e **cota + tarifa contra o total pago**. Os valores
+aparecem com centavos, ao contrário do resto do painel, porque aqui a conferência é
+centavo a centavo.
+
+**Dois defeitos encontrados no caminho, os dois de recorte, não de lógica:**
+
+`"endstream"` contém `"stream"`. Sem uma guarda para isso, metade dos streams do arquivo
+era pulada e o PDF parecia não ter texto nenhum.
+
+O EOL entre os dados e a palavra `endstream` **não** faz parte do stream. Incluí-lo fazia
+o `DecompressionStream` terminar a inflação e então reclamar de *"Junk found after end of
+compressed data"* — dado bom, recorte errado. A mensagem enganava: parecia arquivo
+corrompido.
+
+E um terceiro, de ambiente: a primeira versão usava `new Response(stream).arrayBuffer()`,
+que é mais curto e falha com *"Failed to fetch"* quando a página está aberta por
+`file://` — justamente o modo em que este painel é usado. Trocado por leitura direta pelo
+reader.

@@ -5689,6 +5689,231 @@ function painelGraficoHistorico(linhas){
   p.appendChild(el('p',{class:'note'},'Com poucas apostas registradas, qualquer desenho aqui é ruído — um único prêmio de faixa alta reescreveria o gráfico inteiro. Ele vale pelo hábito de registrar, não pelo formato da linha de hoje.'));
   return p;
 }
+/* ====================== LER O COMPROVANTE DA CAIXA ======================
+   O comprovante de bolão que a Caixa manda por e-mail é um PDF gerado, não
+   digitalizado: o texto está lá dentro em streams FlateDecode, com cada campo
+   num operador (…)Tj separado. Dá para ler no navegador sem biblioteca nenhuma
+   — DecompressionStream('deflate') é nativo e o painel continua funcionando
+   offline, que é a regra do projeto.
+
+   O que este código NÃO faz, de propósito: salvar sozinho. Ele lê, mostra tudo
+   o que entendeu numa ficha, aponta o que não fechou, e espera confirmação.
+   Escrever no registro financeiro de alguém a partir de um parser sem ele ver
+   é o tipo de automação que erra em silêncio — e este painel já teve erro
+   demais achado tarde para inaugurar mais um. */
+async function inflar(bytes, formato){
+  /* Lemos a saída do DecompressionStream direto pelo reader. A primeira versão
+     usava `new Response(stream).arrayBuffer()`, que é mais curto e falha com
+     "Failed to fetch" quando a página está aberta por file:// — justamente o
+     modo em que este painel é usado. */
+  const ds=new DecompressionStream(formato);
+  const w=ds.writable.getWriter();
+  w.write(bytes); w.close();
+  const rd=ds.readable.getReader();
+  const partes=[]; let total=0;
+  try{
+    for(;;){ const {value,done}=await rd.read(); if(done) break; partes.push(value); total+=value.length; }
+  }catch(e){
+    /* "Junk found after end of compressed data" chega DEPOIS de a inflação ter
+       terminado: os dados úteis já vieram. Se veio conteúdo, aproveitamos. */
+    if(!total || !/Junk|junk/.test(String(e.message||''))) throw e;
+  }
+  const out=new Uint8Array(total); let o=0;
+  for(const p of partes){ out.set(p,o); o+=p.length; }
+  return out;
+}
+async function inflarStream(bytes){
+  if(typeof DecompressionStream!=='function') throw new Error('sem-decompression');
+  const copia=new Uint8Array(bytes);          // desprende do buffer original
+  try{ return await inflar(copia,'deflate'); }
+  catch(e){ return await inflar(new Uint8Array(bytes),'deflate-raw'); }
+}
+function bytesParaTexto(u8){ return new TextDecoder('windows-1252').decode(u8); }
+function acharStreams(txt){
+  /* Trabalhamos com a visão latin1 do arquivo inteiro: os índices em caracteres
+     coincidem com os índices em bytes, então dá para recortar os streams sem
+     precisar de um parser de PDF de verdade. */
+  const out=[]; let i=0;
+  for(;;){
+    const s=txt.indexOf('stream', i); if(s<0) break;
+    /* "endstream" contém "stream": sem esta guarda, metade dos streams do
+       arquivo era pulada e o PDF parecia não ter texto. */
+    if(s>=3 && txt.slice(s-3,s)==='end'){ i=s+6; continue; }
+    let ini=s+6;
+    if(txt[ini]==='\r') ini++;
+    if(txt[ini]==='\n') ini++;
+    let f=txt.indexOf('endstream', ini); if(f<0) break;
+    const fim=f;
+    /* O EOL que separa os dados do "endstream" NÃO faz parte do stream. Incluí-lo
+       fazia o DecompressionStream terminar a inflação e então reclamar de
+       "Junk found after end of compressed data" — dado bom, recorte errado. */
+    while(f>ini && (txt[f-1]==='\n'||txt[f-1]==='\r'||txt[f-1]===' ')) f--;
+    out.push([ini,f]); i=fim+9;
+  }
+  return out;
+}
+function pedacosDeTexto(conteudo){
+  /* (…)Tj e [(…)…(…)]TJ — os dois operadores que a Caixa usa. */
+  const out=[];
+  const re=/\((?:\\[\s\S]|[^()\\])*\)/g;
+  const reOp=/(\((?:\\[\s\S]|[^()\\])*\)\s*Tj)|(\[[\s\S]*?\]\s*TJ)/g;
+  let m;
+  while((m=reOp.exec(conteudo))!==null){
+    const bloco=m[0];
+    let s='', mm; re.lastIndex=0;
+    while((mm=re.exec(bloco))!==null){
+      s += mm[0].slice(1,-1).replace(/\\([()\\])/g,'$1')
+                .replace(/\\n/g,' ').replace(/\\r/g,' ').replace(/\\t/g,' ')
+                .replace(/\\(\d{1,3})/g, (_,o)=>String.fromCharCode(parseInt(o,8)));
+    }
+    if(s.trim()) out.push(s);
+  }
+  return out;
+}
+async function textoDoPDF(arrayBuffer){
+  const u8=new Uint8Array(arrayBuffer);
+  let bruto=''; const CH=0x8000;
+  for(let i=0;i<u8.length;i+=CH) bruto+=String.fromCharCode.apply(null, u8.subarray(i,i+CH));
+  const pedacos=[];
+  for(const [a,b] of acharStreams(bruto)){
+    let conteudo=null;
+    try{ conteudo=bytesParaTexto(await inflarStream(u8.subarray(a,b))); }
+    catch(e){
+      if(String(e.message)==='sem-decompression') throw e;
+      const cru=bruto.slice(a,b);
+      if(/\)\s*Tj/.test(cru)) conteudo=cru;      // stream sem compressão
+    }
+    if(conteudo && /\)\s*Tj|\]\s*TJ/.test(conteudo)) pedacos.push(...pedacosDeTexto(conteudo));
+  }
+  if(!pedacos.length) throw new Error('Não encontrei texto neste PDF. Se ele for um scan ou uma foto, não dá para ler — cole os dados à mão no formulário abaixo.');
+  return pedacos;
+}
+/* ---------- interpretação do comprovante ---------- */
+const MOD_PARA_JOGO = {'mega-sena':'megasena','megasena':'megasena','lotofácil':'lotofacil','lotofacil':'lotofacil',
+  'quina':'quina','lotomania':'lotomania','timemania':'timemania','dupla-sena':'duplasena','duplasena':'duplasena',
+  'dia de sorte':'diadesorte','super sete':'supersete','+milionária':'maismilionaria','mais milionária':'maismilionaria'};
+/* fmtBRL corta os centavos de propósito nos painéis de prêmio, onde eles são
+   ruído. Aqui é o oposto: a ficha existe para conferir centavo a centavo se
+   cota + tarifa fecha com o total do comprovante. */
+function fmtBRL2(n){ return n==null? '—' : 'R$ '+Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function moedaBR(t){
+  const m=String(t).match(/-?[\d.]+,\d{2}/); if(!m) return null;
+  const v=parseFloat(m[0].replace(/\./g,'').replace(',','.'));
+  return isFinite(v)? v : null;
+}
+function interpretarComprovante(pedacos){
+  const linhas=pedacos.map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean);
+  const tudo=linhas.join('\n');
+  const aviso=[];
+  /* Valor que segue um rótulo: o layout da Caixa quebra rótulos longos em duas
+     linhas ("Valor tarifa de" / "serviço:"), então procuramos o rótulo por
+     pedaços e pegamos o primeiro pedaço seguinte que tenha o formato certo. */
+  const apos=(regexRotulo, valida)=>{
+    for(let i=0;i<linhas.length;i++){
+      if(!regexRotulo.test(linhas[i])) continue;
+      for(let j=i+1;j<Math.min(i+4,linhas.length);j++){
+        const v=valida(linhas[j]); if(v!=null) return v;
+      }
+    }
+    return null;
+  };
+  const numero=t=>{ const m=String(t).match(/^\s*(\d{1,7})\s*$/); return m? +m[1] : null; };
+  const data=t=>{ const m=String(t).match(/^\s*(\d{2}\/\d{2}\/\d{4})\s*$/); return m? m[1] : null; };
+
+  let jogoKey=null;
+  const mMod=tudo.match(/Comprovante de Aposta(?: Bol(?:ão|ao))? ([^\n]+)/i) || null;
+  const rotMod=(apos(/^Modalidade:?$/i, t=>t.trim()||null) || (mMod?mMod[1]:'') || '').trim().toLowerCase();
+  for(const k in MOD_PARA_JOGO) if(rotMod.indexOf(k)>=0){ jogoKey=MOD_PARA_JOGO[k]; break; }
+
+  const conc=apos(/^Concurso:?$/i, numero);
+  const dSorteio=apos(/^Data do sorteio:?$/i, data);
+  const dAposta=apos(/^Data da (aposta|compra):?$/i, data);
+  const vTotal=apos(/^Valor total da$|^Valor total da aposta:?$/i, moedaBR);
+  const vCota =apos(/^Valor da cota:?$/i, moedaBR);
+  const vTar  =apos(/^Valor tarifa de$|^Valor tarifa de servi/i, moedaBR);
+
+  let cotas=null, totalCotas=null;
+  const mC=tudo.match(/PARTICIPA\s+COM\s+(\d+)\s+COTAS?\s+DO\s+TOTAL\s+DE\s+(\d+)\s+COTAS/i);
+  if(mC){ cotas=+mC[1]; totalCotas=+mC[2]; }
+  else {
+    const mC2=apos(/^Cota:?$/i, t=>{ const m=String(t).match(/^\s*(\d+)\s*\/\s*(\d+)\s*$/); return m? {a:+m[1],b:+m[2]} : null; });
+    if(mC2){ cotas=1; totalCotas=mC2.b; aviso.push('O total de cotas veio do campo "Cota: '+mC2.a+'/'+mC2.b+'", que é o NÚMERO da sua cota. Assumi 1 cota comprada — confira.'); }
+  }
+
+  /* Jogos: linhas de dezenas separadas por | ou espaço, logo abaixo de "Jogo N". */
+  const jogos=[];
+  const cfg=jogoKey? GAMES[jogoKey] : null;
+  for(let i=0;i<linhas.length;i++){
+    if(!/^Jogo\s+\d+$/i.test(linhas[i])) continue;
+    for(let j=i+1;j<Math.min(i+3,linhas.length);j++){
+      const nums=(linhas[j].match(/\d+/g)||[]).map(Number);
+      if(nums.length>=5 && (!cfg || nums.every(v=>v>=cfg.min&&v<=cfg.max))){ jogos.push([...new Set(nums)].sort((a,b)=>a-b)); break; }
+    }
+  }
+  if(!jogos.length){
+    for(const l of linhas){
+      if(!/\|/.test(l)) continue;
+      const nums=(l.match(/\d+/g)||[]).map(Number);
+      if(nums.length>=5 && (!cfg || nums.every(v=>v>=cfg.min&&v<=cfg.max))) jogos.push([...new Set(nums)].sort((a,b)=>a-b));
+    }
+  }
+  return {jogoKey, conc, dSorteio, dAposta, vTotal, vCota, vTarifa:vTar, cotas, totalCotas, jogos, aviso, linhas};
+}
+/* Confere o que foi lido contra o que dá para calcular, e devolve os problemas
+   em português — não "parse error". */
+function conferirComprovante(d){
+  const probs=[], notas=[];
+  if(!d.jogoKey) probs.push('Não identifiquei a modalidade.');
+  if(!d.conc) probs.push('Não achei o número do concurso.');
+  if(!d.jogos.length) probs.push('Não achei nenhum jogo.');
+  const cfg=d.jogoKey? GAMES[d.jogoKey] : null;
+  if(cfg){
+    const curtos=d.jogos.filter(j=>j.length<cfg.pick).length;
+    if(curtos) probs.push(curtos+' jogo(s) com menos de '+cfg.pick+' dezenas.');
+  }
+  let custoBilhete=null;
+  if(cfg && d.jogos.length && !d.jogos.some(j=>j.length<cfg.pick))
+    custoBilhete=d.jogos.reduce((a,j)=>a+custoAposta(d.jogoKey,j.length),0);
+  const ehBol = d.totalCotas>1;
+  if(ehBol){
+    if(d.vCota!=null && d.totalCotas && custoBilhete!=null){
+      const somaCotas=d.vCota*d.totalCotas;
+      if(Math.abs(somaCotas-custoBilhete)>0.02)
+        notas.push('As '+d.totalCotas+' cotas de '+fmtBRL2(d.vCota)+' somam '+fmtBRL2(somaCotas)+
+                   ', e os jogos custam '+fmtBRL2(custoBilhete)+'. Diferença de '+fmtBRL2(somaCotas-custoBilhete)+'.');
+      else notas.push('✓ '+d.totalCotas+' × '+fmtBRL2(d.vCota)+' = '+fmtBRL2(custoBilhete)+', exatamente o custo dos jogos.');
+    }
+    if(d.vCota!=null && d.vTarifa!=null && d.vTotal!=null){
+      const soma=(d.vCota*(d.cotas||1))+d.vTarifa;
+      if(Math.abs(soma-d.vTotal)>0.02)
+        notas.push('Cota + tarifa dá '+fmtBRL2(soma)+', mas o comprovante diz total '+fmtBRL2(d.vTotal)+'.');
+    }
+  }
+  return {probs, notas, custoBilhete, ehBol};
+}
+function apostaDoComprovante(d, chk){
+  const cfg=GAMES[d.jogoKey];
+  const dataISO=(x)=> x? x.split('/').reverse().join('-') : new Date().toISOString().slice(0,10);
+  const base={id:novoId(), jogo:d.jogoKey, conc:d.conc, data:dataISO(d.dAposta||d.dSorteio),
+              origem:'lido do comprovante oficial da Caixa em '+new Date().toLocaleDateString('pt-BR')};
+  if(chk.ehBol){
+    base.tipo='bolao';
+    base.jogos=d.jogos;
+    base.bolao={valorCota:d.vCota||0, totalCotas:d.totalCotas, cotas:d.cotas||1, tarifa:d.vTarifa||0};
+    base.custoTotal=chk.custoBilhete!=null? chk.custoBilhete : (d.vCota||0)*d.totalCotas;
+    base.custo = d.vTotal!=null ? d.vTotal : +(((d.vCota||0)*(d.cotas||1))+(d.vTarifa||0)).toFixed(2);
+    base.sombra=d.jogos.map((j,i)=>sorteioAleatorio(d.jogoKey, j.length, chaveAposta(base)+'#'+i));
+  } else if(d.jogos.length>1){
+    base.jogos=d.jogos;
+    base.custo=chk.custoBilhete!=null? chk.custoBilhete : (d.vTotal||0);
+    base.sombra=d.jogos.map((j,i)=>sorteioAleatorio(d.jogoKey, j.length, chaveAposta(base)+'#'+i));
+  } else {
+    base.nums=d.jogos[0];
+    base.custo=chk.custoBilhete!=null? chk.custoBilhete : (d.vTotal||0);
+    base.sombra=sorteioAleatorio(d.jogoKey, d.jogos[0].length, chaveAposta(base));
+  }
+  return base;
+}
 /* ================= REGISTRO DE APOSTAS · a regra O do método =================
    O método exige registrar toda aposta e comparar contra um baseline aleatório.
    Sem isso ele não é falseável na prática — só na teoria. Aqui cada aposta
@@ -5953,6 +6178,102 @@ async function renderRegistro(m){
   const g=state.game, cfg=GAMES[g], ap=APOSTAS[g];
   const semeadas=await semearApostas();
   let apostas=lerApostas();
+
+  /* ---------- ler comprovante da Caixa ---------- */
+  const pz=el('div',{class:'panel'});
+  pz.appendChild(el('h3',null,'Registrar pelo comprovante da Caixa'));
+  pz.appendChild(htmlBloco('<p class="note">Arraste aqui o <b>PDF do comprovante</b> que a Caixa manda — bolão ou aposta comum. O painel lê as dezenas, o concurso, o valor da cota e a tarifa de serviço, <b>mostra tudo o que entendeu</b> e só grava depois que você confirmar. Nada é salvo sozinho.</p>'));
+  const alvo=el('div',{style:'border:2px dashed var(--border-default);border-radius:var(--radius-md);padding:var(--space-7) var(--space-5);text-align:center;cursor:pointer;transition:background .15s,border-color .15s'});
+  alvo.innerHTML='<div style="font-size:var(--text-md);font-weight:var(--weight-semi)">Solte o PDF aqui</div>'+
+    '<div class="note" style="margin-top:var(--space-2)">ou clique para escolher · dá para soltar vários de uma vez</div>';
+  const inPdf=el('input',{type:'file',accept:'.pdf,application/pdf',multiple:'',style:'display:none'});
+  const fichas=el('div');
+  pz.appendChild(alvo); pz.appendChild(inPdf); pz.appendChild(fichas);
+
+  const pinta=(on)=>{ alvo.style.background = on? 'var(--accent-wash)':''; alvo.style.borderColor = on? 'var(--accent)':'var(--border-default)'; };
+  ['dragenter','dragover'].forEach(ev=>alvo.addEventListener(ev, e=>{ e.preventDefault(); pinta(true); }));
+  ['dragleave','drop'].forEach(ev=>alvo.addEventListener(ev, e=>{ e.preventDefault(); pinta(false); }));
+  alvo.addEventListener('drop', e=>{ const fs=[...(e.dataTransfer&&e.dataTransfer.files||[])]; if(fs.length) lerArquivos(fs); });
+  alvo.onclick=()=>inPdf.click();
+  inPdf.onchange=()=>{ const fs=[...(inPdf.files||[])]; if(fs.length) lerArquivos(fs); inPdf.value=''; };
+
+  async function lerArquivos(arquivos){
+    for(const f of arquivos){
+      const ficha=el('div',{class:'panel',style:'background:var(--surface-sunken);box-shadow:none;margin-top:var(--space-5)'});
+      ficha.innerHTML='<b>'+esc(f.name)+'</b><br><span class="note">lendo…</span>';
+      fichas.appendChild(ficha);
+      try{
+        const pedacos=await textoDoPDF(await f.arrayBuffer());
+        const d=interpretarComprovante(pedacos);
+        const chk=conferirComprovante(d);
+        montarFicha(ficha, f, d, chk);
+      }catch(e){
+        const semDS=String(e.message)==='sem-decompression';
+        ficha.innerHTML='<b>'+esc(f.name)+'</b>'+
+          '<div class="warnbox" style="margin-top:var(--space-3)">'+
+          (semDS? 'Este navegador não descomprime PDF (falta <code>DecompressionStream</code>). Use um Chrome, Edge ou Firefox atual, ou digite as dezenas no formulário abaixo.'
+                : esc(e.message))+'</div>';
+      }
+    }
+  }
+  function montarFicha(ficha, f, d, chk){
+    ficha.innerHTML='';
+    ficha.appendChild(el('div',{style:'font-weight:var(--weight-semi);margin-bottom:var(--space-3)'}, esc(f.name)));
+    const cfgL=d.jogoKey? GAMES[d.jogoKey] : null;
+    let h='<table><tr><th>Campo</th><th>Lido do comprovante</th></tr>'+
+      '<tr><td>Modalidade</td><td>'+(cfgL? esc(cfgL.label) : '<span style="color:var(--status-critical)">não identificada</span>')+'</td></tr>'+
+      '<tr><td>Concurso</td><td>'+(d.conc? String(d.conc) : '—')+'</td></tr>'+
+      '<tr><td>Data do sorteio</td><td>'+esc(d.dSorteio||'—')+'</td></tr>'+
+      (chk.ehBol? '<tr><td>Cotas</td><td>'+(d.cotas||1)+' de '+d.totalCotas+'</td></tr>'+
+                  '<tr><td>Valor da cota</td><td>'+fmtBRL2(d.vCota)+'</td></tr>'+
+                  '<tr><td>Tarifa de serviço</td><td>'+(d.vTarifa!=null?fmtBRL2(d.vTarifa)+
+                    (d.vCota? ' <span class="t-note">('+(100*d.vTarifa/d.vCota).toFixed(1).replace('.',',')+'% da cota)</span>':''):'—')+'</td></tr>'
+                : '')+
+      '<tr><td>Você pagou</td><td><b>'+fmtBRL2(d.vTotal)+'</b></td></tr>'+
+      '<tr><td>Custo do bilhete</td><td>'+fmtBRL2(chk.custoBilhete)+'</td></tr>'+
+      '<tr><td>Jogos</td><td>'+d.jogos.length+'</td></tr></table>';
+    ficha.appendChild(htmlBloco(h));
+    if(d.jogos.length){
+      const cx=el('div',{style:'margin-top:var(--space-4)'});
+      d.jogos.forEach((j,i)=>{
+        const row=el('div',{style:'display:flex;align-items:center;gap:8px;margin:3px 0;flex-wrap:wrap'});
+        row.appendChild(el('span',{class:'t-note',style:'width:56px'},'Jogo '+(i+1)));
+        const b=el('div',{class:'balls',style:'gap:3px'});
+        j.forEach(v=>b.appendChild(el('span',{class:'ball mini'}, d.jogoKey? pad(v,d.jogoKey) : String(v))));
+        row.appendChild(b);
+        cx.appendChild(row);
+      });
+      ficha.appendChild(cx);
+    }
+    for(const t of (d.aviso||[])) ficha.appendChild(el('div',{class:'warnbox',style:'margin-top:var(--space-3)'}, esc(t)));
+    for(const t of chk.notas) ficha.appendChild(el('div',{class: t.indexOf('✓')===0?'okbox':'warnbox',style:'margin-top:var(--space-3)'}, esc(t)));
+    if(chk.probs.length){
+      ficha.appendChild(el('div',{class:'warnbox',style:'margin-top:var(--space-3)'},
+        '<b>Não dá para registrar automaticamente:</b><br>'+chk.probs.map(esc).join('<br>')+
+        '<br><br>Os dados acima são o que consegui ler — use o formulário abaixo para completar à mão.'));
+      return;
+    }
+    const jaTem=lerApostas().some(x=>chaveAposta(x)===chaveAposta({jogo:d.jogoKey, conc:d.conc, jogos:d.jogos}));
+    if(jaTem){
+      ficha.appendChild(el('div',{class:'okbox',style:'margin-top:var(--space-3)'},
+        'Esta aposta <b>já está registrada</b> — mesmo jogo, mesmo concurso, mesmas dezenas. Não vou duplicar.'));
+      return;
+    }
+    const bar=el('div',{class:'controls',style:'margin-top:var(--space-4)'});
+    const bOk=el('button',{class:'primary'},'Confirmar e registrar');
+    bOk.onclick=()=>{
+      const item=apostaDoComprovante(d, chk);
+      const lista=lerApostas(); lista.push(item);
+      if(!salvarApostas(lista)){ alert('Não consegui salvar no navegador.'); return; }
+      refresh();
+    };
+    bar.appendChild(bOk);
+    const bNao=el('button',null,'Descartar');
+    bNao.onclick=()=>ficha.remove();
+    bar.appendChild(bNao);
+    ficha.appendChild(bar);
+  }
+  m.appendChild(pz);
 
   /* ---------- histórico é do usuário, não do navegador ---------- */
   const pb=el('div',{class:'panel'});

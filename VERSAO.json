@@ -1,5 +1,5 @@
 {
-  "versao": "19.11",
+  "versao": "19.12",
   "nome": "Painel Loterias",
   "geradoEm": "2026-07-27T19:00:00Z",
   "geradoEmBrasilia": "2026-07-27 16:00",
@@ -442,6 +442,12 @@
       "Bolao ganha campo de tarifa de servico: ela nao compra combinacao e reduz o retorno esperado na mesma proporcao. A previa mostra o percentual do desembolso.",
       "Registrado o bolao da Mega-Sena 3042 (10 jogos de 8 dezenas, cota 1/80, R$ 28,35 com tarifa).",
       "Base ate 09/08/2026 nas nove modalidades; historico_crivo regerado com 4.651 sorteios."
+    ],
+    "19.12": [
+      "Area de arrastar-e-soltar em Minhas apostas: le o PDF do comprovante da Caixa no proprio navegador, sem biblioteca externa, e funciona offline.",
+      "O parser NUNCA salva sozinho: monta uma ficha com tudo o que leu, aponta o que nao fechou e espera confirmacao.",
+      "A ficha confere cotas x valor da cota contra o custo dos jogos, e cota + tarifa contra o total pago, com centavos.",
+      "Tres defeitos achados no caminho: endstream contem stream; o EOL antes de endstream nao faz parte do stream; new Response(stream) falha em file://."
     ]
   },
   "apostasReais": [

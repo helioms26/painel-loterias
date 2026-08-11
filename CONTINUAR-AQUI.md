@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.14**, 10/08/2026.
+Última versão: **19.15**, 10/08/2026.
 
 ---
 
@@ -503,3 +503,23 @@ que é.
 Está logo abaixo dos quatro cards, em `renderRegistro`. A causa raiz continua aberta por
 construção — o painel não acessa a conta da Caixa —, então a defesa é a honestidade da tela
 mais o hábito de arrastar o PDF.
+
+---
+
+## v19.15 — base até 10/08/2026, e o diário empatou com o acaso
+
+Entraram seis sorteios: Lotofácil 3758, Quina 7088, Lotomania 2961, Dupla-Sena 2994, Dia de
+Sorte 1268, Super Sete 884. Mega-Sena, Timemania e +Milionária continuam em 09/08 (não houve
+sorteio). `historico_crivo` regerado: **4.652 sorteios**, 5 cruzaram 1,00.
+
+A Lotofácil 3758 não acumulou — 8 ganhadores de 15, R$ 530.611,74 cada. Das três apostas do
+Hélio, a de melhor perfil (0,82×) fez 11 acertos e pagou R$ 7,00; as outras duas fizeram 9.
+**Não trate essa coincidência como sinal** — está escrito na seção 25.4 por quê.
+
+**O número que importa:** o diário fora da amostra caiu para **10 de 19** (Lotofácil 8/13,
+Mega-Sena 2/6). Estava em 6 de 9 há uma semana. Isso é acaso, e a seção 25.4 separa o que
+isso derruba (nada, ainda) do que não derruba (o coeficiente, medido em 3.411 concursos).
+Se alguém retomar este projeto: **não conserte esse número**. Ele é o mecanismo funcionando.
+
+A aferição de preço reconstruído continua dentro de 10% em todas as modalidades com amostra
+suficiente; Super Sete segue sinalizado como amostra pequena (n=4).

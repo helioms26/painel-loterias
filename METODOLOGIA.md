@@ -1379,3 +1379,48 @@ no aplicativo da Caixa é invisível até alguém digitar ou arrastar o comprova
 não tem — e não deveria fingir ter — acesso à conta da Caixa. O que ele pode fazer é parar
 de dar a impressão de completude: a carteira apresenta "seu saldo" como se fosse o saldo,
 quando é o saldo *do que foi informado*.
+
+### 25.4 O concurso 3758 saiu — e o diário fora da amostra virou cara-ou-coroa (v19.15)
+
+Seis sorteios entraram na base em 10/08/2026: Lotofácil 3758, Quina 7088, Lotomania 2961,
+Dupla-Sena 2994, Dia de Sorte 1268 e Super Sete 884. A Lotofácil **não acumulou**: saiu
+`01 03 04 05 08 09 11 12 13 14 17 18 20 24 25`, com **8 ganhadores de 15 acertos**, R$
+530.611,74 para cada um.
+
+**As três apostas do Hélio.** Uma delas fez 11 acertos e pagou R$ 7,00; as outras duas
+fizeram 9. Retorno de R$ 7,00 sobre R$ 10,50 — perda de R$ 3,50, dentro do esperado.
+
+| dezenas | perfil medido | acertos | prêmio |
+|---|---|---|---|
+| 02 04 05 09 10 11 12 13 14 15 16 18 20 24 25 | 0,82× | **11** | R$ 7,00 |
+| 01 04 05 06 07 08 09 13 15 16 17 18 21 23 24 | 0,92× | 9 | — |
+| 02 03 05 06 08 09 11 13 15 18 19 20 22 23 25 | 2,66× | 9 | — |
+
+A aposta de melhor perfil foi a única premiada. **Isso não significa nada** e registrar como
+se significasse seria o mesmo erro que este projeto existe para não cometer: o fator de
+rateio não mexe na chance de acertar, e num sorteio único a ordem entre três apostas é ruído
+puro. Se a coincidência tivesse saído ao contrário, ela também não diria nada.
+
+**O que diz alguma coisa — e diz contra.** Com o 3758 incorporado, o diário fora da amostra
+passa a **10 acertos de direção em 19 concursos**: Lotofácil 8 de 13, Mega-Sena 2 de 6. Isso
+é indistinguível de cara-ou-coroa. Em 02/08 o quadro estava em 6 de 9 e eu escrevi, aqui
+mesmo, que aquilo não era evidência de nada; a série continuou e regrediu para o acaso,
+exatamente como o texto previa que poderia acontecer.
+
+Vale separar duas coisas que o quadro mistura, para ninguém enterrar o método pelo motivo
+errado nem salvá-lo pelo motivo errado:
+
+O **coeficiente medido** vem de 3.411 concursos e tem intervalo de confiança estreito
+(Lotofácil ≤3 coladas: 2,21×, IC95 1,97–2,53). Uma amostra de 19 sorteios não tem poder
+estatístico para derrubar isso — nem para confirmar.
+
+O **diário**, por outro lado, testa uma coisa mais frágil que o coeficiente: que o fator
+previsto ordene corretamente cada sorteio individual, cuja razão observada carrega ruído de
+volume, de dia da semana e de acumulação. É esperado que ele seja barulhento. Mas foi por
+isso que ele foi construído para crescer sozinho e registrar erro com o mesmo destaque do
+acerto — e agora está fazendo justamente o trabalho para o qual foi feito: **impedir que eu
+conte a história boa**. Perto de 20 concursos ele começa a valer como sinal fraco. Está em
+19, empatado com o acaso, e é isso que a tela mostra.
+
+**Carteira após o 3758:** 16 apostas, R$ 172,45 gastos, R$ 766,55 recebidos. O saldo continua
+dominado por um único prêmio de faixa média.

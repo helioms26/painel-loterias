@@ -1,8 +1,8 @@
 {
-  "versao": "19.14",
+  "versao": "19.15",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-08-10T16:40:00Z",
-  "geradoEmBrasilia": "2026-08-10 13:40",
+  "geradoEm": "2026-08-10T17:10:00Z",
+  "geradoEmBrasilia": "2026-08-10 14:10",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -15,7 +15,7 @@
     "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
   },
   "baseDeDados": {
-    "fechadaEm": "09/08/2026",
+    "fechadaEm": "10/08/2026",
     "concursosPorModalidade": {
       "timemania": {
         "ultimoConcurso": 2426,
@@ -25,32 +25,32 @@
         "estimativa": 7500000.0
       },
       "diadesorte": {
-        "ultimoConcurso": 1267,
-        "data": "09/08/2026",
+        "ultimoConcurso": 1268,
+        "data": "10/08/2026",
         "acumulado": true,
-        "proximoSorteio": "10/08/2026",
-        "estimativa": 650000.0
+        "proximoSorteio": "11/08/2026",
+        "estimativa": 800000.0
       },
       "quina": {
-        "ultimoConcurso": 7087,
-        "data": "09/08/2026",
+        "ultimoConcurso": 7088,
+        "data": "10/08/2026",
         "acumulado": true,
-        "proximoSorteio": "10/08/2026",
-        "estimativa": 2300000.0
+        "proximoSorteio": "11/08/2026",
+        "estimativa": 3000000.0
       },
       "duplasena": {
-        "ultimoConcurso": 2993,
-        "data": "07/08/2026",
+        "ultimoConcurso": 2994,
+        "data": "10/08/2026",
         "acumulado": true,
-        "proximoSorteio": "10/08/2026",
-        "estimativa": 1000000.0
+        "proximoSorteio": "12/08/2026",
+        "estimativa": 1100000.0
       },
       "lotofacil": {
-        "ultimoConcurso": 3757,
-        "data": "09/08/2026",
-        "acumulado": true,
-        "proximoSorteio": "10/08/2026",
-        "estimativa": 5000000.0
+        "ultimoConcurso": 3758,
+        "data": "10/08/2026",
+        "acumulado": false,
+        "proximoSorteio": "11/08/2026",
+        "estimativa": 2000000.0
       },
       "maismilionaria": {
         "ultimoConcurso": 379,
@@ -60,11 +60,11 @@
         "estimativa": 82000000.0
       },
       "lotomania": {
-        "ultimoConcurso": 2960,
-        "data": "07/08/2026",
+        "ultimoConcurso": 2961,
+        "data": "10/08/2026",
         "acumulado": true,
-        "proximoSorteio": "10/08/2026",
-        "estimativa": 9300000.0
+        "proximoSorteio": "12/08/2026",
+        "estimativa": 10500000.0
       },
       "megasena": {
         "ultimoConcurso": 3042,
@@ -74,43 +74,43 @@
         "estimativa": 3500000.0
       },
       "supersete": {
-        "ultimoConcurso": 883,
-        "data": "07/08/2026",
+        "ultimoConcurso": 884,
+        "data": "10/08/2026",
         "acumulado": true,
-        "proximoSorteio": "10/08/2026",
-        "estimativa": 5000000.0
+        "proximoSorteio": "12/08/2026",
+        "estimativa": 5200000.0
       }
     },
     "arquivos": {
       "apostas.json": 9084,
-      "dates_diadesorte.json": 24234,
-      "dates_duplasena.json": 58754,
-      "dates_lotofacil.json": 74034,
-      "dates_lotomania.json": 58094,
+      "dates_diadesorte.json": 24254,
+      "dates_duplasena.json": 58774,
+      "dates_lotofacil.json": 74054,
+      "dates_lotomania.json": 58114,
       "dates_maismilionaria.json": 7094,
       "dates_megasena.json": 59734,
-      "dates_quina.json": 140634,
-      "dates_supersete.json": 16670,
+      "dates_quina.json": 140654,
+      "dates_supersete.json": 16689,
       "dates_timemania.json": 47414,
-      "diadesorte.json": 66746,
-      "duplasena.json": 205411,
-      "historico_crivo.json": 43738,
-      "lotofacil.json": 314482,
-      "lotomania.json": 321534,
+      "diadesorte.json": 66800,
+      "duplasena.json": 205480,
+      "historico_crivo.json": 43745,
+      "lotofacil.json": 314566,
+      "lotomania.json": 321643,
       "maismilionaria.json": 17725,
       "megasena.json": 117532,
-      "premios_diadesorte.json": 109920,
-      "premios_duplasena.json": 338362,
-      "premios_lotofacil.json": 360249,
-      "premios_lotomania.json": 323703,
+      "premios_diadesorte.json": 110006,
+      "premios_duplasena.json": 338482,
+      "premios_lotofacil.json": 360345,
+      "premios_lotomania.json": 323814,
       "premios_maismilionaria.json": 54559,
       "premios_megasena.json": 198210,
-      "premios_quina.json": 531389,
-      "premios_supersete.json": 72458,
+      "premios_quina.json": 531467,
+      "premios_supersete.json": 72544,
       "premios_timemania.json": 234830,
-      "quina.json": 239852,
-      "status.json": 1550,
-      "supersete.json": 31681,
+      "quina.json": 239886,
+      "status.json": 1283,
+      "supersete.json": 31717,
       "timemania.json": 145784
     },
     "totalArquivos": 30
@@ -195,11 +195,11 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Registradas 8 apostas simples de Mega-Sena (3040, 3041, 3042) a partir dos comprovantes oficiais em PDF.",
-    "Uma delas, 02 05 10 13 41 53 no concurso 3042, fez 4 acertos: R$ 706,56, com comprovante de pagamento de premio.",
-    "O comprovante de pagamento diz 'valor total liquido' e bate com o rateio publicado - prova documental da secao 17 (sem IR).",
-    "Placar passa a avisar que cobre apenas o que foi registrado; aposta feita no app e invisivel ate ser informada.",
-    "Bolao do 3042 reconferido com extrator independente (pdftotext): 1 pagina, 10 jogos, sem truncamento. O parser estava certo."
+    "Base ate 10/08/2026: lotofacil 3758, quina 7088, lotomania 2961, duplasena 2994, diadesorte 1268, supersete 884.",
+    "Lotofacil 3758 nao acumulou: 8 ganhadores de 15 acertos, R$ 530.611,74 cada.",
+    "As 3 apostas do Helio no 3758: 11, 9 e 9 acertos - R$ 7,00 de retorno sobre R$ 10,50.",
+    "historico_crivo regerado: 4.652 sorteios avaliados, 5 cruzaram 1,00.",
+    "Diario fora da amostra caiu para 10 de 19 (lotofacil 8/13, megasena 2/6) - empatado com o acaso, e dito assim na tela."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -214,7 +214,7 @@
     "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)"
   ],
   "varreduraHistorica": {
-    "sorteiosMedidos": 4651,
+    "sorteiosMedidos": 4652,
     "cruzaram1": 5,
     "cruzamentos": [
       {
@@ -463,6 +463,13 @@
       "O comprovante de pagamento diz 'valor total liquido' e bate com o rateio publicado - prova documental da secao 17 (sem IR).",
       "Placar passa a avisar que cobre apenas o que foi registrado; aposta feita no app e invisivel ate ser informada.",
       "Bolao do 3042 reconferido com extrator independente (pdftotext): 1 pagina, 10 jogos, sem truncamento. O parser estava certo."
+    ],
+    "19.15": [
+      "Base ate 10/08/2026: lotofacil 3758, quina 7088, lotomania 2961, duplasena 2994, diadesorte 1268, supersete 884.",
+      "Lotofacil 3758 nao acumulou: 8 ganhadores de 15 acertos, R$ 530.611,74 cada.",
+      "As 3 apostas do Helio no 3758: 11, 9 e 9 acertos - R$ 7,00 de retorno sobre R$ 10,50.",
+      "historico_crivo regerado: 4.652 sorteios avaliados, 5 cruzaram 1,00.",
+      "Diario fora da amostra caiu para 10 de 19 (lotofacil 8/13, megasena 2/6) - empatado com o acaso, e dito assim na tela."
     ]
   },
   "apostasReais": [
@@ -586,8 +593,26 @@
         0.92,
         2.664
       ],
-      "resultado": "aguardando sorteio de 10/08/2026",
-      "nota": "o terceiro jogo esta no pior lado da medicao (dezenas espalhadas + coluna inteira do volante)"
+      "resultado": "11, 9 e 9 acertos",
+      "nota": "a aposta de melhor perfil (0,82x) foi a unica premiada - coincidencia de um sorteio, nao sinal",
+      "premio": 7.0,
+      "sorteio": [
+        1,
+        3,
+        4,
+        5,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        17,
+        18,
+        20,
+        24,
+        25
+      ]
     },
     {
       "data": "04 a 07/08/2026",
@@ -611,8 +636,15 @@
   "carteira": {
     "apostas": 16,
     "gasto": 172.45,
-    "ganho": 759.55,
-    "saldo": 587.1,
-    "ressalva": "saldo positivo vem de um unico premio de faixa media em 16 apostas; amostra pequena demais para significar qualquer coisa"
+    "ganho": 766.55,
+    "saldo": 594.1,
+    "ressalva": "dominado por um unico premio de faixa media; amostra pequena demais para significar qualquer coisa"
+  },
+  "diarioForaDaAmostra": {
+    "acertos": 10,
+    "concursos": 19,
+    "lotofacil": "8 de 13",
+    "megasena": "2 de 6",
+    "leitura": "indistinguivel de cara-ou-coroa; estava em 6 de 9 em 02/08 e regrediu ao acaso"
   }
 }

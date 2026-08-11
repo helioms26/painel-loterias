@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.15**, 10/08/2026.
+Última versão: **19.16**, 11/08/2026.
 
 ---
 
@@ -523,3 +523,32 @@ Se alguém retomar este projeto: **não conserte esse número**. Ele é o mecani
 
 A aferição de preço reconstruído continua dentro de 10% em todas as modalidades com amostra
 suficiente; Super Sete segue sinalizado como amostra pequena (n=4).
+
+---
+
+## v19.16 — marcar ≠ sortear (o erro da Lotomania)
+
+`GAMES[g].pick` é **quantas dezenas o sorteio tira**, não quantas você marca. Nas sete
+modalidades comuns é a mesma coisa; na Lotomania (marca 50, sorteia 20) e na Timemania
+(marca 10, sorteia 7) não é. O código confundia as duas desde o começo.
+
+Consequências: o volante da Lotomania mirava 20 dezenas, e — pior — `conferir` expandia um
+bilhete de 50 em C(50,20) apostas simples. Um bilhete com 15 acertos, que paga R$ 12,19,
+devolvia R$ 3.957.264,08. Na Timemania, 7 acertos com a faixa acumulada devolvia R$ 1 milhão
+em vez de zero.
+
+**Use sempre `tamanhoBase(g)` para tamanho de aposta e `GAMES[g].pick` só para o sorteio.**
+`expandeEmSimples(g,n)` é o guarda: só é desdobramento quem admite dezenas extras. Se for
+mexer em qualquer lugar que fale de "apostas simples equivalentes", passe por essas funções.
+
+**A lição de teste, que importa mais que o conserto:** a regressão cobria 9 modalidades × 9
+abas × 2 temas e não pegou isso, porque conferia renderização e console — nunca o **valor de
+um prêmio**. Um teste que confere prêmio contra o rateio oficial, em todas as modalidades,
+está faltando. Se você for acrescentar um teste, acrescente esse.
+
+Entraram 4 apostas de Lotomania do concurso 2962 (dois pares espelho perfeitos, R$ 3,00
+cada). A seção 26.1 tem a conta exata do espelho: ele **não** aumenta a chance (1 em 44,
+igual a dois bilhetes quaisquer) — só anticorrelaciona os dois.
+
+Base: consultei a API em 11/08/2026 às 16h30 de Brasília e os sorteios do dia ainda não
+tinham saído. Continua fechada em 10/08/2026.

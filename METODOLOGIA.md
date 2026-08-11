@@ -1424,3 +1424,68 @@ conte a história boa**. Perto de 20 concursos ele começa a valer como sinal fr
 
 **Carteira após o 3758:** 16 apostas, R$ 172,45 gastos, R$ 766,55 recebidos. O saldo continua
 dominado por um único prêmio de faixa média.
+
+## 26. Marcar não é sortear: o erro que inflava o prêmio da Lotomania (v19.16)
+
+O Hélio reclamou de uma coisa pequena — "quando faço o jogo da Lotomania, ele não coloca
+todas as dezenas" — e o rastro levou a um erro grande.
+
+`GAMES[g].pick` guarda **quantas dezenas o sorteio tira**. Em sete das nove modalidades isso
+coincide com quantas você marca, e o código tratou as duas grandezas como a mesma coisa
+desde a primeira versão. Em duas modalidades elas não coincidem:
+
+| modalidade | marca | sorteia |
+|---|---|---|
+| Lotomania | **50** | 20 |
+| Timemania | **10** | 7 |
+
+**O sintoma visível.** Em "Montar eu mesmo", o contador dizia "0 de 20" na Lotomania e os
+quatro botões de preenchimento paravam em 20 dezenas. O gerador estava certo — ele já usava
+`APOSTAS[g].minN` — o que mostra que o conceito existia no código e não tinha sido aplicado
+por igual.
+
+**O sintoma invisível, que era pior.** Um bilhete de 50 dezenas caía no caminho de "jogo com
+dezenas extras" e era expandido em C(50,20) apostas simples, com o prêmio somado sobre todas
+as faixas. Medido em cima do concurso 2961, um bilhete real com 15 acertos:
+
+| | prêmio |
+|---|---|
+| painel, antes | R$ 3.957.264,08 |
+| rateio oficial da faixa de 15 acertos | **R$ 12,19** |
+
+Fator de erro: 324.632×. Na Timemania, um bilhete de 10 dezenas com 7 acertos no concurso
+2426 devolvia R$ 1.011.742,20 quando a faixa tinha acumulado e o valor correto era **zero**.
+
+A correção é conceitual, não numérica: um bilhete de Lotomania ou de Timemania é **uma
+aposta**, não um desdobramento. Só expande em apostas simples quem pode marcar dezenas
+extras. Entraram três funções — `tamanhoBase`, `apostaFixa` e `expandeEmSimples` — e todos
+os pontos que usavam `pick` como tamanho de aposta passaram a usar o tamanho de fato marcado:
+volante, contador, botões de preencher, busca anti-multidão, tabela de custo, validação de
+registro e leitura de comprovante.
+
+Vale dizer por que o erro sobreviveu tanto tempo: **nunca houve uma aposta de Lotomania ou
+Timemania registrada**. O caminho quebrado só era percorrido por quem jogasse essas duas
+modalidades, e ninguém jogava. A regressão automatizada cobria as nove modalidades em nove
+abas, mas conferia renderização e erro de console — não o valor de um prêmio.
+
+### 26.1 A aposta espelho da Lotomania
+
+Foram registradas quatro apostas do concurso 2962, R$ 3,00 cada, compradas em 11/08/2026 —
+**dois pares espelho perfeitos**: união de 100 dezenas, interseção zero, conferido nos PDFs.
+
+No par espelho os acertos são complementares por construção: se um bilhete faz *h*, o outro
+faz exatamente **20 − h**. Como a Lotomania premia de 15 a 20 acertos **e também zero**, o
+par cobre h ≤ 5 ou h ≥ 15. A conta é exata, por combinatória hipergeométrica:
+
+| | leva algum prêmio |
+|---|---|
+| um bilhete | 1 em 88 |
+| par espelho | 1 em 44 |
+| dois bilhetes quaisquer, não espelhados | 1 em 44 |
+
+A vantagem do espelho é de **0,6%**, e vem só de ele nunca premiar os dois bilhetes ao mesmo
+tempo — o que desperdiçaria um acerto. **O espelho não aumenta a chance de ganhar.** Ele
+torna os dois bilhetes perfeitamente anticorrelacionados: troca-se a possibilidade de ganhar
+duas vezes pela certeza de nunca ganhar nas duas. O gasto dobra nos dois casos.
+
+Isso está escrito no painel, no próprio volante da Lotomania, para quem marcar 50 dezenas.

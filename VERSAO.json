@@ -1,8 +1,8 @@
 {
-  "versao": "19.15",
+  "versao": "19.16",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-08-10T17:10:00Z",
-  "geradoEmBrasilia": "2026-08-10 14:10",
+  "geradoEm": "2026-08-11T19:45:00Z",
+  "geradoEmBrasilia": "2026-08-11 16:45",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -82,7 +82,7 @@
       }
     },
     "arquivos": {
-      "apostas.json": 9084,
+      "apostas.json": 12792,
       "dates_diadesorte.json": 24254,
       "dates_duplasena.json": 58774,
       "dates_lotofacil.json": 74054,
@@ -195,11 +195,13 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Base ate 10/08/2026: lotofacil 3758, quina 7088, lotomania 2961, duplasena 2994, diadesorte 1268, supersete 884.",
-    "Lotofacil 3758 nao acumulou: 8 ganhadores de 15 acertos, R$ 530.611,74 cada.",
-    "As 3 apostas do Helio no 3758: 11, 9 e 9 acertos - R$ 7,00 de retorno sobre R$ 10,50.",
-    "historico_crivo regerado: 4.652 sorteios avaliados, 5 cruzaram 1,00.",
-    "Diario fora da amostra caiu para 10 de 19 (lotofacil 8/13, megasena 2/6) - empatado com o acaso, e dito assim na tela."
+    "ERRO CORRIGIDO: pick (quantas o sorteio tira) era usado como tamanho de aposta. Lotomania marca 50 e sorteia 20; Timemania marca 10 e sorteia 7.",
+    "Um bilhete de Lotomania com 15 acertos devolvia R$ 3.957.264,08 no lugar de R$ 12,19 - expandia em C(50,20) apostas simples.",
+    "Timemania com 7 acertos e faixa acumulada devolvia R$ 1.011.742,20 no lugar de zero.",
+    "Volante da Lotomania mirava 20 dezenas em Montar eu mesmo; agora mira 50. O gerador ja estava certo.",
+    "Novas funcoes tamanhoBase, apostaFixa e expandeEmSimples; aplicadas em volante, custo, validacao de registro e leitor de comprovante.",
+    "Registradas 4 apostas de Lotomania do concurso 2962 (dois pares espelho perfeitos, R$ 3,00 cada).",
+    "Nota da aposta espelho no volante: nao aumenta a chance (1 em 44, igual a dois bilhetes quaisquer), so anticorrelaciona."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -211,7 +213,8 @@
   "lacunasDeclaradas": [
     "+Milionaria fora do backtest do metodo (ordem das faixas nao verificada)",
     "criterios anti-popularidade do Super Sete sao analogia, nao medicao — a Caixa nao publica a distribuicao das apostas",
-    "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)"
+    "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)",
+    "nao existe teste automatizado que confira VALOR de premio contra o rateio oficial - foi essa lacuna que deixou o erro da Lotomania passar"
   ],
   "varreduraHistorica": {
     "sorteiosMedidos": 4652,
@@ -470,6 +473,15 @@
       "As 3 apostas do Helio no 3758: 11, 9 e 9 acertos - R$ 7,00 de retorno sobre R$ 10,50.",
       "historico_crivo regerado: 4.652 sorteios avaliados, 5 cruzaram 1,00.",
       "Diario fora da amostra caiu para 10 de 19 (lotofacil 8/13, megasena 2/6) - empatado com o acaso, e dito assim na tela."
+    ],
+    "19.16": [
+      "ERRO CORRIGIDO: pick (quantas o sorteio tira) era usado como tamanho de aposta. Lotomania marca 50 e sorteia 20; Timemania marca 10 e sorteia 7.",
+      "Um bilhete de Lotomania com 15 acertos devolvia R$ 3.957.264,08 no lugar de R$ 12,19 - expandia em C(50,20) apostas simples.",
+      "Timemania com 7 acertos e faixa acumulada devolvia R$ 1.011.742,20 no lugar de zero.",
+      "Volante da Lotomania mirava 20 dezenas em Montar eu mesmo; agora mira 50. O gerador ja estava certo.",
+      "Novas funcoes tamanhoBase, apostaFixa e expandeEmSimples; aplicadas em volante, custo, validacao de registro e leitor de comprovante.",
+      "Registradas 4 apostas de Lotomania do concurso 2962 (dois pares espelho perfeitos, R$ 3,00 cada).",
+      "Nota da aposta espelho no volante: nao aumenta a chance (1 em 44, igual a dois bilhetes quaisquer), so anticorrelaciona."
     ]
   },
   "apostasReais": [
@@ -629,15 +641,26 @@
       "premio": 706.56,
       "detalhe": "02 05 10 13 41 53 no 3042 fez 4 acertos; resgate em 09/08/2026 22:24, NSU 208855923",
       "nota": "as oito medem 1,41x - nenhuma tem dezenas coladas, o lado que a multidao prefere"
+    },
+    {
+      "data": "11/08/2026",
+      "modalidade": "lotomania",
+      "concurso": 2962,
+      "apostas": 4,
+      "custo": 12.0,
+      "origem": "comprovantes oficiais em PDF (lotomania_1 a 4), compra pelo app em 11/08/2026 16:29",
+      "detalhe": "dois pares espelho perfeitos: uniao de 100 dezenas, interseccao zero, conferido nos PDFs",
+      "resultado": "aguardando sorteio de 12/08/2026",
+      "nota": "o espelho nao aumenta a chance de premio (1 em 44, igual a dois bilhetes quaisquer); so anticorrelaciona"
     }
   ],
   "commit": "96e3b34",
   "commitCurto": "96e3b34",
   "carteira": {
-    "apostas": 16,
-    "gasto": 172.45,
+    "apostas": 20,
+    "gasto": 184.45,
     "ganho": 766.55,
-    "saldo": 594.1,
+    "saldo": 582.1,
     "ressalva": "dominado por um unico premio de faixa media; amostra pequena demais para significar qualquer coisa"
   },
   "diarioForaDaAmostra": {

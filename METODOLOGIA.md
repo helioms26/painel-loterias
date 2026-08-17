@@ -1490,39 +1490,104 @@ duas vezes pela certeza de nunca ganhar nas duas. O gasto dobra nos dois casos.
 
 Isso está escrito no painel, no próprio volante da Lotomania, para quem marcar 50 dezenas.
 
-### 26.2 Oito bilhetes, quatro pares espelho, um só concurso (v19.17)
+### 26.2 Quatro pares espelho, dois concursos (v19.17)
 
-Mais quatro apostas de Lotomania entraram no registro do concurso 2962, vindas de prints do
-aplicativo. Elas também são **dois pares espelho perfeitos** — A com D, B com C, união de 100
-dezenas e interseção zero em cada par.
+Mais quatro apostas de Lotomania foram registradas a partir de prints do aplicativo, e elas
+também são **dois pares espelho perfeitos** — A com D, B com C, união de 100 dezenas e
+interseção zero em cada par.
 
 Vale registrar como isso foi conferido, porque é um caso raro de dado transcrito de imagem que
 se valida sozinho: **um único número lido errado quebraria o espelho**. As quatro listas foram
-transcritas dos prints e a checagem de complementaridade fechou exata nos dois pares. Não é
-prova de que o print corresponde a uma compra, mas é prova de que a transcrição está correta.
+transcritas dos prints e a checagem de complementaridade fechou exata nos dois pares. Isso
+prova a transcrição — não prova a compra, nem o concurso.
 
-Com isso o concurso 2962 tem **oito bilhetes, R$ 24,00**, formando quatro pares espelho. A
-pergunta natural é o que essa estrutura faz com a chance de levar alguma coisa:
+**Correção registrada (11/08/2026).** Os prints não mostram o número do concurso. Eu assumi
+2962, por ser o único aberto no momento, e escrevi isso como ressalva. O Hélio confirmou 2962
+e depois corrigiu: é **2964**. As duas versões ficam aqui de propósito — o erro não foi de
+leitura nem de conta, foi de inferência a partir de uma tela que não trazia o dado, e é
+exatamente o tipo de coisa que um registro honesto guarda em vez de apagar. A lição prática
+está anotada no arquivo de continuidade: **campo que não aparece no print não deve ser
+preenchido por dedução, nem com ressalva** — deve ser perguntado.
+
+O resultado é que os oito bilhetes não estão num concurso só:
+
+| lote | origem | concurso | bilhetes | valor |
+|---|---|---|---|---|
+| 11/08 às 16h29 | comprovante oficial em PDF | 2962 | 4 | R$ 12,00 |
+| 11/08 às 19h23 | print da tela do app | **2964** | 4 | R$ 12,00 |
+
+Os dois lotes são jogos diferentes: o cruzamento entre eles fica entre 21 e 29 dezenas em
+comum, longe das 50 que indicariam repetição.
+
+Cada lote é um par duplo de espelhos, e a chance de levar alguma coisa em cada um:
 
 | | leva algum prêmio |
 |---|---|
 | um bilhete | 1 em 88 |
-| oito bilhetes, quatro pares espelho | 1 em 11 |
-| oito bilhetes quaisquer, sem espelho | 1 em 11 |
+| quatro bilhetes, dois pares espelho | 1 em 22 |
+| quatro bilhetes quaisquer, sem espelho | 1 em 22 |
 
-Os dois últimos números vêm de **simulação** (400 mil sorteios, semente fixa), não de fórmula
-fechada: os oito bilhetes se sobrepõem entre si e a união não tem expressão simples. A
-diferença a favor do espelho é de **1,1%** — do mesmo tamanho do que já se mediu para um par
-isolado, e pela mesma razão: o espelho só evita desperdiçar dois acertos no mesmo concurso.
+Os dois últimos vêm de **simulação** (400 mil sorteios, semente fixa), não de fórmula fechada:
+quatro conjuntos de 50 dezenas se sobrepõem e a união não tem expressão simples. A razão entre
+eles ficou em 0,998 — ou seja, **indistinguível de 1 dentro do ruído da própria simulação**.
+Estruturar os bilhetes em espelho não muda a chance de forma detectável.
 
-**A estrutura não é o que decide aqui.** Oito bilhetes custam R$ 24,00 e cobrem 1 em 11
+**A estrutura não é o que decide aqui.** Quatro bilhetes custam R$ 12,00 e cobrem 1 em 22
 concursos com algum prêmio — mas a faixa que quase sempre sai nesse "algum prêmio" é a de 15
-acertos, que no concurso 2961 pagou **R$ 12,19**. Levar algum prêmio em 1 de cada 11 concursos
-pagando R$ 12 por R$ 24 apostados não é retorno positivo; é a mesma perda esperada de sempre,
-distribuída em pedaços menores e mais frequentes. Quem quiser o número exato do retorno
-esperado encontra na aba Financeiro, que usa o rateio real de cada faixa.
+acertos, que no concurso 2961 pagou **R$ 12,19**. Levar R$ 12 em 1 de cada 22 concursos,
+gastando R$ 12 por vez, é a mesma perda esperada de sempre, distribuída em pedaços menores e
+mais frequentes. O retorno esperado exato, por faixa e com o rateio real, está na aba
+Financeiro.
 
-**Duas ressalvas declaradas no arquivo.** Os prints são da tela de montar a aposta, com o botão
-"Adicionar ao carrinho" — não são comprovante pago; e não mostram o número do concurso, que foi
-assumido como 2962 por ser o único aberto no momento (sorteio em 12/08/2026). As duas ressalvas
-estão escritas no campo `origem` de cada registro, não só aqui.
+**Ressalva que continua aberta.** Os prints são da tela de montar a aposta, com o botão
+"Adicionar ao carrinho" — não são comprovante pago. Está escrito no campo `origem` de cada um
+dos quatro registros.
+
+### 26.3 O 2962 saiu, e o espelho fez exatamente o que a álgebra dizia (v19.18)
+
+Sorteio do concurso 2962, em 12/08/2026: `13 15 21 29 34 35 36 42 47 56 60 64 74 75 86 89 91 95 96 99`.
+Os quatro bilhetes do Hélio, dois pares espelho:
+
+| par | bilhete | acertos |
+|---|---|---|
+| 1 | primeiro | **13** |
+| 1 | espelho | **7** |
+| 2 | primeiro | **12** |
+| 2 | espelho | **8** |
+
+13 + 7 = 20. 12 + 8 = 20. É a identidade do espelho aparecendo num sorteio real, e serve como
+conferência de que a transcrição e o registro estão certos — nenhum erro de dezena produziria
+duas somas exatas de 20.
+
+**Nenhum prêmio**, como ele já sabia. A Lotomania paga a partir de 15 acertos (ou zero), e o par
+espelho só premia quando um dos lados sai com h ≤ 5 ou h ≥ 15. Saiu 13 e 12: perto da média —
+que é exatamente 10 — e longe das duas pontas. É o resultado mais provável, não azar.
+
+Vale o registro porque ilustra o que o espelho faz e o que não faz. Ele **garantiu** que os
+quatro bilhetes ficassem espalhados de forma complementar; não aproximou nenhum deles do prêmio.
+Com E[acertos] = 10 e as faixas premiadas começando em 15, quase todo concurso cai no vazio do
+meio — e é por isso que a chance de um par espelho premiar é de 1 em 44, e não de 1 em 2.
+
+**Estado da carteira:** o segundo lote, do concurso 2964, foi sorteado em 17/08/2026 e ainda não
+estava na base no fechamento desta versão.
+
+## 27. Base até 16/08/2026 (v19.18)
+
+Vinte e nove concursos entraram de uma vez, fechando um intervalo de seis dias em que a coleta
+não rodou: Lotofácil 3759–3763, Mega-Sena 3043–3045, Quina 7089–7093, Lotomania 2962–2963,
+Timemania 2427–2429, Dia de Sorte 1269–1273, Super Sete 885–886, Dupla-Sena 2995–2996 e
++Milionária 380–381.
+
+O mapeamento de faixas foi validado antes de escrever: para cada uma das nove modalidades,
+reconsultei o **último concurso já armazenado** e conferi que a reconstrução reproduz byte a byte
+o registro existente. Só depois os concursos novos foram gravados. Sem esse controle, um
+reordenamento de faixas na API entraria em silêncio e contaminaria o rateio de todas as apostas.
+
+`historico_crivo` regerado: **4.658 sorteios avaliados**, 5 cruzaram 1,00.
+
+**O diário fora da amostra continua no acaso, agora com mais dados:** 15 acertos de direção em 27
+concursos (Lotofácil 12 de 18, Mega-Sena 3 de 9). Em 02/08 estava em 6 de 9 e parecia promissor;
+em 10/08 caiu para 10 de 19; agora está em 15 de 27. Três leituras seguidas, todas indistinguíveis
+de cara-ou-coroa, com a amostra crescendo. Isso ainda não derruba o coeficiente medido em 3.411
+concursos — mas já são 27 concursos cegos sem sinal, e o número está na tela do jeito que está.
+

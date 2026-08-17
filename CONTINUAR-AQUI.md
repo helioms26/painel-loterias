@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.17.1**, 11/08/2026.
+Última versão: **19.18**, 17/08/2026.
 
 ---
 
@@ -555,18 +555,51 @@ tinham saído. Continua fechada em 10/08/2026.
 
 ---
 
-## v19.17 — mais 4 Lotomania no 2962 (agora são 8)
+## v19.17 — 4 Lotomania no 2962 e 4 no 2964
 
-Quatro apostas novas, transcritas de prints do app. Também dois pares espelho perfeitos (A com
-D, B com C). **A transcrição se validou sozinha**: um número lido errado quebraria a
-complementaridade, e os dois pares fecharam exatos em 100 dezenas com interseção zero. Guarde
-esse truque — vale para qualquer bilhete espelhado lido de imagem.
+Oito apostas de Lotomania no registro, em quatro pares espelho, mas em **dois concursos
+diferentes**: 4 do concurso 2962 (comprovante em PDF, compra às 16h29) e 4 do **2964** (prints
+do app, 19h23). R$ 12,00 cada lote.
 
-O concurso 2962 fica com 8 bilhetes, R$ 24,00, quatro pares espelho. Chance de levar algum
-prêmio: 1 em 11 — contra 1 em 11 de oito bilhetes quaisquer. Número de **simulação** (400 mil
-sorteios, semente fixa), porque a união de oito conjuntos sobrepostos não tem forma fechada;
-está marcado como simulação na seção 26.2 e deve continuar marcado.
+A transcrição dos prints **se validou sozinha**: um número lido errado quebraria a
+complementaridade dos pares, e os dois fecharam exatos em 100 dezenas com interseção zero.
+Guarde esse truque — vale para qualquer bilhete espelhado lido de imagem.
 
-**Ressalvas:** o concurso 2962 foi **confirmado pelo Hélio** em 11/08/2026 — essa ficou fechada.
-Sobra que a origem dos quatro é print de tela, não comprovante em PDF; está escrito no campo
-`origem` de cada registro. Se ele mandar os PDFs, troque a origem e apague a ressalva.
+**A lição que custou duas correções.** Os prints não mostram o concurso. Eu deduzi 2962 (o
+único aberto) e registrei com ressalva; o Hélio confirmou e depois corrigiu para 2964. Ressalva
+no arquivo não substitui pergunta: **campo que não aparece na imagem deve ser perguntado, não
+deduzido**. O histórico dessa correção está na seção 26.2 de propósito.
+
+Chance de levar algum prêmio com 4 bilhetes em dois pares espelho: **1 em 22** — contra 1 em 22
+de quatro bilhetes quaisquer, razão 0,998, indistinguível de 1 dentro do ruído. Número de
+**simulação** (400 mil sorteios, semente fixa); está marcado como simulação e deve continuar.
+
+**Ressalva aberta:** os prints são tela de carrinho, não comprovante pago. Está no campo
+`origem` dos quatro. Se o Hélio mandar os PDFs, troque a origem e apague a ressalva.
+
+---
+
+## v19.18 — base até 16/08/2026 e o 2962 conferido
+
+**Atenção ao relógio.** O container desta sessão estava com a data errada (marcava 11/08 quando
+já era 17/08) e eu quase publiquei em cima disso. Quem mandou a verdade foi a API da Caixa, que
+já trazia sorteios de 14 e 16/08. **Confira a data pela API ou pela máquina do Hélio, nunca pelo
+relógio do container.**
+
+Entraram 29 concursos: Lotofácil 3759–3763, Mega-Sena 3043–3045, Quina 7089–7093, Lotomania
+2962–2963, Timemania 2427–2429, Dia de Sorte 1269–1273, Super Sete 885–886, Dupla-Sena 2995–2996,
++Milionária 380–381. `historico_crivo`: 4.658 sorteios.
+
+**Controle usado na coleta, repita sempre:** antes de gravar, reconsultei na API o último concurso
+JÁ armazenado de cada modalidade e conferi que a reconstrução reproduz o registro existente. As
+nove bateram. É o que impede um reordenamento de faixas de entrar em silêncio. O campo de trevos
+da +Milionária é `trevosSorteados`, não `trevos` — `trevos` volta vazio.
+
+Lotomania 2962 conferido: 13, 7, 12 e 8 acertos. Os pares espelho somam 20 exatos nos dois casos,
+o que confirma registro e transcrição. Sem prêmio, como o Hélio informou. O lote do 2964 sorteia
+em 17/08 e ainda não estava na base no fechamento.
+
+**Diário fora da amostra: 15 de 27** (Lotofácil 12/18, Mega-Sena 3/9). Terceira leitura seguida
+em torno do acaso, com amostra crescendo: 6/9 → 10/19 → 15/27. Continua sem derrubar o
+coeficiente, e continua sem sustentá-lo. Não conserte esse número.
+

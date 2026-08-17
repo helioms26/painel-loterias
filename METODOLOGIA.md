@@ -1489,3 +1489,40 @@ torna os dois bilhetes perfeitamente anticorrelacionados: troca-se a possibilida
 duas vezes pela certeza de nunca ganhar nas duas. O gasto dobra nos dois casos.
 
 Isso está escrito no painel, no próprio volante da Lotomania, para quem marcar 50 dezenas.
+
+### 26.2 Oito bilhetes, quatro pares espelho, um só concurso (v19.17)
+
+Mais quatro apostas de Lotomania entraram no registro do concurso 2962, vindas de prints do
+aplicativo. Elas também são **dois pares espelho perfeitos** — A com D, B com C, união de 100
+dezenas e interseção zero em cada par.
+
+Vale registrar como isso foi conferido, porque é um caso raro de dado transcrito de imagem que
+se valida sozinho: **um único número lido errado quebraria o espelho**. As quatro listas foram
+transcritas dos prints e a checagem de complementaridade fechou exata nos dois pares. Não é
+prova de que o print corresponde a uma compra, mas é prova de que a transcrição está correta.
+
+Com isso o concurso 2962 tem **oito bilhetes, R$ 24,00**, formando quatro pares espelho. A
+pergunta natural é o que essa estrutura faz com a chance de levar alguma coisa:
+
+| | leva algum prêmio |
+|---|---|
+| um bilhete | 1 em 88 |
+| oito bilhetes, quatro pares espelho | 1 em 11 |
+| oito bilhetes quaisquer, sem espelho | 1 em 11 |
+
+Os dois últimos números vêm de **simulação** (400 mil sorteios, semente fixa), não de fórmula
+fechada: os oito bilhetes se sobrepõem entre si e a união não tem expressão simples. A
+diferença a favor do espelho é de **1,1%** — do mesmo tamanho do que já se mediu para um par
+isolado, e pela mesma razão: o espelho só evita desperdiçar dois acertos no mesmo concurso.
+
+**A estrutura não é o que decide aqui.** Oito bilhetes custam R$ 24,00 e cobrem 1 em 11
+concursos com algum prêmio — mas a faixa que quase sempre sai nesse "algum prêmio" é a de 15
+acertos, que no concurso 2961 pagou **R$ 12,19**. Levar algum prêmio em 1 de cada 11 concursos
+pagando R$ 12 por R$ 24 apostados não é retorno positivo; é a mesma perda esperada de sempre,
+distribuída em pedaços menores e mais frequentes. Quem quiser o número exato do retorno
+esperado encontra na aba Financeiro, que usa o rateio real de cada faixa.
+
+**Duas ressalvas declaradas no arquivo.** Os prints são da tela de montar a aposta, com o botão
+"Adicionar ao carrinho" — não são comprovante pago; e não mostram o número do concurso, que foi
+assumido como 2962 por ser o único aberto no momento (sorteio em 12/08/2026). As duas ressalvas
+estão escritas no campo `origem` de cada registro, não só aqui.

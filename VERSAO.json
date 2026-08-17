@@ -1,8 +1,8 @@
 {
-  "versao": "19.16",
+  "versao": "19.17",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-08-11T19:45:00Z",
-  "geradoEmBrasilia": "2026-08-11 16:45",
+  "geradoEm": "2026-08-11T20:05:00Z",
+  "geradoEmBrasilia": "2026-08-11 17:05",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -82,7 +82,7 @@
       }
     },
     "arquivos": {
-      "apostas.json": 12792,
+      "apostas.json": 17312,
       "dates_diadesorte.json": 24254,
       "dates_duplasena.json": 58774,
       "dates_lotofacil.json": 74054,
@@ -195,13 +195,11 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "ERRO CORRIGIDO: pick (quantas o sorteio tira) era usado como tamanho de aposta. Lotomania marca 50 e sorteia 20; Timemania marca 10 e sorteia 7.",
-    "Um bilhete de Lotomania com 15 acertos devolvia R$ 3.957.264,08 no lugar de R$ 12,19 - expandia em C(50,20) apostas simples.",
-    "Timemania com 7 acertos e faixa acumulada devolvia R$ 1.011.742,20 no lugar de zero.",
-    "Volante da Lotomania mirava 20 dezenas em Montar eu mesmo; agora mira 50. O gerador ja estava certo.",
-    "Novas funcoes tamanhoBase, apostaFixa e expandeEmSimples; aplicadas em volante, custo, validacao de registro e leitor de comprovante.",
-    "Registradas 4 apostas de Lotomania do concurso 2962 (dois pares espelho perfeitos, R$ 3,00 cada).",
-    "Nota da aposta espelho no volante: nao aumenta a chance (1 em 44, igual a dois bilhetes quaisquer), so anticorrelaciona."
+    "Mais 4 apostas de Lotomania no concurso 2962, transcritas de prints do app - dois pares espelho perfeitos (A-D e B-C).",
+    "A transcricao se validou sozinha: um numero lido errado quebraria a complementaridade dos pares.",
+    "O 2962 fica com 8 bilhetes, R$ 24,00, quatro pares espelho.",
+    "Chance de levar algum premio com os 8: 1 em 11 - identico a oito bilhetes quaisquer. Numero de SIMULACAO (400 mil sorteios), nao formula fechada.",
+    "Ressalvas gravadas na origem de cada registro: print e tela de carrinho (nao comprovante pago) e nao mostra o concurso (2962 assumido)."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -482,6 +480,13 @@
       "Novas funcoes tamanhoBase, apostaFixa e expandeEmSimples; aplicadas em volante, custo, validacao de registro e leitor de comprovante.",
       "Registradas 4 apostas de Lotomania do concurso 2962 (dois pares espelho perfeitos, R$ 3,00 cada).",
       "Nota da aposta espelho no volante: nao aumenta a chance (1 em 44, igual a dois bilhetes quaisquer), so anticorrelaciona."
+    ],
+    "19.17": [
+      "Mais 4 apostas de Lotomania no concurso 2962, transcritas de prints do app - dois pares espelho perfeitos (A-D e B-C).",
+      "A transcricao se validou sozinha: um numero lido errado quebraria a complementaridade dos pares.",
+      "O 2962 fica com 8 bilhetes, R$ 24,00, quatro pares espelho.",
+      "Chance de levar algum premio com os 8: 1 em 11 - identico a oito bilhetes quaisquer. Numero de SIMULACAO (400 mil sorteios), nao formula fechada.",
+      "Ressalvas gravadas na origem de cada registro: print e tela de carrinho (nao comprovante pago) e nao mostra o concurso (2962 assumido)."
     ]
   },
   "apostasReais": [
@@ -646,21 +651,22 @@
       "data": "11/08/2026",
       "modalidade": "lotomania",
       "concurso": 2962,
-      "apostas": 4,
-      "custo": 12.0,
+      "apostas": 8,
+      "custo": 24.0,
       "origem": "comprovantes oficiais em PDF (lotomania_1 a 4), compra pelo app em 11/08/2026 16:29",
-      "detalhe": "dois pares espelho perfeitos: uniao de 100 dezenas, interseccao zero, conferido nos PDFs",
+      "detalhe": "quatro pares espelho perfeitos; 4 com comprovante PDF (16h29) e 4 de print do app (19h23)",
       "resultado": "aguardando sorteio de 12/08/2026",
-      "nota": "o espelho nao aumenta a chance de premio (1 em 44, igual a dois bilhetes quaisquer); so anticorrelaciona"
+      "nota": "chance de algum premio com os 8: 1 em 11, identico a oito bilhetes quaisquer (simulacao de 400 mil sorteios)",
+      "ressalva": "os 4 do print sao tela de carrinho e sem numero de concurso visivel; 2962 assumido"
     }
   ],
   "commit": "96e3b34",
   "commitCurto": "96e3b34",
   "carteira": {
-    "apostas": 20,
-    "gasto": 184.45,
+    "apostas": 24,
+    "gasto": 196.45,
     "ganho": 766.55,
-    "saldo": 582.1,
+    "saldo": 570.1,
     "ressalva": "dominado por um unico premio de faixa media; amostra pequena demais para significar qualquer coisa"
   },
   "diarioForaDaAmostra": {

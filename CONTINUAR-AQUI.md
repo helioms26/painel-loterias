@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.16**, 11/08/2026.
+Última versão: **19.17**, 11/08/2026.
 
 ---
 
@@ -552,3 +552,22 @@ igual a dois bilhetes quaisquer) — só anticorrelaciona os dois.
 
 Base: consultei a API em 11/08/2026 às 16h30 de Brasília e os sorteios do dia ainda não
 tinham saído. Continua fechada em 10/08/2026.
+
+---
+
+## v19.17 — mais 4 Lotomania no 2962 (agora são 8)
+
+Quatro apostas novas, transcritas de prints do app. Também dois pares espelho perfeitos (A com
+D, B com C). **A transcrição se validou sozinha**: um número lido errado quebraria a
+complementaridade, e os dois pares fecharam exatos em 100 dezenas com interseção zero. Guarde
+esse truque — vale para qualquer bilhete espelhado lido de imagem.
+
+O concurso 2962 fica com 8 bilhetes, R$ 24,00, quatro pares espelho. Chance de levar algum
+prêmio: 1 em 11 — contra 1 em 11 de oito bilhetes quaisquer. Número de **simulação** (400 mil
+sorteios, semente fixa), porque a união de oito conjuntos sobrepostos não tem forma fechada;
+está marcado como simulação na seção 26.2 e deve continuar marcado.
+
+**Ressalvas que precisam ser fechadas:** os prints são da tela de carrinho, não comprovante
+pago, e não mostram o concurso (2962 foi assumido, por ser o único aberto). As duas coisas
+estão escritas no campo `origem` dos quatro registros. Se o Hélio mandar os PDFs, troque a
+origem e apague as ressalvas.

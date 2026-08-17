@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.17**, 11/08/2026.
+Última versão: **19.17.1**, 11/08/2026.
 
 ---
 
@@ -567,7 +567,6 @@ prêmio: 1 em 11 — contra 1 em 11 de oito bilhetes quaisquer. Número de **sim
 sorteios, semente fixa), porque a união de oito conjuntos sobrepostos não tem forma fechada;
 está marcado como simulação na seção 26.2 e deve continuar marcado.
 
-**Ressalvas que precisam ser fechadas:** os prints são da tela de carrinho, não comprovante
-pago, e não mostram o concurso (2962 foi assumido, por ser o único aberto). As duas coisas
-estão escritas no campo `origem` dos quatro registros. Se o Hélio mandar os PDFs, troque a
-origem e apague as ressalvas.
+**Ressalvas:** o concurso 2962 foi **confirmado pelo Hélio** em 11/08/2026 — essa ficou fechada.
+Sobra que a origem dos quatro é print de tela, não comprovante em PDF; está escrito no campo
+`origem` de cada registro. Se ele mandar os PDFs, troque a origem e apague a ressalva.

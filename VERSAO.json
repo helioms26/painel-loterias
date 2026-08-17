@@ -1,8 +1,8 @@
 {
-  "versao": "19.17",
+  "versao": "19.17.1",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-08-11T20:05:00Z",
-  "geradoEmBrasilia": "2026-08-11 17:05",
+  "geradoEm": "2026-08-11T20:20:00Z",
+  "geradoEmBrasilia": "2026-08-11 17:20",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -195,11 +195,8 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Mais 4 apostas de Lotomania no concurso 2962, transcritas de prints do app - dois pares espelho perfeitos (A-D e B-C).",
-    "A transcricao se validou sozinha: um numero lido errado quebraria a complementaridade dos pares.",
-    "O 2962 fica com 8 bilhetes, R$ 24,00, quatro pares espelho.",
-    "Chance de levar algum premio com os 8: 1 em 11 - identico a oito bilhetes quaisquer. Numero de SIMULACAO (400 mil sorteios), nao formula fechada.",
-    "Ressalvas gravadas na origem de cada registro: print e tela de carrinho (nao comprovante pago) e nao mostra o concurso (2962 assumido)."
+    "Concurso 2962 confirmado pelo Helio para as 4 apostas vindas de print; a ressalva de 'concurso assumido' esta fechada.",
+    "Permanece registrado que a origem dessas 4 e print de tela, nao comprovante em PDF."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -487,6 +484,10 @@
       "O 2962 fica com 8 bilhetes, R$ 24,00, quatro pares espelho.",
       "Chance de levar algum premio com os 8: 1 em 11 - identico a oito bilhetes quaisquer. Numero de SIMULACAO (400 mil sorteios), nao formula fechada.",
       "Ressalvas gravadas na origem de cada registro: print e tela de carrinho (nao comprovante pago) e nao mostra o concurso (2962 assumido)."
+    ],
+    "19.17.1": [
+      "Concurso 2962 confirmado pelo Helio para as 4 apostas vindas de print; a ressalva de 'concurso assumido' esta fechada.",
+      "Permanece registrado que a origem dessas 4 e print de tela, nao comprovante em PDF."
     ]
   },
   "apostasReais": [
@@ -657,7 +658,7 @@
       "detalhe": "quatro pares espelho perfeitos; 4 com comprovante PDF (16h29) e 4 de print do app (19h23)",
       "resultado": "aguardando sorteio de 12/08/2026",
       "nota": "chance de algum premio com os 8: 1 em 11, identico a oito bilhetes quaisquer (simulacao de 400 mil sorteios)",
-      "ressalva": "os 4 do print sao tela de carrinho e sem numero de concurso visivel; 2962 assumido"
+      "ressalva": "os 4 vindos de print sao tela do app, nao comprovante PDF; o concurso 2962 foi confirmado pelo Helio"
     }
   ],
   "commit": "96e3b34",

@@ -1591,3 +1591,42 @@ em 10/08 caiu para 10 de 19; agora está em 15 de 27. Três leituras seguidas, t
 de cara-ou-coroa, com a amostra crescendo. Isso ainda não derruba o coeficiente medido em 3.411
 concursos — mas já são 27 concursos cegos sem sinal, e o número está na tela do jeito que está.
 
+
+## 28. Base até 19/08/2026, e a primeira lacuna de API em duas semanas (v19.19)
+
+Dezesseis concursos entraram: Lotofácil 3764–3766, Mega-Sena 3046, Quina 7094–7096, Lotomania
+2964–2965, Timemania 2430, Dupla-Sena 2997–2998, Dia de Sorte 1274–1276 e +Milionária 382. O
+controle de faixas foi rodado de novo modalidade por modalidade contra o último concurso já
+armazenado, e as oito consultadas bateram.
+
+**Lacuna declarada: Super Sete.** A API oficial devolveu **erro 500 em todas as tentativas**,
+tanto no endpoint do último concurso quanto nos concursos 886, 887 e 888, em três rodadas
+espaçadas. A base do Super Sete fica travada no concurso **886 (14/08/2026)** e o `status.json`
+mantém o valor antigo, marcado. Não estimei nada no lugar: uma modalidade parada é menos danosa
+que uma modalidade inventada, e é a mesma decisão tomada com a Dupla-Sena 2990 e a +Milionária
+377. Quando a API voltar, os concursos entram e a lacuna se fecha sozinha.
+
+`historico_crivo` regerado: **4.661 sorteios**, 5 cruzaram 1,00.
+
+### 28.1 O concurso 2964: o espelho de novo, e de novo no meio
+
+Sorteio de 17/08/2026: `07 13 14 16 25 29 33 40 41 44 56 60 61 64 67 68 73 77 83 85`. Os quatro
+bilhetes do Hélio fizeram **9, 10, 10 e 11 acertos** — e os pares somam 20 exatos nos dois casos,
+como manda a identidade do espelho. **Sem prêmio.**
+
+Vale juntar os dois concursos, porque o padrão é instrutivo:
+
+| concurso | acertos dos quatro bilhetes | prêmio |
+|---|---|---|
+| 2962 | 13, 7, 12, 8 | — |
+| 2964 | 11, 10, 10, 9 | — |
+
+Oito bilhetes, R$ 24,00, e nenhum passou de 13 acertos. Isso **não é azar**: com 50 dezenas
+marcadas em 100 e 20 sorteadas, o número esperado de acertos é exatamente 10, e a distribuição
+é apertada em torno disso. Chegar aos 15 que a Lotomania paga exige um desvio grande, e é por
+isso que um bilhete premia 1 vez em 88. O par espelho não muda essa distribuição — ele apenas
+garante que, se um lado desviar para cima, o outro desvia para baixo na mesma medida. Os dois
+concursos mostraram exatamente isso, com todos os oito bilhetes empilhados entre 7 e 13.
+
+**O diário fora da amostra sobe para 18 de 31** (Lotofácil 14 de 21, Mega-Sena 4 de 10). Quarta
+leitura seguida em torno do acaso: 6/9, 10/19, 15/27, agora 18/31.

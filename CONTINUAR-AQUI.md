@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.18**, 17/08/2026.
+Última versão: **19.19**, 20/08/2026.
 
 ---
 
@@ -603,3 +603,26 @@ em 17/08 e ainda não estava na base no fechamento.
 em torno do acaso, com amostra crescendo: 6/9 → 10/19 → 15/27. Continua sem derrubar o
 coeficiente, e continua sem sustentá-lo. Não conserte esse número.
 
+
+---
+
+## v19.19 — base até 19/08/2026, Super Sete com a API fora do ar
+
+Dezesseis concursos novos: Lotofácil 3764–3766, Mega-Sena 3046, Quina 7094–7096, Lotomania
+2964–2965, Timemania 2430, Dupla-Sena 2997–2998, Dia de Sorte 1274–1276, +Milionária 382.
+`historico_crivo`: 4.661 sorteios.
+
+**Super Sete não entrou.** A API devolveu 500 em todas as tentativas — endpoint do último e
+concursos 886/887/888, três rodadas. A base fica em **886 (14/08/2026)** e o `status.json`
+mantém o valor antigo. Quando voltar, é só rodar a coleta: os concursos entram e a lacuna some.
+**Não estime nada no lugar.**
+
+Lotomania 2964 conferido: 9, 10, 10 e 11 acertos, pares somando 20. Sem prêmio. Somando com o
+2962 (13, 7, 12, 8), os oito bilhetes ficaram todos entre 7 e 13 acertos — o comportamento
+esperado, não azar: E[acertos] = 10 e a distribuição é apertada. A seção 28.1 explica.
+
+**Diário fora da amostra: 18 de 31** (Lotofácil 14/21, Mega-Sena 4/10). Quarta leitura seguida
+em torno do acaso: 6/9 → 10/19 → 15/27 → 18/31.
+
+**Pendência:** o Hélio disse que fez apostas novas, mas a pasta `comprovantes` não tem arquivo
+novo desde 11/08. Elas ainda não foram registradas — peça os PDFs ou os prints.

@@ -1,8 +1,8 @@
 {
-  "versao": "19.19",
+  "versao": "19.20",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-08-20T18:10:00Z",
-  "geradoEmBrasilia": "2026-08-20 15:10",
+  "geradoEm": "2026-08-20T19:00:00Z",
+  "geradoEmBrasilia": "2026-08-20 16:00",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -195,12 +195,11 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Base ate 19/08/2026: 16 concursos novos em oito modalidades.",
-    "LACUNA: Super Sete travado em 886 (14/08) - a API oficial devolveu erro 500 em todas as tentativas.",
-    "Lotomania 2964 conferido: 9, 10, 10 e 11 acertos, pares somando 20. Sem premio.",
-    "Somando 2962 e 2964, os oito bilhetes ficaram entre 7 e 13 acertos - comportamento esperado, nao azar (E[acertos]=10).",
-    "historico_crivo regerado: 4.661 sorteios avaliados.",
-    "Diario fora da amostra: 18 de 31. Quarta leitura seguida em torno do acaso."
+    "Linha de Total no topo do grafico por modalidade: gasto, premio recebido, saldo e retorno.",
+    "Rodape equivalente na tabela, em <tfoot> para nao ser embaralhado pelo ordenador de colunas.",
+    "A linha do total nao tem barra de proposito - na mesma escala ela engoliria a comparacao entre modalidades.",
+    "Aviso de concentracao: quando o maior premio isolado responde por 60% ou mais do total recebido, a linha diz isso.",
+    "Hoje sao 92% (a quadra de R$ 706,56 na Mega 3042); sem a aposta, o retorno cai de 390% para 31%."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -515,6 +514,13 @@
       "Somando 2962 e 2964, os oito bilhetes ficaram entre 7 e 13 acertos - comportamento esperado, nao azar (E[acertos]=10).",
       "historico_crivo regerado: 4.661 sorteios avaliados.",
       "Diario fora da amostra: 18 de 31. Quarta leitura seguida em torno do acaso."
+    ],
+    "19.20": [
+      "Linha de Total no topo do grafico por modalidade: gasto, premio recebido, saldo e retorno.",
+      "Rodape equivalente na tabela, em <tfoot> para nao ser embaralhado pelo ordenador de colunas.",
+      "A linha do total nao tem barra de proposito - na mesma escala ela engoliria a comparacao entre modalidades.",
+      "Aviso de concentracao: quando o maior premio isolado responde por 60% ou mais do total recebido, a linha diz isso.",
+      "Hoje sao 92% (a quadra de R$ 706,56 na Mega 3042); sem a aposta, o retorno cai de 390% para 31%."
     ]
   },
   "apostasReais": [

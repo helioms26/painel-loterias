@@ -1630,3 +1630,39 @@ concursos mostraram exatamente isso, com todos os oito bilhetes empilhados entre
 
 **O diário fora da amostra sobe para 18 de 31** (Lotofácil 14 de 21, Mega-Sena 4 de 10). Quarta
 leitura seguida em torno do acaso: 6/9, 10/19, 15/27, agora 18/31.
+
+## 29. A linha que faltava no alto do gráfico (v19.20)
+
+O gráfico "por modalidade" comparava Lotofácil com Mega-Sena com Lotomania com Quina, e nunca
+dizia o total. Para saber quanto a carteira inteira tinha gasto e recebido era preciso ler
+quatro barras e somar de cabeça — num painel cuja tese é justamente que o número consolidado é
+o que importa.
+
+A v19.20 põe uma **linha de Total no topo**, com gasto, prêmio recebido, saldo e retorno, mais
+um rodapé equivalente na tabela abaixo. Duas decisões de desenho valem registro:
+
+**A linha do total não tem barra.** Desenhá-la na mesma escala das outras faria a barra do
+total engolir todas as demais — e a comparação entre modalidades, que é a razão de existir do
+gráfico, desapareceria. O total é um número, não uma comparação; ele aparece como número.
+
+**O rodapé da tabela fica em `<tfoot>`, fora do `<tbody>`.** É o que impede o ordenador de
+colunas de embaralhar o total junto com as linhas quando alguém clica num cabeçalho. O
+ordenador já lia só o `<tbody>`; foi preciso apenas respeitar isso.
+
+### 29.1 O aviso que a linha do total obrigou a escrever
+
+Consolidar criou um problema que as barras separadas escondiam. A carteira do Hélio mostra hoje
+**R$ 196,45 gastos, R$ 766,55 recebidos, saldo +R$ 570,10 e retorno de 390%** — e essa linha é a
+única do painel que alguém lê de relance. Sozinha, ela diz "está funcionando".
+
+Não está. **92% de tudo o que voltou veio de uma única aposta** — a quadra de R$ 706,56 na
+Mega-Sena 3042. Tirando ela, a carteira tem R$ 59,99 recebidos contra R$ 196,45 gastos: retorno
+de 31%, que é o que a matemática da loteria prevê.
+
+Por isso a linha do total calcula a concentração do prêmio e, quando o maior prêmio isolado
+responde por **60% ou mais** do total recebido, escreve embaixo: *"N% desse prêmio veio de uma
+aposta só. O saldo mede sorte pontual, não desempenho do método."* O aviso some sozinho quando
+a carteira ficar diversificada o bastante para o saldo significar alguma coisa.
+
+Isso é a mesma regra que vale para o diário fora da amostra e para a varredura histórica: **o
+número que favorece a tese é o que precisa da ressalva mais visível**, não o contrário.

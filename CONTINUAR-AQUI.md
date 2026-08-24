@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.19**, 20/08/2026.
+Última versão: **19.20**, 20/08/2026.
 
 ---
 
@@ -626,3 +626,25 @@ em torno do acaso: 6/9 → 10/19 → 15/27 → 18/31.
 
 **Pendência:** o Hélio disse que fez apostas novas, mas a pasta `comprovantes` não tem arquivo
 novo desde 11/08. Elas ainda não foram registradas — peça os PDFs ou os prints.
+
+---
+
+## v19.20 — linha de Total no gráfico por modalidade
+
+Pedido do Hélio: uma linha inicial consolidada. Entrou no topo do gráfico (gasto, prêmio, saldo,
+retorno) e como `<tfoot>` na tabela abaixo.
+
+Três coisas para não desfazer sem querer:
+
+**A linha do total não tem barra**, de propósito. Na mesma escala ela engoliria as outras e
+mataria a comparação entre modalidades, que é a função do gráfico.
+
+**O rodapé fica em `<tfoot>`**, fora do `<tbody>` — é isso que impede `tabelaOrdenavel` de
+embaralhar o total ao ordenar por coluna. Se mover para dentro do tbody, o total vira uma linha
+qualquer no meio da ordenação.
+
+**O aviso de concentração.** Quando o maior prêmio isolado responde por ≥60% do total recebido,
+a linha escreve isso embaixo do saldo. Hoje são 92% (a quadra de R$ 706,56 na Mega 3042): sem o
+aviso, "+R$ 570,10 · 390%" leria como método funcionando. Tirando essa aposta, o retorno é 31%.
+**Não remova esse aviso** — ele é a aplicação da mesma regra do diário fora da amostra: o número
+que favorece a tese é o que precisa da ressalva mais visível.

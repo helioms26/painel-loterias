@@ -5611,16 +5611,50 @@ function graficoPorModalidade(linhas){
      mais honesta. */
   const eixoSeparado = maxP > 4*maxG;
   const escG = v=> v/maxG, escP = v=> maxP? v/maxP : 0;
-  const L=132, R=104, T=eixoSeparado?36:22, B=26, linhaH=44, W=760;
-  const H=T+B+arr.length*linhaH;
+  /* Linha consolidada (v19.20). O gráfico comparava modalidade com modalidade e
+     nunca dizia o total — para somar, era preciso ler quatro barras e fazer conta
+     de cabeça. A linha do topo é deliberadamente SEM BARRA: o total não compete
+     com ninguém, e desenhá-lo na mesma escala faria a barra dele engolir todas as
+     outras, que é justamente a comparação que este gráfico existe para mostrar. */
+  const TOT = arr.reduce((a,d)=>({gasto:a.gasto+d.gasto, ganho:a.ganho+d.ganho,
+                                  n:a.n+d.n, conferidas:a.conferidas+d.conferidas}),
+                         {gasto:0,ganho:0,n:0,conferidas:0});
+  TOT.saldo = TOT.ganho - TOT.gasto;
+  /* Um saldo positivo grande quase sempre é UM prêmio, não um padrão. Se a linha
+     do topo mostrar "+R$ 570" e "390%" sem dizer isso, ela mente por omissão —
+     e é a única linha do painel que alguém lê de relance. */
+  const maiorPremio = Math.max(0, ...linhas.map(({c})=> c.premio||0));
+  TOT.concentracao = TOT.ganho>0 ? maiorPremio/TOT.ganho : 0;
+  TOT.maiorPremio = maiorPremio;
+  const L=132, R=104, T=eixoSeparado?36:22, B=26, linhaH=44, W=760, HDR=70;
+  const H=T+HDR+B+arr.length*linhaH;
   const X=(v,serie)=> L + (W-L-R)*((serie==='p'&&eixoSeparado)? escP(v) : (eixoSeparado? escG(v) : v/Math.max(maxG,maxP)));
   let s='<text x="'+L+'" y="'+(T-8)+'" style="font-size:var(--text-2xs);fill:var(--ink-muted)">gasto</text>'+
         '<text x="'+(L+58)+'" y="'+(T-8)+'" style="font-size:var(--text-2xs);fill:var(--status-good-ink)">prêmio recebido</text>';
   if(eixoSeparado)
     s+='<text x="'+L+'" y="'+(T-22)+'" style="font-size:var(--text-2xs);fill:var(--status-warning)">▲ escalas diferentes — o prêmio é '+
        fmtInt(Math.round(maxP/maxG))+'× o maior gasto.</text>';
+  /* ---- linha consolidada, antes das modalidades ---- */
+  {
+    const y=T, corS = TOT.saldo>=0? 'var(--status-good-ink)':'var(--status-critical)';
+    const col=(x0,rot,val,cor,peso)=>
+      '<text x="'+x0+'" y="'+(y+13)+'" style="font-size:var(--text-2xs);fill:var(--ink-muted)">'+rot+'</text>'+
+      '<text x="'+x0+'" y="'+(y+31)+'" style="font-size:var(--text-sm);font-weight:'+(peso||'var(--weight-semi)')+';fill:'+cor+'">'+val+'</text>';
+    s+='<text x="'+(L-10)+'" y="'+(y+18)+'" text-anchor="end" style="font-size:var(--text-sm);font-weight:var(--weight-bold);fill:var(--ink-primary)">Total</text>'+
+       '<text x="'+(L-10)+'" y="'+(y+32)+'" text-anchor="end" style="font-size:var(--text-2xs);fill:var(--ink-muted)">'+TOT.n+' aposta'+(TOT.n>1?'s':'')+
+         ' · '+arr.length+' modalidade'+(arr.length>1?'s':'')+'</text>'+
+       col(L, 'gasto', fmtBRLc(TOT.gasto), 'var(--ink-primary)')+
+       col(L+150, 'prêmio recebido', TOT.ganho>0? fmtBRLc(TOT.ganho) : '—', TOT.ganho>0?'var(--status-good-ink)':'var(--ink-muted)')+
+       col(L+320, 'saldo', (TOT.saldo>=0?'+':'−')+fmtBRLc(Math.abs(TOT.saldo)), corS, 'var(--weight-bold)')+
+       col(L+470, 'retorno', TOT.gasto? (100*TOT.ganho/TOT.gasto).toFixed(0).replace('.',',')+'%' : '—', 'var(--ink-secondary)');
+    if(TOT.ganho>0 && TOT.concentracao>=0.6)
+      s+='<text x="'+L+'" y="'+(y+48)+'" style="font-size:var(--text-2xs);fill:var(--status-warning)">▲ '+
+         Math.round(100*TOT.concentracao)+'% desse prêmio veio de uma aposta só ('+fmtBRLc(TOT.maiorPremio)+
+         '). O saldo mede sorte pontual, não desempenho do método.</text>';
+    s+='<line x1="'+(L-118)+'" y1="'+(y+HDR-8)+'" x2="'+(W-R+40)+'" y2="'+(y+HDR-8)+'" stroke="var(--border-default)" stroke-width="1"/>';
+  }
   arr.forEach((d,i)=>{
-    const y=T+i*linhaH;
+    const y=T+HDR+i*linhaH;
     s+='<text x="'+(L-10)+'" y="'+(y+16)+'" text-anchor="end" style="font-size:var(--text-xs);font-weight:var(--weight-semi);fill:var(--ink-primary)">'+esc(d.label)+'</text>'+
        '<text x="'+(L-10)+'" y="'+(y+30)+'" text-anchor="end" style="font-size:var(--text-2xs);fill:var(--ink-muted)">'+d.n+' aposta'+(d.n>1?'s':'')+'</text>';
     const wG=Math.max(X(d.gasto,'g')-L, 2), wP=Math.max(X(d.ganho,'p')-L, d.ganho>0?2:0);
@@ -5695,8 +5729,8 @@ function painelGraficoHistorico(linhas){
   if(state.grafHist==='modalidade'){
     const gr=graficoPorModalidade(linhas);
     p.appendChild(el('p',{class:'note'}, gr.eixoSeparado
-      ? 'Quanto cada modalidade levou do seu dinheiro e quanto devolveu. Aqui as duas séries estão em <b>escalas diferentes</b>: um prêmio de faixa alta é milhares de vezes o custo e, no mesmo eixo, achataria as barras de gasto até sumirem. Compare gasto com gasto e prêmio com prêmio — a comparação entre os dois está na coluna Saldo da tabela.'
-      : 'Quanto cada modalidade levou do seu dinheiro e quanto devolveu. As duas séries estão na <b>mesma escala</b>, então o tamanho relativo das barras pode ser lido diretamente.'));
+      ? 'A primeira linha é o <b>consolidado</b> de tudo; abaixo dela, quanto cada modalidade levou do seu dinheiro e quanto devolveu. Aqui as duas séries estão em <b>escalas diferentes</b>: um prêmio de faixa alta é milhares de vezes o custo e, no mesmo eixo, achataria as barras de gasto até sumirem. Compare gasto com gasto e prêmio com prêmio — a comparação entre os dois está no saldo.'
+      : 'A primeira linha é o <b>consolidado</b> de tudo; abaixo dela, quanto cada modalidade levou do seu dinheiro e quanto devolveu. As duas séries estão na <b>mesma escala</b>, então o tamanho relativo das barras pode ser lido diretamente.'));
     p.appendChild(htmlBloco(gr.svg));
     const t=el('table',{style:'margin-top:var(--space-4)'});
     let h='<thead><tr><th>Modalidade</th><th class="num">Apostas</th><th class="num">Gasto</th><th class="num">Prêmio</th><th class="num">Saldo</th><th class="num">Retorno</th></tr></thead><tbody>';
@@ -5707,7 +5741,15 @@ function painelGraficoHistorico(linhas){
          '<td class="num" style="color:'+(sal>=0?'var(--status-good-ink)':'var(--status-critical)')+'">'+fmtBRLc(sal)+'</td>'+
          '<td class="num">'+(d.gasto? (100*d.ganho/d.gasto).toFixed(1).replace('.',',')+'%' : '—')+'</td></tr>';
     }
-    h+='</tbody></table>';
+    /* Rodapé com o consolidado. Fica em <tfoot>, fora do <tbody> — é o que
+       impede o ordenador de misturar o total com as linhas ao clicar numa coluna. */
+    const TG=gr.arr.reduce((a,d)=>({g:a.g+d.gasto, p:a.p+d.ganho, n:a.n+d.n}),{g:0,p:0,n:0});
+    const TS=TG.p-TG.g;
+    h+='</tbody><tfoot><tr style="border-top:var(--stroke-thin) solid var(--border-default);font-weight:var(--weight-semi)">'+
+       '<td>Total</td><td class="num">'+TG.n+'</td><td class="num">'+fmtBRLc(TG.g)+'</td>'+
+       '<td class="num">'+fmtBRLc(TG.p)+'</td>'+
+       '<td class="num" style="color:'+(TS>=0?'var(--status-good-ink)':'var(--status-critical)')+'">'+fmtBRLc(TS)+'</td>'+
+       '<td class="num">'+(TG.g? (100*TG.p/TG.g).toFixed(1).replace('.',',')+'%' : '—')+'</td></tr></tfoot></table>';
     t.innerHTML=h; tabelaOrdenavel(t); p.appendChild(t);
   } else {
     const gr=graficoNoTempo(linhas);

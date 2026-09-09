@@ -1,8 +1,8 @@
 {
-  "versao": "19.20",
+  "versao": "19.21",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-08-20T19:00:00Z",
-  "geradoEmBrasilia": "2026-08-20 16:00",
+  "geradoEm": "2026-09-09T17:00:00Z",
+  "geradoEmBrasilia": "2026-09-09 14:00",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -15,103 +15,103 @@
     "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
   },
   "baseDeDados": {
-    "fechadaEm": "19/08/2026 (Super Sete em 14/08 - API fora do ar)",
+    "fechadaEm": "08/09/2026",
     "concursosPorModalidade": {
       "lotofacil": {
-        "ultimoConcurso": 3766,
-        "data": "19/08/2026",
+        "ultimoConcurso": 3779,
+        "data": "03/09/2026",
         "acumulado": false,
-        "proximoSorteio": "20/08/2026",
-        "estimativa": 2000000.0
+        "proximoSorteio": "15/09/2026",
+        "estimativa": 300000000.0
       },
       "megasena": {
-        "ultimoConcurso": 3046,
-        "data": "18/08/2026",
+        "ultimoConcurso": 3055,
+        "data": "08/09/2026",
         "acumulado": true,
-        "proximoSorteio": "20/08/2026",
-        "estimativa": 50000000.0
+        "proximoSorteio": "10/09/2026",
+        "estimativa": 76000000.0
       },
       "quina": {
-        "ultimoConcurso": 7096,
-        "data": "19/08/2026",
+        "ultimoConcurso": 7112,
+        "data": "08/09/2026",
         "acumulado": true,
-        "proximoSorteio": "20/08/2026",
-        "estimativa": 15000000.0
+        "proximoSorteio": "09/09/2026",
+        "estimativa": 20000000.0
       },
       "lotomania": {
-        "ultimoConcurso": 2965,
-        "data": "19/08/2026",
+        "ultimoConcurso": 2972,
+        "data": "04/09/2026",
         "acumulado": true,
-        "proximoSorteio": "21/08/2026",
-        "estimativa": 16000000.0
+        "proximoSorteio": "09/09/2026",
+        "estimativa": 5000000.0
       },
       "timemania": {
-        "ultimoConcurso": 2430,
-        "data": "18/08/2026",
+        "ultimoConcurso": 2439,
+        "data": "08/09/2026",
         "acumulado": true,
-        "proximoSorteio": "20/08/2026",
-        "estimativa": 9300000.0
+        "proximoSorteio": "10/09/2026",
+        "estimativa": 13000000.0
       },
       "duplasena": {
-        "ultimoConcurso": 2998,
-        "data": "19/08/2026",
+        "ultimoConcurso": 3005,
+        "data": "04/09/2026",
         "acumulado": true,
-        "proximoSorteio": "21/08/2026",
-        "estimativa": 1800000.0
+        "proximoSorteio": "09/09/2026",
+        "estimativa": 3500000.0
       },
       "diadesorte": {
-        "ultimoConcurso": 1276,
-        "data": "19/08/2026",
+        "ultimoConcurso": 1292,
+        "data": "08/09/2026",
         "acumulado": true,
-        "proximoSorteio": "20/08/2026",
-        "estimativa": 300000.0
+        "proximoSorteio": "09/09/2026",
+        "estimativa": 400000.0
       },
       "supersete": {
-        "ultimoConcurso": 886,
-        "data": "14/08/2026",
+        "ultimoConcurso": 895,
+        "data": "04/09/2026",
         "acumulado": true,
-        "proximoSorteio": "17/08/2026",
-        "estimativa": 5600000.0
+        "proximoSorteio": "09/09/2026",
+        "estimativa": 7500000.0
       },
       "maismilionaria": {
-        "ultimoConcurso": 382,
-        "data": "19/08/2026",
+        "ultimoConcurso": 387,
+        "data": "06/09/2026",
         "acumulado": true,
-        "proximoSorteio": "22/08/2026",
-        "estimativa": 86000000.0
+        "proximoSorteio": "09/09/2026",
+        "estimativa": 92000000.0
       }
     },
     "arquivos": {
-      "apostas.json": 17264,
-      "dates_diadesorte.json": 24414,
-      "dates_duplasena.json": 58854,
-      "dates_lotofacil.json": 74214,
-      "dates_lotomania.json": 58194,
-      "dates_maismilionaria.json": 7151,
-      "dates_megasena.json": 59814,
-      "dates_quina.json": 140814,
-      "dates_supersete.json": 16727,
-      "dates_timemania.json": 47494,
-      "diadesorte.json": 67223,
-      "duplasena.json": 205756,
-      "historico_crivo.json": 43809,
-      "lotofacil.json": 315238,
-      "lotomania.json": 322079,
-      "maismilionaria.json": 17863,
-      "megasena.json": 117688,
-      "premios_diadesorte.json": 110698,
-      "premios_duplasena.json": 338958,
-      "premios_lotofacil.json": 361098,
-      "premios_lotomania.json": 324257,
-      "premios_maismilionaria.json": 54999,
-      "premios_megasena.json": 198476,
-      "premios_quina.json": 532088,
-      "premios_supersete.json": 72714,
-      "premios_timemania.json": 235225,
-      "quina.json": 240158,
-      "status.json": 1293,
-      "supersete.json": 31789,
-      "timemania.json": 146021
+      "apostas.json": 18762,
+      "dates_diadesorte.json": 24734,
+      "dates_duplasena.json": 58994,
+      "dates_lotofacil.json": 74474,
+      "dates_lotomania.json": 58334,
+      "dates_maismilionaria.json": 7246,
+      "dates_megasena.json": 59994,
+      "dates_quina.json": 141134,
+      "dates_supersete.json": 16898,
+      "dates_timemania.json": 47674,
+      "diadesorte.json": 68074,
+      "duplasena.json": 206239,
+      "historico_crivo.json": 43900,
+      "lotofacil.json": 316330,
+      "lotomania.json": 322842,
+      "maismilionaria.json": 18093,
+      "megasena.json": 118039,
+      "premios_diadesorte.json": 112078,
+      "premios_duplasena.json": 339794,
+      "premios_lotofacil.json": 362303,
+      "premios_lotomania.json": 325046,
+      "premios_maismilionaria.json": 55734,
+      "premios_megasena.json": 199063,
+      "premios_quina.json": 533345,
+      "premios_supersete.json": 73488,
+      "premios_timemania.json": 236119,
+      "quina.json": 240702,
+      "status.json": 1307,
+      "supersete.json": 32113,
+      "timemania.json": 146548
     },
     "totalArquivos": 30
   },
@@ -195,11 +195,14 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Linha de Total no topo do grafico por modalidade: gasto, premio recebido, saldo e retorno.",
-    "Rodape equivalente na tabela, em <tfoot> para nao ser embaralhado pelo ordenador de colunas.",
-    "A linha do total nao tem barra de proposito - na mesma escala ela engoliria a comparacao entre modalidades.",
-    "Aviso de concentracao: quando o maior premio isolado responde por 60% ou mais do total recebido, a linha diz isso.",
-    "Hoje sao 92% (a quadra de R$ 706,56 na Mega 3042); sem a aposta, o retorno cai de 390% para 31%."
+    "ERRO GRAVE CORRIGIDO: o painel dava indice 12,67 e veredito APOSTAR para a Lotofacil da Independencia. O correto e 0,696.",
+    "Causa: a correcao de volume da v16 e pela sequencia de acumulacao, e concurso especial nao acumula - junta publico por ser evento.",
+    "Nova funcao multiplicadorEspecial: mede o multiplicador uma edicao por vez. Independencia 33,2x, Virada 37,4x, Sao Joao 35,2x, Primavera 1,4x, Natal 1,9x.",
+    "Acumulacao e especial usam Math.max, nunca o produto - as duas causas quase nunca coincidem.",
+    "Premio de gatilho da Independencia passa de R$ 17,3 milhoes para R$ 520,9 milhoes.",
+    "Base ate 08/09/2026: 91 concursos incorporados, incluindo os do Super Sete travados desde 14/08.",
+    "historico_crivo regerado: 4.674 sorteios avaliados.",
+    "Registradas 3 apostas de Quina do concurso 7113 (R$ 24,00)."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -213,10 +216,10 @@
     "criterios anti-popularidade do Super Sete sao analogia, nao medicao — a Caixa nao publica a distribuicao das apostas",
     "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)",
     "nao existe teste automatizado que confira VALOR de premio contra o rateio oficial - foi essa lacuna que deixou o erro da Lotomania passar",
-    "Super Sete travado em 886 desde 14/08/2026: API oficial devolvendo erro 500"
+    "nao existe teste de PLAUSIBILIDADE de numero: nenhum indice CRIVO acima de ~1,5, nenhum premio acima do total da faixa. Duas vezes um numero absurdo passou pela regressao (Lotomania na secao 26, Independencia na secao 30)"
   ],
   "varreduraHistorica": {
-    "sorteiosMedidos": 4661,
+    "sorteiosMedidos": 4674,
     "cruzaram1": 5,
     "cruzamentos": [
       {
@@ -521,6 +524,16 @@
       "A linha do total nao tem barra de proposito - na mesma escala ela engoliria a comparacao entre modalidades.",
       "Aviso de concentracao: quando o maior premio isolado responde por 60% ou mais do total recebido, a linha diz isso.",
       "Hoje sao 92% (a quadra de R$ 706,56 na Mega 3042); sem a aposta, o retorno cai de 390% para 31%."
+    ],
+    "19.21": [
+      "ERRO GRAVE CORRIGIDO: o painel dava indice 12,67 e veredito APOSTAR para a Lotofacil da Independencia. O correto e 0,696.",
+      "Causa: a correcao de volume da v16 e pela sequencia de acumulacao, e concurso especial nao acumula - junta publico por ser evento.",
+      "Nova funcao multiplicadorEspecial: mede o multiplicador uma edicao por vez. Independencia 33,2x, Virada 37,4x, Sao Joao 35,2x, Primavera 1,4x, Natal 1,9x.",
+      "Acumulacao e especial usam Math.max, nunca o produto - as duas causas quase nunca coincidem.",
+      "Premio de gatilho da Independencia passa de R$ 17,3 milhoes para R$ 520,9 milhoes.",
+      "Base ate 08/09/2026: 91 concursos incorporados, incluindo os do Super Sete travados desde 14/08.",
+      "historico_crivo regerado: 4.674 sorteios avaliados.",
+      "Registradas 3 apostas de Quina do concurso 7113 (R$ 24,00)."
     ]
   },
   "apostasReais": [
@@ -747,16 +760,27 @@
         83,
         85
       ]
+    },
+    {
+      "data": "09/09/2026",
+      "modalidade": "quina",
+      "concurso": 7113,
+      "apostas": 3,
+      "custo": 24.0,
+      "origem": "print do carrinho do app da Caixa, 09/09/2026 13h42; concurso legivel no print",
+      "detalhe": "uma de 6 dezenas (R$ 18,00 = 6 apostas simples) e duas simples de 5",
+      "resultado": "aguardando sorteio de 09/09/2026",
+      "ressalva": "origem e tela de carrinho, nao comprovante pago"
     }
   ],
   "commit": "96e3b34",
   "commitCurto": "96e3b34",
   "carteira": {
-    "apostas": 24,
-    "gasto": 196.45,
+    "apostas": 27,
+    "gasto": 220.45,
     "ganho": 766.55,
-    "saldo": 570.1,
-    "ressalva": "dominado por um unico premio de faixa media; amostra pequena demais para significar qualquer coisa"
+    "saldo": 546.1,
+    "ressalva": "92% do ganho vem de um unico premio; sem ele o retorno e 27%"
   },
   "diarioForaDaAmostra": {
     "acertos": 18,
@@ -764,5 +788,13 @@
     "lotofacil": "14 de 21",
     "megasena": "4 de 10",
     "leitura": "quarta leitura seguida em torno do acaso: 6/9, 10/19, 15/27, 18/31"
+  },
+  "correcaoConcursoEspecial": {
+    "lotofacil_independencia": 33.2,
+    "megasena_virada": 37.4,
+    "quina_saojoao": 35.2,
+    "diadesorte_primavera": 1.4,
+    "timemania_natal": 1.9,
+    "nota": "multiplicador de volume medido nas 5 ultimas edicoes de cada especial; combinado com a curva de acumulacao por Math.max"
   }
 }

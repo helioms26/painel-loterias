@@ -1666,3 +1666,72 @@ a carteira ficar diversificada o bastante para o saldo significar alguma coisa.
 
 Isso é a mesma regra que vale para o diário fora da amostra e para a varredura histórica: **o
 número que favorece a tese é o que precisa da ressalva mais visível**, não o contrário.
+
+## 30. O erro que teria mandado apostar na Independência (v19.21)
+
+Este é o erro mais perigoso já encontrado neste projeto, e ele foi encontrado por acaso: eu fui
+conferir a matriz de decisão depois de atualizar a base e o painel dizia, para a **Lotofácil da
+Independência** de 15/09/2026, índice CRIVO **12,67** e veredito **APOSTAR**.
+
+Um índice de 12,67 significa R$ 12,67 de retorno esperado por real apostado. Se isso existisse,
+não seria loteria — seria uma máquina de dinheiro, e a Caixa não a operaria. O número estava
+errado, e a implausibilidade foi o único sinal de alarme: nenhum teste pegou.
+
+**A causa.** A v16 já tinha consertado um erro dessa família — "o índice usa o prêmio de agora
+com o volume de apostas típico" — corrigindo o volume pela **sequência de concursos acumulados**.
+Isso cobre a Mega-Sena que acumulou seis vezes. Não cobre concurso especial, que é outra coisa
+inteiramente: **a Lotofácil da Independência não acumula.** Ela junta público por ser um evento,
+com a sequência de acumulação em zero. O painel então dividia R$ 300 milhões pelos ~2 ganhadores
+de um concurso comum, quando as edições recentes tiveram entre 33 e 86 ganhadores.
+
+**A medição.** Uma edição de cada vez: dentro da janela do especial, a edição do ano é o concurso
+de maior volume, e o multiplicador é o volume dele dividido pelo volume típico dos 60 concursos
+anteriores. O ano corrente fica fora, porque o especial dele ainda não aconteceu.
+
+| edição | concurso | volume | típico | multiplicador |
+|---|---|---|---|---|
+| 2021 | 2320 | 210,4 mi | 7,5 mi | 28,1× |
+| 2022 | 2610 | 252,0 mi | 7,4 mi | 34,1× |
+| 2023 | 2900 | 220,5 mi | 7,1 mi | 31,1× |
+| 2024 | 3190 | 244,9 mi | 6,5 mi | 37,5× |
+| 2025 | 3480 | 216,2 mi | 6,4 mi | 33,2× |
+
+Mediana: **33,2×**. O mesmo procedimento mede a Mega da Virada em 37,4×, a Quina de São João em
+35,2×, o Dia de Sorte da Primavera em 1,4× e a Timemania de Natal em 1,9× — as duas últimas não
+são eventos de massa, e a medição diz isso sozinha.
+
+**O resultado.**
+
+| | antes | depois |
+|---|---|---|
+| índice CRIVO | 12,67 | **0,696** |
+| prêmio de gatilho | R$ 17,3 milhões | **R$ 520,9 milhões** |
+| veredito | APOSTAR | MELHOR OPÇÃO (ainda abaixo de 1,00) |
+
+O valor corrigido tem uma checagem externa forte: **0,696 é praticamente idêntico ao recorde
+histórico da Lotofácil**, que é 0,693 na Independência de 2013, e a mediana das 50 edições
+especiais medidas na varredura é 0,378 contra 0,370 dos concursos comuns. Ou seja, o modelo
+corrigido recoloca a Independência exatamente onde a série histórica sempre a colocou: o melhor
+momento da modalidade, e ainda assim negativo. Para valer a pena, o prêmio teria que ser **R$ 521
+milhões**, não R$ 300 milhões.
+
+**Acumulação e evento especial não se multiplicam.** Quando as duas correções existem, o painel
+usa a maior, não o produto. As duas causas quase nunca coincidem — a Independência não acumula, a
+Mega acumulada não é a Virada — e multiplicá-las inventaria um volume que nunca foi observado.
+
+### 30.1 O que este erro diz sobre o método de teste
+
+A regressão automatizada cobre 81 combinações de modalidade e aba em dois temas, e passou limpa
+com o índice em 12,67. Ela verifica renderização e erro de console; **não verifica plausibilidade
+de número**. É a segunda vez que essa mesma lacuna aparece: a primeira foi o prêmio da Lotomania,
+que devolvia R$ 3,9 milhões no lugar de R$ 12,19 (seção 26).
+
+Os dois casos têm a mesma forma — um número absurdo, calculado sem erro de sintaxe, exibido com
+confiança total. E os dois teriam sido pegos por um teste trivial: **nenhum índice CRIVO pode
+passar de ~1,5, e nenhum prêmio conferido pode passar do prêmio total daquela faixa**. Fica
+registrado como a lacuna de teste mais cara do projeto, e como o próximo item a ser construído.
+
+Vale dizer o que a tese do CRIVO tem a ver com isso. O método existe para responder "onde o mesmo
+dinheiro rende mais", e a resposta quase sempre é "em lugar nenhum". Um painel que erra para
+**cima** — que diz APOSTAR quando o índice real é 0,70 — não é um painel com um bug; é um painel
+que faz o oposto do que foi construído para fazer.

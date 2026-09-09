@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.20**, 20/08/2026.
+Última versão: **19.21**, 09/09/2026.
 
 ---
 
@@ -648,3 +648,36 @@ a linha escreve isso embaixo do saldo. Hoje são 92% (a quadra de R$ 706,56 na M
 aviso, "+R$ 570,10 · 390%" leria como método funcionando. Tirando essa aposta, o retorno é 31%.
 **Não remova esse aviso** — ele é a aplicação da mesma regra do diário fora da amostra: o número
 que favorece a tese é o que precisa da ressalva mais visível.
+
+---
+
+## v19.21 — o erro que teria mandado apostar na Independência
+
+**Leia a seção 30 da metodologia antes de mexer no índice.** O painel dizia índice **12,67** e
+veredito **APOSTAR** para a Lotofácil da Independência (3780, 15/09/2026, R$ 300 milhões). O
+valor correto é **0,696**. Nenhum teste pegou; o que pegou foi a implausibilidade do número.
+
+Causa: a correção de volume da v16 é pela **sequência de acumulação**, e concurso especial não
+acumula — ele junta público por ser evento. Entrou `multiplicadorEspecial(g, dataProx)`, que mede
+o multiplicador uma edição por vez (maior volume do ano dentro da janela ÷ mediana dos 60
+anteriores), pega as 5 últimas e usa a mediana. Medido: Independência 33,2×, Virada 37,4×, São
+João 35,2×, Primavera 1,4×, Natal 1,9×.
+
+**Acumulação e especial usam `Math.max`, nunca o produto** — as duas causas quase nunca coincidem
+e multiplicá-las inventaria volume nunca observado.
+
+Checagem externa que dá confiança no conserto: 0,696 bate com o recorde histórico da Lotofácil
+(0,693, Independência de 2013), e a mediana das 50 especiais na varredura é 0,378 contra 0,370
+das comuns. O modelo corrigido recoloca a Independência onde a série sempre a colocou.
+
+**A TAREFA MAIS IMPORTANTE PENDENTE — teste de plausibilidade.** É a segunda vez que um número
+absurdo passa por 81 combinações de regressão sem ser notado (a primeira foi o prêmio da Lotomania,
+seção 26). Os dois seriam pegos por asserções triviais: **nenhum índice CRIVO acima de ~1,5**, e
+**nenhum prêmio conferido acima do prêmio total da faixa**. Construa esse teste antes de qualquer
+funcionalidade nova.
+
+Base atualizada até 08/09/2026 — 91 concursos de uma vez, incluindo os do Super Sete que estavam
+travados desde 14/08 (a API voltou). `historico_crivo`: 4.674 sorteios.
+
+Registradas 3 apostas de Quina do concurso 7113 (R$ 24,00): uma de 6 dezenas (R$ 18,00 = 6 apostas
+simples) e duas simples. Origem: print do carrinho, com o concurso legível no próprio print.

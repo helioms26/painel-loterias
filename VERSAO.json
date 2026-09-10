@@ -1,8 +1,8 @@
 {
-  "versao": "19.21",
+  "versao": "19.22",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-09-09T17:00:00Z",
-  "geradoEmBrasilia": "2026-09-09 14:00",
+  "geradoEm": "2026-09-10T17:00:00Z",
+  "geradoEmBrasilia": "2026-09-10 14:00",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -15,7 +15,7 @@
     "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
   },
   "baseDeDados": {
-    "fechadaEm": "08/09/2026",
+    "fechadaEm": "09/09/2026",
     "concursosPorModalidade": {
       "lotofacil": {
         "ultimoConcurso": 3779,
@@ -32,18 +32,18 @@
         "estimativa": 76000000.0
       },
       "quina": {
-        "ultimoConcurso": 7112,
-        "data": "08/09/2026",
+        "ultimoConcurso": 7113,
+        "data": "09/09/2026",
         "acumulado": true,
-        "proximoSorteio": "09/09/2026",
-        "estimativa": 20000000.0
+        "proximoSorteio": "10/09/2026",
+        "estimativa": 21500000.0
       },
       "lotomania": {
-        "ultimoConcurso": 2972,
-        "data": "04/09/2026",
-        "acumulado": true,
-        "proximoSorteio": "09/09/2026",
-        "estimativa": 5000000.0
+        "ultimoConcurso": 2973,
+        "data": "09/09/2026",
+        "acumulado": false,
+        "proximoSorteio": "11/09/2026",
+        "estimativa": 650000.0
       },
       "timemania": {
         "ultimoConcurso": 2439,
@@ -53,64 +53,64 @@
         "estimativa": 13000000.0
       },
       "duplasena": {
-        "ultimoConcurso": 3005,
-        "data": "04/09/2026",
+        "ultimoConcurso": 3006,
+        "data": "09/09/2026",
         "acumulado": true,
-        "proximoSorteio": "09/09/2026",
-        "estimativa": 3500000.0
+        "proximoSorteio": "11/09/2026",
+        "estimativa": 3700000.0
       },
       "diadesorte": {
-        "ultimoConcurso": 1292,
-        "data": "08/09/2026",
+        "ultimoConcurso": 1293,
+        "data": "09/09/2026",
         "acumulado": true,
-        "proximoSorteio": "09/09/2026",
-        "estimativa": 400000.0
+        "proximoSorteio": "10/09/2026",
+        "estimativa": 520000.0
       },
       "supersete": {
-        "ultimoConcurso": 895,
-        "data": "04/09/2026",
+        "ultimoConcurso": 896,
+        "data": "09/09/2026",
         "acumulado": true,
-        "proximoSorteio": "09/09/2026",
-        "estimativa": 7500000.0
+        "proximoSorteio": "11/09/2026",
+        "estimativa": 7700000.0
       },
       "maismilionaria": {
-        "ultimoConcurso": 387,
-        "data": "06/09/2026",
+        "ultimoConcurso": 388,
+        "data": "09/09/2026",
         "acumulado": true,
-        "proximoSorteio": "09/09/2026",
-        "estimativa": 92000000.0
+        "proximoSorteio": "13/09/2026",
+        "estimativa": 93000000.0
       }
     },
     "arquivos": {
-      "apostas.json": 18762,
-      "dates_diadesorte.json": 24734,
-      "dates_duplasena.json": 58994,
+      "apostas.json": 21633,
+      "dates_diadesorte.json": 24754,
+      "dates_duplasena.json": 59014,
       "dates_lotofacil.json": 74474,
-      "dates_lotomania.json": 58334,
-      "dates_maismilionaria.json": 7246,
+      "dates_lotomania.json": 58354,
+      "dates_maismilionaria.json": 7265,
       "dates_megasena.json": 59994,
-      "dates_quina.json": 141134,
-      "dates_supersete.json": 16898,
+      "dates_quina.json": 141154,
+      "dates_supersete.json": 16917,
       "dates_timemania.json": 47674,
-      "diadesorte.json": 68074,
-      "duplasena.json": 206239,
-      "historico_crivo.json": 43900,
+      "diadesorte.json": 68129,
+      "duplasena.json": 206308,
+      "historico_crivo.json": 43907,
       "lotofacil.json": 316330,
-      "lotomania.json": 322842,
-      "maismilionaria.json": 18093,
+      "lotomania.json": 322951,
+      "maismilionaria.json": 18139,
       "megasena.json": 118039,
-      "premios_diadesorte.json": 112078,
-      "premios_duplasena.json": 339794,
+      "premios_diadesorte.json": 112164,
+      "premios_duplasena.json": 339916,
       "premios_lotofacil.json": 362303,
-      "premios_lotomania.json": 325046,
-      "premios_maismilionaria.json": 55734,
+      "premios_lotomania.json": 325164,
+      "premios_maismilionaria.json": 55877,
       "premios_megasena.json": 199063,
-      "premios_quina.json": 533345,
-      "premios_supersete.json": 73488,
+      "premios_quina.json": 533424,
+      "premios_supersete.json": 73575,
       "premios_timemania.json": 236119,
-      "quina.json": 240702,
-      "status.json": 1307,
-      "supersete.json": 32113,
+      "quina.json": 240736,
+      "status.json": 1305,
+      "supersete.json": 32149,
       "timemania.json": 146548
     },
     "totalArquivos": 30
@@ -195,14 +195,13 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "ERRO GRAVE CORRIGIDO: o painel dava indice 12,67 e veredito APOSTAR para a Lotofacil da Independencia. O correto e 0,696.",
-    "Causa: a correcao de volume da v16 e pela sequencia de acumulacao, e concurso especial nao acumula - junta publico por ser evento.",
-    "Nova funcao multiplicadorEspecial: mede o multiplicador uma edicao por vez. Independencia 33,2x, Virada 37,4x, Sao Joao 35,2x, Primavera 1,4x, Natal 1,9x.",
-    "Acumulacao e especial usam Math.max, nunca o produto - as duas causas quase nunca coincidem.",
-    "Premio de gatilho da Independencia passa de R$ 17,3 milhoes para R$ 520,9 milhoes.",
-    "Base ate 08/09/2026: 91 concursos incorporados, incluindo os do Super Sete travados desde 14/08.",
-    "historico_crivo regerado: 4.674 sorteios avaliados.",
-    "Registradas 3 apostas de Quina do concurso 7113 (R$ 24,00)."
+    "Registradas 2 apostas de Lotofacil no concurso 3780 - a Lotofacil da Independencia, 15/09, R$ 300 milhoes.",
+    "Registradas 3 apostas de Quina no 7114, repetindo as dezenas do 7113 (repeticao confirmada pelo Helio).",
+    "Quina 7113 conferido: saiu 01 32 57 78 80, os tres jogos fizeram zero acertos.",
+    "Analise do rateio das duas da Independencia: aposta 1 mede 1,32x (contem a coluna 3 inteira) e aposta 2 mede 0,85x.",
+    "Traduzido para a escala de 2025 (54 ganhadores, R$ 231,9 mi): cota de ~R$ 3,25 mi contra ~R$ 5,03 mi. Mesma chance de ganhar.",
+    "Base ate 09/09/2026: quina 7113, lotomania 2973, duplasena 3006, diadesorte 1293, supersete 896, maismilionaria 388.",
+    "historico_crivo regerado: 4.675 sorteios avaliados."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -219,7 +218,7 @@
     "nao existe teste de PLAUSIBILIDADE de numero: nenhum indice CRIVO acima de ~1,5, nenhum premio acima do total da faixa. Duas vezes um numero absurdo passou pela regressao (Lotomania na secao 26, Independencia na secao 30)"
   ],
   "varreduraHistorica": {
-    "sorteiosMedidos": 4674,
+    "sorteiosMedidos": 4675,
     "cruzaram1": 5,
     "cruzamentos": [
       {
@@ -534,6 +533,15 @@
       "Base ate 08/09/2026: 91 concursos incorporados, incluindo os do Super Sete travados desde 14/08.",
       "historico_crivo regerado: 4.674 sorteios avaliados.",
       "Registradas 3 apostas de Quina do concurso 7113 (R$ 24,00)."
+    ],
+    "19.22": [
+      "Registradas 2 apostas de Lotofacil no concurso 3780 - a Lotofacil da Independencia, 15/09, R$ 300 milhoes.",
+      "Registradas 3 apostas de Quina no 7114, repetindo as dezenas do 7113 (repeticao confirmada pelo Helio).",
+      "Quina 7113 conferido: saiu 01 32 57 78 80, os tres jogos fizeram zero acertos.",
+      "Analise do rateio das duas da Independencia: aposta 1 mede 1,32x (contem a coluna 3 inteira) e aposta 2 mede 0,85x.",
+      "Traduzido para a escala de 2025 (54 ganhadores, R$ 231,9 mi): cota de ~R$ 3,25 mi contra ~R$ 5,03 mi. Mesma chance de ganhar.",
+      "Base ate 09/09/2026: quina 7113, lotomania 2973, duplasena 3006, diadesorte 1293, supersete 896, maismilionaria 388.",
+      "historico_crivo regerado: 4.675 sorteios avaliados."
     ]
   },
   "apostasReais": [
@@ -768,19 +776,54 @@
       "apostas": 3,
       "custo": 24.0,
       "origem": "print do carrinho do app da Caixa, 09/09/2026 13h42; concurso legivel no print",
-      "detalhe": "uma de 6 dezenas (R$ 18,00 = 6 apostas simples) e duas simples de 5",
-      "resultado": "aguardando sorteio de 09/09/2026",
+      "detalhe": "zero acertos nos tres jogos",
+      "resultado": "sem premio",
+      "ressalva": "origem e tela de carrinho, nao comprovante pago",
+      "premio": 0.0,
+      "sorteio": [
+        1,
+        32,
+        57,
+        78,
+        80
+      ]
+    },
+    {
+      "data": "10/09/2026",
+      "modalidade": "lotofacil",
+      "concurso": 3780,
+      "apostas": 2,
+      "custo": 7.0,
+      "origem": "print do carrinho do app da Caixa, 10/09/2026; concurso legivel no print",
+      "detalhe": "Lotofacil da Independencia, sorteio 15/09/2026, premio estimado R$ 300 milhoes",
+      "fatoresMedidos": [
+        1.319,
+        0.853
+      ],
+      "nota": "aposta 1 contem a coluna 3 inteira do volante (1,210x); na escala de 2025 a diferenca entre as duas e de ~R$ 1,8 milhao na cota",
+      "resultado": "aguardando sorteio",
+      "ressalva": "origem e tela de carrinho, nao comprovante pago"
+    },
+    {
+      "data": "10/09/2026",
+      "modalidade": "quina",
+      "concurso": 7114,
+      "apostas": 3,
+      "custo": 24.0,
+      "origem": "print do carrinho do app da Caixa, 10/09/2026",
+      "detalhe": "mesmas dezenas do 7113; repeticao confirmada pelo Helio, nao substituicao",
+      "resultado": "aguardando sorteio",
       "ressalva": "origem e tela de carrinho, nao comprovante pago"
     }
   ],
   "commit": "96e3b34",
   "commitCurto": "96e3b34",
   "carteira": {
-    "apostas": 27,
-    "gasto": 220.45,
+    "apostas": 32,
+    "gasto": 251.45,
     "ganho": 766.55,
-    "saldo": 546.1,
-    "ressalva": "92% do ganho vem de um unico premio; sem ele o retorno e 27%"
+    "saldo": 515.1,
+    "ressalva": "92% do ganho vem de um unico premio; sem ele o retorno e 8%"
   },
   "diarioForaDaAmostra": {
     "acertos": 18,

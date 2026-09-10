@@ -1735,3 +1735,42 @@ Vale dizer o que a tese do CRIVO tem a ver com isso. O método existe para respo
 dinheiro rende mais", e a resposta quase sempre é "em lugar nenhum". Um painel que erra para
 **cima** — que diz APOSTAR quando o índice real é 0,70 — não é um painel com um bug; é um painel
 que faz o oposto do que foi construído para fazer.
+
+## 31. As duas apostas da Independência, e onde o método finalmente pesa (v19.22)
+
+Registradas duas apostas de Lotofácil para o concurso **3780 — a Lotofácil da Independência**,
+sorteio em 15/09/2026, prêmio estimado em R$ 300 milhões. Mais três de Quina no 7114, repetindo
+as dezenas do 7113 (repetição confirmada, não substituição; o 7113 saiu `01 32 57 78 80` e os três
+jogos fizeram zero acertos).
+
+**Aqui o fator de rateio deixa de ser detalhe.** Em concurso comum da Lotofácil, quem acerta 15
+divide com uma ou duas pessoas, e o fator muda pouco em dinheiro. Na Independência o prêmio é
+dividido entre dezenas de ganhadores — 54 em 2025, 86 em 2024, 65 em 2023 — e aí o fator age
+diretamente sobre a quantia recebida. É o único momento do ano em que o CRIVO tem efeito material
+sobre o resultado de uma aposta única.
+
+| aposta | dezenas | maior sequência | soma | linha/coluna cheia | fator |
+|---|---|---|---|---|---|
+| 1 | 02 03 05 06 08 12 13 15 17 18 19 21 22 23 24 | 4 (0,949×) | 208 (1,149×) | **coluna 3** (1,210×) | **1,32×** |
+| 2 | 01 03 04 05 06 08 10 12 14 15 17 18 22 23 25 | 4 (0,949×) | 183 (0,899×) | nenhuma | **0,85×** |
+
+Traduzindo para a escala da edição de 2025, em que 54 ganhadores dividiram R$ 231,9 milhões:
+
+| | pessoas com quem dividiria | cota estimada |
+|---|---|---|
+| aposta 1 (1,32×) | ~71 | ~R$ 3,25 milhões |
+| aposta 2 (0,85×) | ~46 | ~R$ 5,03 milhões |
+
+**A diferença entre as duas apostas do mesmo bilhete é de cerca de R$ 1,8 milhão** — não na chance
+de ganhar, que é idêntica (1 em 3.268.760 nas duas), mas no valor recebido caso ganhe.
+
+O que puxa a aposta 1 para cima é uma coisa só: ela contém a **coluna 3 inteira do volante**
+(03, 08, 13, 18, 23), padrão medido em 1,210×. Trocar **uma** dezena resolve: qualquer uma das
+trocas `02→25`, `03→16`, `03→20` ou `03→25` derruba o fator de 1,32× para 0,70×, o piso do
+método. A soma sai da faixa mais jogada junto.
+
+Fica registrado como o caso mais claro do projeto de "o método não muda a chance, muda o rateio" —
+e do único cenário em que essa distinção vale milhões em vez de reais.
+
+**Base ao fechar esta versão:** Quina 7113, Lotomania 2973, Dupla-Sena 3006, Dia de Sorte 1293,
+Super Sete 896 e +Milionária 388, todos de 09/09/2026. `historico_crivo`: 4.675 sorteios.

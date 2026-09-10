@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.21**, 09/09/2026.
+Última versão: **19.22**, 10/09/2026.
 
 ---
 
@@ -681,3 +681,26 @@ travados desde 14/08 (a API voltou). `historico_crivo`: 4.674 sorteios.
 
 Registradas 3 apostas de Quina do concurso 7113 (R$ 24,00): uma de 6 dezenas (R$ 18,00 = 6 apostas
 simples) e duas simples. Origem: print do carrinho, com o concurso legível no próprio print.
+
+---
+
+## v19.22 — duas apostas na Independência, e o rateio valendo milhões
+
+Entraram 2 apostas de Lotofácil no concurso **3780 (Independência, 15/09, R$ 300 milhões)** e 3 de
+Quina no 7114 — estas repetindo as dezenas do 7113, **repetição confirmada pelo Hélio, não
+substituição**. O 7113 saiu `01 32 57 78 80` e os três jogos fizeram zero.
+
+**O ponto da seção 31:** na Independência o prêmio se divide entre dezenas de ganhadores (54 em
+2025), então o fator de rateio age direto sobre a quantia. A aposta 1 mede 1,32× (contém a coluna
+3 inteira do volante) e a aposta 2 mede 0,85× — traduzido, ~R$ 3,25 mi contra ~R$ 5,03 mi de cota.
+Mesma chance de ganhar nas duas. **É o caso mais claro do projeto para explicar a tese**, e vale
+guardar como exemplo canônico.
+
+Uma troca de dezena na aposta 1 (`02→25`, `03→16`, `03→20` ou `03→25`) leva o fator de 1,32× a
+0,70×, o piso. Informado ao Hélio; a decisão é dele.
+
+Base: Quina 7113, Lotomania 2973, Dupla-Sena 3006, Dia de Sorte 1293, Super Sete 896, +Milionária
+388 — todos de 09/09. `historico_crivo`: 4.675 sorteios.
+
+**Pendência que continua a mais importante:** o teste de plausibilidade (seção 30.1). Nada foi
+feito nele nesta versão.

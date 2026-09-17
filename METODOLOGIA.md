@@ -1774,3 +1774,150 @@ e do único cenário em que essa distinção vale milhões em vez de reais.
 
 **Base ao fechar esta versão:** Quina 7113, Lotomania 2973, Dupla-Sena 3006, Dia de Sorte 1293,
 Super Sete 896 e +Milionária 388, todos de 09/09/2026. `historico_crivo`: 4.675 sorteios.
+
+---
+
+## 32. A janela não sabia que a edição já tinha saído — e o teste que finalmente existe (v19.23)
+
+Esta versão fecha a pendência mais antiga do projeto e conserta um erro que nasceu no próprio
+conserto anterior. As duas coisas estão ligadas: o erro novo é exatamente do tipo que o teste novo
+pega.
+
+### 32.1 A correção da v19.21 acertou o alvo — e continuou atirando depois que ele saiu
+
+A v19.21 ensinou o painel a prever o volume das edições especiais. A regra era: se o próximo
+sorteio cai dentro da janela de calendário da edição, aplique o multiplicador medido. Para a
+Lotofácil a janela vai de 1º a 20 de setembro, porque a data da Independência muda de ano para ano.
+
+**A previsão se validou fora da amostra.** A Independência de 2026 foi o concurso 3780, sorteado em
+15/09: prêmio de R$ 300 milhões anunciado, arrecadação real de R$ 843.914.921,50, o que dá
+**241,1 milhões de apostas**. O modelo corrigido previu 208,1 milhões — erro de **−13,7%**. O
+modelo antigo, sem a correção, teria previsto 6,2 milhões: erro de −97,4%. O índice previsto foi
+**0,696**; recalculado depois com o volume real, deu **0,667**, terceiro maior da série histórica
+da Lotofácil. Saíram 72 ganhadores de 15 acertos, R$ 4.488.579,00 cada.
+
+**O que ninguém tinha pensado:** a janela continua aberta depois que a edição sai. Em 17/09/2026 o
+próximo concurso da Lotofácil era o **3782, uma quarta-feira comum com prêmio estimado em
+R$ 5 milhões** — e o dia 17 está dentro da janela que vai até o dia 20. O painel aplicava a ele o
+multiplicador de **33,16×** da Independência. O efeito, medido: índice da Lotofácil em **0,2894**,
+quando o valor correto é **0,4405**. Uma diferença de 52%, na direção conservadora — o painel
+mandava não apostar num dia em que a Lotofácil era a primeira colocada.
+
+Errar para o lado cauteloso não torna o erro aceitável. Um painel que subestima sem motivo é tão
+inútil quanto um que superestima: os dois destroem a única coisa que o método vende, que é a
+medição honesta.
+
+### 32.2 O conserto usa um campo oficial, não uma heurística
+
+A tentação era inventar um limiar: "se um concurso da janela já teve volume N vezes acima do
+normal, a edição passou". Isso funcionaria na Lotofácil, cujo especial multiplica o volume por 33,
+e falharia no Dia de Sorte, cuja Primavera multiplica por 1,41 — indistinguível de um dia agitado.
+
+A API da Caixa já responde a pergunta. O campo **`indicadorConcursoEspecial`** vale **2** na edição
+especial e **1** no sorteio comum. Conferido em 17/09/2026:
+
+| concurso | data | indicadorConcursoEspecial |
+|---|---|---|
+| lotofacil 3779 | 03/09/2026 | 1 |
+| **lotofacil 3780** | **15/09/2026** | **2** |
+| lotofacil 3781 | 16/09/2026 | 1 |
+| diadesorte 1296 a 1299 | 13 a 16/09/2026 | 1 |
+
+O campo é lido na coleta e gravado em `status.json[jogo].especialDoAno`. `multiplicadorEspecial`
+passa a devolver `null` quando a edição do ano corrente já está registrada ali. Três estados, e a
+diferença entre eles importa:
+
+- **objeto preenchido** — a edição já saiu; sem multiplicador.
+- **`null`** — conferido, a edição ainda não saiu; multiplicador vale.
+- **chave ausente** — não foi conferido; a guarda não opina e o comportamento é o da v19.21.
+
+Com isso, em 17/09 a Lotofácil perde o multiplicador (edição 3780 já saiu) e o Dia de Sorte o
+mantém (nenhum concurso de 2026 marcado como especial até aqui).
+
+### 32.3 A varredura histórica rotulava por data — e apagava o efeito que queria medir
+
+O mesmo problema, em outro arquivo, com um efeito quase cômico. `gerar_historico_crivo.py`
+rotulava a edição especial por data: para a Lotofácil, "setembro, até o dia 12". Só que em setembro
+a Lotofácil sorteia quase todo dia. O rótulo caía sobre dezenas de sorteios comuns, e a mediana do
+"especial" descia até encostar na do dia comum — e o painel dizia, com todas as letras, que a
+Independência não ajudava em nada.
+
+**A Independência de 2026 expôs a falha de outra forma:** sorteada no dia 15, ficou fora da janela
+que parava no dia 12, e entrou na tabela de recordes **sem rótulo nenhum**.
+
+O conserto usa a mesma regra que o painel já usava para prever volume: **dentro da janela, a edição
+do ano é o concurso de maior arrecadação.** Uma por ano, não uma dúzia. O que aparece com a medida
+certa é o contrário do que estava escrito:
+
+| sorteio especial | edições | índice mediano | sorteio comum | ganho |
+|---|---|---|---|---|
+| Quina de São João | 10 | 0,804 | 0,293 | **2,74×** |
+| Lotofácil da Independência | 18 | 0,627 | 0,370 | **1,69×** |
+| Dia de Sorte da Primavera | 8 | 0,487 | 0,320 | 1,52× |
+| Mega da Virada | 16 | 0,443 | 0,296 | 1,50× |
+| Timemania de Natal | 3 | 0,410 | 0,335 | 1,22× |
+
+Antes do conserto, a Lotofácil aparecia como 0,378 contra 0,370 — ganho de 1,02×, ou seja, nada.
+O efeito real é de 1,69×, e era o rótulo errado que o escondia.
+
+**A tese não muda, o tamanho dela muda.** O sorteio especial ajuda de verdade, e ajuda bastante —
+e mesmo assim **nenhum dos cinco cruza a régua de 1,00**. O melhor da série inteira, a Quina de São
+João, para em 0,80. O prêmio cresce, o público cresce junto, e o fator de partilha come a maior
+parte da diferença. Ressalva de tamanho: são de 3 a 18 edições por jogo, e mediana de amostra
+pequena mexe muito com um ano atípico.
+
+### 32.4 O teste de plausibilidade, com controle negativo
+
+Era a pendência mais antiga, declarada duas vezes (seções 26 e 30) e adiada duas vezes. Dois
+números absurdos passaram intactos pela regressão de 81 combinações × 2 temas: um prêmio de
+Lotomania inflado 324.632× e um índice CRIVO de 12,67 com veredito APOSTAR. Nenhum dos dois lançou
+erro. **A regressão testa se a tela pinta; nunca testou se o número é possível.**
+
+`plaus.js` testa a segunda coisa. Quatro invariantes:
+
+**A — aposta registrada: prêmio ≤ total pago no concurso.** Se você segurou *k* bilhetes premiados
+na faixa *j*, a Caixa contou esses *k* dentro de `ganhadores_j`; logo *k*×rateio_j ≤
+ganhadores_j×rateio_j. Vale porque a aposta existiu — não vale para aposta hipotética. *32 apostas
+conferidas.*
+
+**B — aposta que não expande paga o valor de UMA faixa, não uma soma.** Este é o invariante com
+dente. Um bilhete de tamanho fixo (Lotomania 50, Timemania 10) ou de tamanho mínimo é uma aposta
+só: o prêmio dele tem de ser exatamente zero ou exatamente o rateio de uma das faixas daquele
+concurso. A soma ponderada `C(h,j)×C(n−h,pick−j)×rateio_j` quase nunca cai em cima de um rateio —
+era assim que R$ 12,19 virava R$ 3.957.264,08. Varredura sintética: para cada jogo, para os últimos
+8 concursos da base, uma aposta construída com exatamente *h* acertos, *h* de 0 até `pick`.
+*544 conferências.*
+
+**C — expansão limitada:** bilhetes premiados ≤ C(n,pick), dobrado na Dupla-Sena porque o mesmo
+bilhete concorre nos dois sorteios; e prêmio ≤ bilhetes × maior rateio do concurso. *296
+conferências.*
+
+**D — índice CRIVO dentro de um teto.** A varredura histórica mede 4.679 sorteios com volume real;
+o máximo da série inteira é 1,36. Previsão acima de **2,00 reprova**. Entre 1,00 e 2,00 não
+reprova, mas emite aviso: cruzar a régua é raro o bastante para merecer um olho humano.
+
+**O controle negativo é a parte que faz o teste valer alguma coisa.** `controle.js` desfaz a v19.16
+de propósito — `expandeEmSimples` volta a dizer "sim" para Lotomania e Timemania — e confirma que o
+invariante B reprova. Ele reproduz o número exato do erro original:
+
+```
+B) lotomania c2973 h=15: expandiu em 324632 bilhetes, premio R$ 3512518.24
+```
+
+Sem esse controle, um teste verde não significaria nada: significaria apenas que o teste não olha
+onde o erro mora. **Um teste de plausibilidade que nunca reprovou nada é decoração.**
+
+**Lacuna declarada:** Super Sete (colunas) e +Milionária (trevos) ficam fora da varredura sintética.
+A aposta nesses dois não é "escolher dezenas", e inventar uma construção errada daria teste verde
+por motivo errado.
+
+### 32.5 As duas apostas da Independência, no resultado
+
+O 3780 saiu `01 02 03 04 05 06 07 12 15 16 17 19 21 22 23`. A aposta 1 fez **11 acertos** e a
+aposta 2 fez **10**; retorno de R$ 3,50 sobre R$ 7,00. A Quina 7114 (`05 21 43 51 54`) não pagou
+nada sobre R$ 24,00. Nada disso valida ou invalida o método: o método nunca afirmou mexer na chance
+de acertar, e uma rodada é ruído puro.
+
+**Base ao fechar esta versão:** Mega-Sena 3058 e Timemania 2442 (15/09); Lotofácil 3781, Quina
+7119, Lotomania 2976, Dupla-Sena 3009, Dia de Sorte 1299, Super Sete 899 e +Milionária 390
+(16/09). 31 concursos novos. `historico_crivo`: 4.679 sorteios.

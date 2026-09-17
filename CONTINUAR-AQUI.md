@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.22**, 10/09/2026.
+Última versão: **19.23**, 17/09/2026.
 
 ---
 
@@ -214,6 +214,10 @@ O backup só depois que tudo isso passa.
 A +Milionária fica de fora do backtest do método: as dez faixas dela combinam acertos de dezenas com acertos de trevos e não conseguimos confirmar a ordem conferindo contagens de ganhadores contra probabilidades. Sem essa confirmação, qualquer retorno seria número inventado com cara de medição.
 
 Os critérios anti-popularidade do Super Sete são raciocínio por analogia com escolha humana de dígitos, não medição — a Caixa não publica a distribuição das apostas dessa modalidade. O efeito aniversário da Mega-Sena, esse sim, foi medido no rateio real. A diferença está escrita na tela.
+
+O teste de plausibilidade (`plaus.js`) deixa de fora o Super Sete e a +Milionária na varredura sintética: a aposta nesses dois não é "escolher dezenas" e inventar uma construção errada daria teste verde por motivo errado.
+
+A guarda de "a edição especial do ano já saiu" depende de `status.json[jogo].especialDoAno`, que é preenchido na coleta a partir do campo oficial `indicadorConcursoEspecial`. **Se a coleta não preencher a chave, a guarda não opina** e o comportamento volta a ser o da v19.21 — que erra depois que a edição passa. Preencher essa chave faz parte da atualização, não é opcional.
 
 As telas 2 a 5 do redesenho existem no código e no protótipo em HTML, não no Figma, por causa da cota mensal.
 
@@ -704,3 +708,54 @@ Base: Quina 7113, Lotomania 2973, Dupla-Sena 3006, Dia de Sorte 1293, Super Sete
 
 **Pendência que continua a mais importante:** o teste de plausibilidade (seção 30.1). Nada foi
 feito nele nesta versão.
+
+---
+
+## v19.23 — a janela que não sabia que a edição já tinha saído, e o teste que finalmente existe
+
+Registradas **3 apostas de Mega-Sena no concurso 3059** (17/09, R$ 18,00). Origem: print da tela
+"Apostas da compra" do app da Caixa — **compra concluída**, Mercado Pago, situação "Em
+Processamento". É o primeiro registro do projeto com prova de pagamento na própria tela, então a
+ressalva padrão de "tela de carrinho, não comprovante" não se aplica aqui.
+
+**Três consertos, na ordem de importância.**
+
+**1. `multiplicadorEspecial` continuava atirando depois que o alvo saiu.** A Independência de 2026
+foi o 3780, sorteada em 15/09 — mas a janela de calendário da Lotofácil vai até o dia 20. Em 17/09
+o painel aplicava o multiplicador de 33,16× ao concurso 3782, uma quarta-feira comum de R$ 5
+milhões. Índice medido com o erro: **0,2894**; correto: **0,4405**. O conserto usa o campo oficial
+`indicadorConcursoEspecial` da API (vale 2 na edição especial), gravado em
+`status.json[jogo].especialDoAno`. Seção 32.1 e 32.2.
+
+**2. A varredura histórica rotulava a edição especial por data,** e em setembro a Lotofácil sorteia
+quase todo dia — o rótulo caía sobre dezenas de sorteios comuns e apagava o efeito. Agora a edição
+do ano é o concurso de maior arrecadação da janela, uma por ano. A Independência sai de "1,02× o
+sorteio comum" (ou seja, nada) para **1,69×**; a Quina de São João vai a **2,74×**. Nenhuma das
+cinco cruza 1,00. O texto do painel que dizia o contrário foi reescrito. Seção 32.3.
+
+**3. O teste de plausibilidade existe.** `plaus.js`, quatro invariantes, 872 conferências. E
+`controle.js`, o controle negativo que desfaz a v19.16 de propósito e confirma que o teste reprova
+o bug original, reproduzindo o número exato: 324.632 bilhetes, R$ 3.512.518,24. **Um teste de
+plausibilidade que nunca reprovou nada é decoração** — o controle negativo é o que o torna real.
+Seção 32.4.
+
+**Validação fora da amostra da v19.21:** previu 208,1 milhões de apostas na Independência; a
+arrecadação real de R$ 843.914.921,50 dá 241,1 milhões. Erro de −13,7%, contra −97,4% do modelo
+antigo. Índice previsto 0,696; recalculado com volume real, 0,667 — terceiro maior da história da
+Lotofácil. As duas apostas do Hélio fizeram 11 e 10 acertos: R$ 3,50 sobre R$ 7,00. A Quina 7114
+não pagou nada sobre R$ 24,00.
+
+**Base:** 31 concursos novos. Mega-Sena 3058 e Timemania 2442 (15/09); Lotofácil 3781, Quina 7119,
+Lotomania 2976, Dupla-Sena 3009, Dia de Sorte 1299, Super Sete 899, +Milionária 390 (16/09).
+`historico_crivo`: 4.679 sorteios.
+
+**Aviso de infraestrutura que muda o procedimento de coleta:** a partir desta versão o contêiner da
+sessão **não alcança mais `servicebus2.caixa.gov.br`** — a política de saída devolve 403 no CONNECT.
+A coleta foi feita pelo PowerShell da máquina do Hélio, que alcança normalmente, e o resultado veio
+para o contêiner como JSON comprimido em base64 (o gzip traz CRC, então corrupção no transporte
+seria detectada, e não foi). Se a próxima sessão encontrar o mesmo 403, este é o caminho: não
+insista no contêiner, colete pela máquina.
+
+**Não foi feito nesta versão:** parar de gerar o `dados.zip` redundante dentro da pasta protegida
+pelo Norton. O alerta continua e a recomendação segue a mesma — "Continuar bloqueando", sem mexer
+em configuração de antivírus.

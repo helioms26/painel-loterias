@@ -1,8 +1,8 @@
 {
-  "versao": "19.22",
+  "versao": "19.23",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-09-10T17:00:00Z",
-  "geradoEmBrasilia": "2026-09-10 14:00",
+  "geradoEm": "2026-09-17T17:00:00Z",
+  "geradoEmBrasilia": "2026-09-17 14:00",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -15,70 +15,77 @@
     "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
   },
   "baseDeDados": {
-    "fechadaEm": "09/09/2026",
+    "fechadaEm": "16/09/2026",
     "concursosPorModalidade": {
       "lotofacil": {
-        "ultimoConcurso": 3779,
-        "data": "03/09/2026",
-        "acumulado": false,
-        "proximoSorteio": "15/09/2026",
-        "estimativa": 300000000.0
+        "ultimoConcurso": 3781,
+        "data": "16/09/2026",
+        "acumulado": true,
+        "proximoSorteio": "17/09/2026",
+        "estimativa": 5000000.0,
+        "especialDoAno": {
+          "conc": 3780,
+          "data": "15/09/2026",
+          "rot": "Lotofácil da Independência",
+          "fonte": "indicadorConcursoEspecial=2 na API da Caixa, conferido em 17/09/2026"
+        }
       },
       "megasena": {
-        "ultimoConcurso": 3055,
-        "data": "08/09/2026",
+        "ultimoConcurso": 3058,
+        "data": "15/09/2026",
         "acumulado": true,
-        "proximoSorteio": "10/09/2026",
-        "estimativa": 76000000.0
+        "proximoSorteio": "17/09/2026",
+        "estimativa": 102000000.0
       },
       "quina": {
-        "ultimoConcurso": 7113,
-        "data": "09/09/2026",
+        "ultimoConcurso": 7119,
+        "data": "16/09/2026",
         "acumulado": true,
-        "proximoSorteio": "10/09/2026",
-        "estimativa": 21500000.0
+        "proximoSorteio": "17/09/2026",
+        "estimativa": 1200000.0
       },
       "lotomania": {
-        "ultimoConcurso": 2973,
-        "data": "09/09/2026",
-        "acumulado": false,
-        "proximoSorteio": "11/09/2026",
-        "estimativa": 650000.0
+        "ultimoConcurso": 2976,
+        "data": "16/09/2026",
+        "acumulado": true,
+        "proximoSorteio": "18/09/2026",
+        "estimativa": 2600000.0
       },
       "timemania": {
-        "ultimoConcurso": 2439,
-        "data": "08/09/2026",
+        "ultimoConcurso": 2442,
+        "data": "15/09/2026",
         "acumulado": true,
-        "proximoSorteio": "10/09/2026",
-        "estimativa": 13000000.0
+        "proximoSorteio": "17/09/2026",
+        "estimativa": 14300000.0
       },
       "duplasena": {
-        "ultimoConcurso": 3006,
-        "data": "09/09/2026",
+        "ultimoConcurso": 3009,
+        "data": "16/09/2026",
         "acumulado": true,
-        "proximoSorteio": "11/09/2026",
-        "estimativa": 3700000.0
+        "proximoSorteio": "18/09/2026",
+        "estimativa": 4400000.0
       },
       "diadesorte": {
-        "ultimoConcurso": 1293,
-        "data": "09/09/2026",
-        "acumulado": true,
-        "proximoSorteio": "10/09/2026",
-        "estimativa": 520000.0
+        "ultimoConcurso": 1299,
+        "data": "16/09/2026",
+        "acumulado": false,
+        "proximoSorteio": "17/09/2026",
+        "estimativa": 100000.0,
+        "especialDoAno": null
       },
       "supersete": {
-        "ultimoConcurso": 896,
-        "data": "09/09/2026",
+        "ultimoConcurso": 899,
+        "data": "16/09/2026",
         "acumulado": true,
-        "proximoSorteio": "11/09/2026",
-        "estimativa": 7700000.0
+        "proximoSorteio": "18/09/2026",
+        "estimativa": 8300000.0
       },
       "maismilionaria": {
-        "ultimoConcurso": 388,
-        "data": "09/09/2026",
+        "ultimoConcurso": 390,
+        "data": "16/09/2026",
         "acumulado": true,
-        "proximoSorteio": "13/09/2026",
-        "estimativa": 93000000.0
+        "proximoSorteio": "20/09/2026",
+        "estimativa": 96000000.0
       }
     },
     "arquivos": {
@@ -113,62 +120,46 @@
       "supersete.json": 32149,
       "timemania.json": 146548
     },
-    "totalArquivos": 30
+    "totalArquivos": 30,
+    "concursosNovosNestaVersao": 31,
+    "fonteDaColeta": "PowerShell na maquina do Helio: o conteiner da sessao passou a receber 403 no CONNECT para servicebus2.caixa.gov.br (politica de saida). Transporte por JSON gzip+base64, com CRC do gzip conferido no destino."
   },
   "indiceCrivoNaPublicacao": [
     {
-      "modalidade": "Lotofácil",
-      "indice": 0.5277,
-      "premioGatilho": 26448767,
-      "premioEstimado": 9000000
+      "modalidade": "Super Sete",
+      "indice": 0.4689
     },
     {
-      "modalidade": "Quina",
-      "indice": 0.3806,
-      "premioGatilho": 91838230,
-      "premioEstimado": 23000000
+      "modalidade": "Lotofácil",
+      "indice": 0.4405
     },
     {
       "modalidade": "Mega-Sena",
-      "indice": 0.3038,
-      "premioGatilho": 400513703,
-      "premioEstimado": 78000000
-    },
-    {
-      "modalidade": "Super Sete",
-      "indice": 0.2906,
-      "premioGatilho": 34909204,
-      "premioEstimado": 4100000
-    },
-    {
-      "modalidade": "Dia de Sorte",
-      "indice": 0.267,
-      "premioGatilho": 8352324,
-      "premioEstimado": 500000
-    },
-    {
-      "modalidade": "Lotomania",
-      "indice": 0.2523,
-      "premioGatilho": 42403530,
-      "premioEstimado": 3600000
-    },
-    {
-      "modalidade": "+Milionária",
-      "indice": 0.2519,
-      "premioGatilho": 1608680519,
-      "premioEstimado": 77000000
+      "indice": 0.4279
     },
     {
       "modalidade": "Timemania",
-      "indice": 0.2471,
-      "premioGatilho": 106782932,
-      "premioEstimado": 5500000
+      "indice": 0.3586
+    },
+    {
+      "modalidade": "+Milionária",
+      "indice": 0.2812
     },
     {
       "modalidade": "Dupla-Sena",
-      "indice": 0.2083,
-      "premioGatilho": 56902695,
-      "premioEstimado": 2000000
+      "indice": 0.2698
+    },
+    {
+      "modalidade": "Lotomania",
+      "indice": 0.2548
+    },
+    {
+      "modalidade": "Dia de Sorte",
+      "indice": 0.2336
+    },
+    {
+      "modalidade": "Quina",
+      "indice": 0.1889
     }
   ],
   "artefatos": {
@@ -195,13 +186,15 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Registradas 2 apostas de Lotofacil no concurso 3780 - a Lotofacil da Independencia, 15/09, R$ 300 milhoes.",
-    "Registradas 3 apostas de Quina no 7114, repetindo as dezenas do 7113 (repeticao confirmada pelo Helio).",
-    "Quina 7113 conferido: saiu 01 32 57 78 80, os tres jogos fizeram zero acertos.",
-    "Analise do rateio das duas da Independencia: aposta 1 mede 1,32x (contem a coluna 3 inteira) e aposta 2 mede 0,85x.",
-    "Traduzido para a escala de 2025 (54 ganhadores, R$ 231,9 mi): cota de ~R$ 3,25 mi contra ~R$ 5,03 mi. Mesma chance de ganhar.",
-    "Base ate 09/09/2026: quina 7113, lotomania 2973, duplasena 3006, diadesorte 1293, supersete 896, maismilionaria 388.",
-    "historico_crivo regerado: 4.675 sorteios avaliados."
+    "Registradas 3 apostas de Mega-Sena no concurso 3059 (17/09, R$ 18,00), a partir da tela 'Apostas da compra' - compra concluida, Mercado Pago, situacao 'Em Processamento'.",
+    "CONSERTO: multiplicadorEspecial continuava aplicando o multiplicador da edicao especial depois que ela ja tinha saido. Em 17/09 a Lotofacil recebia 33,16x num sorteio comum de R$ 5 milhoes. Indice com erro 0,2894; correto 0,4405.",
+    "A guarda usa o campo oficial indicadorConcursoEspecial da API (2 = edicao especial), gravado em status.json[jogo].especialDoAno.",
+    "CONSERTO: gerar_historico_crivo.py rotulava a edicao especial por data. Agora e o concurso de maior arrecadacao da janela, um por ano. A Independencia sai de 1,02x o sorteio comum para 1,69x; a Quina de Sao Joao vai a 2,74x.",
+    "Texto do painel sobre sorteios especiais reescrito - o anterior afirmava que a Independencia nao ajudava, o que era efeito do rotulo errado. Os numeros do texto agora sao calculados, nao fixados.",
+    "NOVO: plaus.js, o teste de plausibilidade - 4 invariantes, 872 conferencias. Era a pendencia declarada mais antiga do projeto.",
+    "NOVO: controle.js, controle negativo do teste - desfaz a v19.16 de proposito e confirma que plaus.js reprova o bug original (324.632 bilhetes, R$ 3.512.518,24).",
+    "Validacao fora da amostra da v19.21: previu 208,1 mi de apostas na Independencia; real 241,1 mi (erro -13,7%, contra -97,4% do modelo antigo). Indice previsto 0,696; medido com volume real 0,667.",
+    "Base ate 16/09/2026: 31 concursos novos nas nove modalidades. historico_crivo: 4.679 sorteios."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -214,11 +207,13 @@
     "+Milionaria fora do backtest do metodo (ordem das faixas nao verificada)",
     "criterios anti-popularidade do Super Sete sao analogia, nao medicao — a Caixa nao publica a distribuicao das apostas",
     "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)",
-    "nao existe teste automatizado que confira VALOR de premio contra o rateio oficial - foi essa lacuna que deixou o erro da Lotomania passar",
-    "nao existe teste de PLAUSIBILIDADE de numero: nenhum indice CRIVO acima de ~1,5, nenhum premio acima do total da faixa. Duas vezes um numero absurdo passou pela regressao (Lotomania na secao 26, Independencia na secao 30)"
+    "plaus.js deixa Super Sete (colunas) e +Milionaria (trevos) fora da varredura sintetica: a aposta nesses dois nao e 'escolher dezenas' e inventar a construcao daria teste verde por motivo errado",
+    "a guarda de 'a edicao especial do ano ja saiu' depende de status.json[jogo].especialDoAno ser preenchido na coleta; chave ausente = guarda nao opina, e volta o comportamento errado da v19.21",
+    "o conteiner da sessao nao alcanca mais a API da Caixa (403 no CONNECT); a coleta depende da maquina do Helio estar conectada",
+    "continua sendo gerado um dados.zip redundante dentro da pasta protegida pelo Norton — nao foi removido nesta versao"
   ],
   "varreduraHistorica": {
-    "sorteiosMedidos": 4675,
+    "sorteiosMedidos": 4679,
     "cruzaram1": 5,
     "cruzamentos": [
       {
@@ -266,7 +261,45 @@
       "diadesorte": 42.92,
       "supersete": 42.69,
       "alvoLegal": 43.35
-    }
+    },
+    "especiaisPorVolume": {
+      "megasena": {
+        "nome": "Mega da Virada",
+        "edicoes": 16,
+        "medianaEspecial": 0.4428,
+        "medianaComum": 0.2959,
+        "ganho": 1.5
+      },
+      "lotofacil": {
+        "nome": "Lotofácil da Independência",
+        "edicoes": 18,
+        "medianaEspecial": 0.6265,
+        "medianaComum": 0.37,
+        "ganho": 1.69
+      },
+      "quina": {
+        "nome": "Quina de São João",
+        "edicoes": 10,
+        "medianaEspecial": 0.8036,
+        "medianaComum": 0.2933,
+        "ganho": 2.74
+      },
+      "timemania": {
+        "nome": "Timemania de Natal",
+        "edicoes": 3,
+        "medianaEspecial": 0.4099,
+        "medianaComum": 0.3347,
+        "ganho": 1.22
+      },
+      "diadesorte": {
+        "nome": "Dia de Sorte da Primavera",
+        "edicoes": 8,
+        "medianaEspecial": 0.4867,
+        "medianaComum": 0.3195,
+        "ganho": 1.52
+      }
+    },
+    "comoAEdicaoEIdentificada": "dentro da janela de calendario, o concurso de MAIOR arrecadacao do ano — uma por ano. Antes era por data, o que rotulava dezenas de sorteios comuns de setembro como Independencia e apagava o efeito medido."
   },
   "repeticoesDeSorteio": {
     "megasena": {
@@ -839,5 +872,13 @@
     "diadesorte_primavera": 1.4,
     "timemania_natal": 1.9,
     "nota": "multiplicador de volume medido nas 5 ultimas edicoes de cada especial; combinado com a curva de acumulacao por Math.max"
+  },
+  "testes": {
+    "regressao": "reg.js — 81 combinacoes (9 jogos x 9 abas) x 2 temas, erros de console, botoes mortos, overflow em 390px",
+    "carteira": "carteira.js — tabela de apostas, grafico e linha de total",
+    "comparar": "crivo.js — ranking das nove modalidades",
+    "plausibilidade": "plaus.js — 4 invariantes de numero possivel (A premio <= pago no concurso; B aposta que nao expande paga UMA faixa; C expansao limitada; D indice <= 2,00)",
+    "controleNegativo": "controle.js — desfaz a v19.16 e exige que plaus.js reprove",
+    "observacao": "a regressao testa se a tela PINTA; plaus.js testa se o NUMERO E POSSIVEL. Duas vezes um numero absurdo passou so pela primeira."
   }
 }

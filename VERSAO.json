@@ -1,8 +1,8 @@
 {
-  "versao": "19.23",
+  "versao": "19.24",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-09-17T17:00:00Z",
-  "geradoEmBrasilia": "2026-09-17 14:00",
+  "geradoEm": "2026-09-18T14:00:00Z",
+  "geradoEmBrasilia": "2026-09-18 11:00",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -186,15 +186,16 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Registradas 3 apostas de Mega-Sena no concurso 3059 (17/09, R$ 18,00), a partir da tela 'Apostas da compra' - compra concluida, Mercado Pago, situacao 'Em Processamento'.",
-    "CONSERTO: multiplicadorEspecial continuava aplicando o multiplicador da edicao especial depois que ela ja tinha saido. Em 17/09 a Lotofacil recebia 33,16x num sorteio comum de R$ 5 milhoes. Indice com erro 0,2894; correto 0,4405.",
-    "A guarda usa o campo oficial indicadorConcursoEspecial da API (2 = edicao especial), gravado em status.json[jogo].especialDoAno.",
-    "CONSERTO: gerar_historico_crivo.py rotulava a edicao especial por data. Agora e o concurso de maior arrecadacao da janela, um por ano. A Independencia sai de 1,02x o sorteio comum para 1,69x; a Quina de Sao Joao vai a 2,74x.",
-    "Texto do painel sobre sorteios especiais reescrito - o anterior afirmava que a Independencia nao ajudava, o que era efeito do rotulo errado. Os numeros do texto agora sao calculados, nao fixados.",
-    "NOVO: plaus.js, o teste de plausibilidade - 4 invariantes, 872 conferencias. Era a pendencia declarada mais antiga do projeto.",
-    "NOVO: controle.js, controle negativo do teste - desfaz a v19.16 de proposito e confirma que plaus.js reprova o bug original (324.632 bilhetes, R$ 3.512.518,24).",
-    "Validacao fora da amostra da v19.21: previu 208,1 mi de apostas na Independencia; real 241,1 mi (erro -13,7%, contra -97,4% do modelo antigo). Indice previsto 0,696; medido com volume real 0,667.",
-    "Base ate 16/09/2026: 31 concursos novos nas nove modalidades. historico_crivo: 4.679 sorteios."
+    "Registradas 4 apostas de Super Sete no concurso 900 (18/09, R$ 21,00, Mercado Pago), uma delas com marcacao multipla (2 digitos na coluna 1 e 2 na coluna 4 = 4 apostas simples).",
+    "CONSERTO GRAVE: conferir() contava acerto do Super Sete por pertencimento ao conjunto, e no Super Sete acerto e por POSICAO. Bilhete com zero acertos reais marcava cinco. Conferencia agora e exata, por polinomio, e validada contra forca bruta.",
+    "Formato novo para aposta de colunas: `cols` (7 arrays de 1 a 3 digitos). Guardar em `nums` destruia a aposta, porque jogosDaAposta() ordena o array.",
+    "CONSERTO: mesclarApostas() descartava em silencio qualquer aposta sem nums nem jogos - a semente entrava com 35 de 39 registros.",
+    "Volante do Super Sete aceita ate 3 digitos por coluna, com custo exato pelo produto e chance recalculada.",
+    "Botoes 'preencher com mais/menos frequentes' funcionam no Super Sete (frequencia por coluna, empate pelo digito menor). 'Completar fugindo da multidao' foi removido da tela do Super Sete: nao ha medicao de popularidade nessa modalidade.",
+    "Contador do volante corrigido: lia `sel` e ficava travado em '0 de 7 colunas' com o volante cheio.",
+    "Registro de Super Sete saiu do formulario de dezenas para um botao no proprio volante; o formulario explica por que.",
+    "NOVO invariante E no plaus.js: contagem por polinomio contra enumeracao de todas as apostas simples (66 conferencias). Controle negativo reconstroi a regra antiga e exige divergencia (38 de 48 casos).",
+    "Caixa de honestidade na tela do Super Sete: maior desvio da tabela de frequencias e 2,66 sigma, e o esperado por puro acaso com 70 casas ja fica perto de 2,5 - nao ha digito quente nem frio."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -207,7 +208,7 @@
     "+Milionaria fora do backtest do metodo (ordem das faixas nao verificada)",
     "criterios anti-popularidade do Super Sete sao analogia, nao medicao — a Caixa nao publica a distribuicao das apostas",
     "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)",
-    "plaus.js deixa Super Sete (colunas) e +Milionaria (trevos) fora da varredura sintetica: a aposta nesses dois nao e 'escolher dezenas' e inventar a construcao daria teste verde por motivo errado",
+    "plaus.js deixa a +Milionaria fora da varredura sintetica: a ordem das dez faixas nunca foi conferida contra contagens de ganhadores",
     "a guarda de 'a edicao especial do ano ja saiu' depende de status.json[jogo].especialDoAno ser preenchido na coleta; chave ausente = guarda nao opina, e volta o comportamento errado da v19.21",
     "o conteiner da sessao nao alcanca mais a API da Caixa (403 no CONNECT); a coleta depende da maquina do Helio estar conectada",
     "continua sendo gerado um dados.zip redundante dentro da pasta protegida pelo Norton — nao foi removido nesta versao"
@@ -877,8 +878,8 @@
     "regressao": "reg.js — 81 combinacoes (9 jogos x 9 abas) x 2 temas, erros de console, botoes mortos, overflow em 390px",
     "carteira": "carteira.js — tabela de apostas, grafico e linha de total",
     "comparar": "crivo.js — ranking das nove modalidades",
-    "plausibilidade": "plaus.js — 4 invariantes de numero possivel (A premio <= pago no concurso; B aposta que nao expande paga UMA faixa; C expansao limitada; D indice <= 2,00)",
-    "controleNegativo": "controle.js — desfaz a v19.16 e exige que plaus.js reprove",
+    "plausibilidade": "plaus.js — 5 invariantes de numero possivel (A premio <= pago no concurso; B aposta que nao expande paga UMA faixa; C expansao limitada; D indice <= 2,00; E Super Sete por polinomio contra forca bruta)",
+    "controleNegativo": "controle.js — desfaz a v19.16 e a regra antiga do Super Sete, e exige que plaus.js reprove as duas",
     "observacao": "a regressao testa se a tela PINTA; plaus.js testa se o NUMERO E POSSIVEL. Duas vezes um numero absurdo passou so pela primeira."
   }
 }

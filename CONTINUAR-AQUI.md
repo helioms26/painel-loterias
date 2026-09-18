@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.23**, 17/09/2026.
+Última versão: **19.24**, 18/09/2026.
 
 ---
 
@@ -759,3 +759,37 @@ insista no contêiner, colete pela máquina.
 **Não foi feito nesta versão:** parar de gerar o `dados.zip` redundante dentro da pasta protegida
 pelo Norton. O alerta continua e a recomendação segue a mesma — "Continuar bloqueando", sem mexer
 em configuração de antivírus.
+
+---
+
+## v19.24 — o Super Sete estava meio implementado, e o pior pedaço era invisível
+
+Começou com o Hélio dizendo que os botões de preencher da aba do Super Sete não faziam nada.
+Terminou num erro de conferência que teria posto prêmio falso na carteira.
+
+**Na tela, três coisas mortas** — nenhuma com erro no console, todas passando pela regressão de 81
+combinações: os botões "preencher com mais/menos frequentes" começavam com `if(cfg.colunas) return`;
+o contador lia `sel` (dezenas) e ficava travado em "0 de 7 colunas" com o volante cheio; e o volante
+só aceitava **um** dígito por coluna, quando a Caixa aceita até 3 e o custo é o produto.
+
+**No cálculo, o erro sério:** `conferir()` contava acerto por pertencimento ao conjunto
+(`nums.filter(v=>set.includes(v))`). No Super Sete acerto é por POSIÇÃO. Um bilhete com zero
+acertos reais marcava cinco. E guardar a aposta em `nums` já a destruía antes disso, porque
+`jogosDaAposta()` ordena o array.
+
+**Formato novo:** `cols`, sete arrays de 1 a 3 dígitos. Conferência exata por polinômio (seção
+33.3). Registro saiu do formulário de dezenas para um botão no próprio volante. `mesclarApostas()`
+aceita `cols` — sem isso a semente entrava com 35 de 39 e as quatro do Super Sete sumiam calado.
+
+**Teste:** invariante E no `plaus.js` — a contagem por polinômio contra a enumeração de todas as
+apostas simples do bilhete, 66 conferências, de 1 a 2.187 apostas. Controle negativo reconstrói a
+regra antiga e exige divergência (38 de 48 casos divergem).
+
+**Registradas** 4 apostas de Super Sete no concurso 900 (18/09, R$ 21,00). A conferência do total
+fecha em 7 apostas simples × R$ 3,00, e foi ela que confirmou a leitura da marcação múltipla no
+print — 2 dígitos na coluna 1 e 2 na coluna 4.
+
+**Padrão que já apareceu três vezes** (Lotomania na seção 26, Independência na 30, Super Sete
+agora): o painel desenha, o console fica limpo, e o número está errado. `plaus.js` existe para isso.
+Toda modalidade que entrar ou mudar precisa de um invariante lá dentro **antes** de a tela ser
+considerada pronta.

@@ -1921,3 +1921,115 @@ de acertar, e uma rodada é ruído puro.
 **Base ao fechar esta versão:** Mega-Sena 3058 e Timemania 2442 (15/09); Lotofácil 3781, Quina
 7119, Lotomania 2976, Dupla-Sena 3009, Dia de Sorte 1299, Super Sete 899 e +Milionária 390
 (16/09). 31 concursos novos. `historico_crivo`: 4.679 sorteios.
+
+---
+
+## 33. O Super Sete estava meio implementado, e o pior pedaço era invisível (v19.24)
+
+O Hélio foi usar a aba do Super Sete — que naquele dia era a primeira do ranking — e os botões de
+preencher não faziam nada. A investigação que começou num botão morto terminou num erro de
+conferência que teria colocado prêmio falso na carteira.
+
+### 33.1 Três coisas mortas na tela, nenhuma delas com erro no console
+
+```js
+btnTop.onclick=()=>{ if(cfg.colunas) return; ... };   // desenhado, e mudo
+```
+
+O botão existia, tinha handler, e o handler começava desistindo. O mesmo valia para "Preencher com
+menos frequentes" e para "Completar fugindo da multidão". O contador, por sua vez, lia `sel` — o
+array de dezenas — nos dois casos, e no Super Sete a marcação mora em `state.pickCols`: o volante
+podia estar inteiro preenchido e a tela continuava dizendo **"0 de 7 colunas selecionadas"**.
+
+**A regressão de 81 combinações × 2 temas não pegou nada disso**, e não tinha como: o botão tem
+handler, a tela pinta, o console fica limpo. É o mesmo buraco da seção 32.4, agora numa terceira
+forma — testamos se a tela desenha, não se ela faz.
+
+O conserto de cada um:
+
+- **Preencher com mais/menos frequentes** passou a operar na unidade certa, que é *(coluna,
+  dígito)*: `frequency()` já devolvia a matriz 7×10, e o dígito de cada coluna é o de maior (ou
+  menor) contagem **naquela coluna**. Empate resolve pelo dígito menor, para o botão ser
+  determinístico.
+- **Completar fugindo da multidão** foi **removido** da tela do Super Sete. Ele é movido pelas
+  bandeiras de anti-popularidade, e essas bandeiras não existem aqui — a Caixa não publica a
+  distribuição das apostas do Super Sete, e o painel já escondia o painel de bandeiras por isso.
+  Botão que não pode funcionar não deve existir.
+- **O contador** passou a contar colunas preenchidas, dígitos marcados, apostas e custo.
+
+### 33.2 O volante só deixava marcar um dígito por coluna
+
+A Caixa aceita de 1 a 3 dígitos em cada uma das sete colunas, e o custo é o **produto** das
+escolhas — 3 em todas dá 3⁷ = 2.187 apostas. O painel já sabia disso em `APOSTAS.supersete`
+(`minN:7, maxN:21`) e na tabela de custos. Só o volante não sabia: cada clique substituía a escolha
+da coluna, então não dava para montar nada além da aposta mínima.
+
+`state.pickCols` passou a guardar um **array por coluna**. O rodapé do volante mostra a conta
+aberta — `3 × 2 × 1 × 1 × 1 × 1 × 1` — o custo exato e a chance resultante. O custo exato importa:
+`qtdApostas()` distribui *n* dígitos da forma mais barata possível, o que é o certo para a tabela
+de custos, mas aqui a distribuição é conhecida e o produto é o número de verdade.
+
+Uma armadilha encontrada no caminho e fechada: `normCols()` recriava os sete arrays a cada
+`draw()`. Qualquer referência guardada por um handler passava a apontar para um array órfão — o
+clique parecia funcionar, o array crescia, e o estado não mudava. Hoje a normalização preserva a
+identidade dos arrays válidos.
+
+### 33.3 O erro que valia dinheiro: acerto no Super Sete é por POSIÇÃO
+
+Este é o que importa. `conferir()` contava acertos assim:
+
+```js
+const h = nums.filter(v => set.includes(v)).length;
+```
+
+Pertencimento ao conjunto. Mas no Super Sete o dígito da coluna 3 só vale **se sair na coluna 3**.
+O controle negativo mede o estrago: num bilhete construído para ter **zero** acertos posicionais
+contra o concurso 894, a regra antiga marcava **cinco**. Em 38 dos 48 casos testados as duas regras
+divergiam.
+
+Pior: guardar a aposta em `nums` já a destruía antes da conferência, porque `jogosDaAposta()`
+**ordena** o array — e ordenar as sete escolhas embaralha as colunas.
+
+O formato passou a ser `cols`: sete arrays, 1 a 3 dígitos cada. A conferência virou exata. Com
+*M* = conjunto das colunas em que o dígito sorteado está entre os seus, e *k<sub>c</sub>* = quantos
+dígitos você marcou na coluna *c*, o número de apostas simples com **exatamente** *j* acertos é o
+coeficiente de *x^j* em
+
+$$\prod_{c \in M}\bigl(x + (k_c - 1)\bigr) \times \prod_{c \notin M} k_c$$
+
+A soma sobre todos os *j* reproduz ∏*k<sub>c</sub>*, o total de apostas do bilhete — é essa
+identidade que prova a conta, e é ela que o teste verifica.
+
+Junto vieram dois consertos menores e necessários: o registro de Super Sete saiu do formulário de
+dezenas (que ordena) para um botão **Registrar esta aposta** embaixo do próprio volante, com o
+formulário agora explicando por que não é ali; e `mesclarApostas()`, que descartava em silêncio
+qualquer aposta sem `nums` nem `jogos`, passou a aceitar `cols` — sem isso a semente entrava com 35
+de 39 registros e as quatro do Super Sete sumiam sem aviso.
+
+### 33.4 O invariante E, e a lacuna que fechou
+
+A varredura de plausibilidade da v19.23 declarava o Super Sete fora por não saber construir a
+aposta. Agora sabe, e o invariante é o mais forte do arquivo: **a contagem por polinômio tem de
+bater com a enumeração de todas as apostas simples do bilhete, centavo a centavo.** 66 conferências,
+de bilhetes de 1 aposta a bilhetes de 2.187. O controle negativo reconstrói a regra antiga e exige
+que as duas divirjam — se dessem sempre o mesmo número, o invariante não estaria discriminando nada.
+
+Continua declarada fora a **+Milionária**: a ordem das dez faixas dela nunca foi conferida contra
+contagens de ganhadores, e testar contra um mapa não verificado daria verde por motivo errado.
+
+### 33.5 E o que os botões de frequência valem, dito na própria tela
+
+Com os botões funcionando, o painel passou a dizer quanto eles valem — calculado ao vivo, não
+escrito à mão. Em 899 concursos cada dígito deveria sair cerca de 90 vezes em cada coluna, com
+desvio-padrão de 9,0. O maior desvio da tabela inteira é o dígito 1 da coluna 5, a **2,66** desvios
+— e com 70 casas, o maior desvio esperado por **puro acaso** já fica perto de 2,5.
+
+**Não há dígito quente nem frio no Super Sete; há ruído.** O botão serve para montar um volante
+rápido, não para ganhar vantagem — e no Super Sete ele não melhora nem o rateio, porque aqui não
+medimos o que a multidão joga.
+
+**Apostas registradas nesta versão:** 4 do Super Sete no concurso 900 (18/09/2026, R$ 21,00,
+Mercado Pago). Três com uma marcação por coluna e uma com marcação múltipla — 2 dígitos na coluna 1
+e 2 na coluna 4, ou 4 apostas simples. A conferência do total fecha: 1 + 1 + 4 + 1 = 7 apostas
+× R$ 3,00 = R$ 21,00, exatamente o total do comprovante. Foi essa identidade que confirmou a
+leitura da marcação múltipla no print.

@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.24**, 18/09/2026.
+Última versão: **19.25**, 18/09/2026.
 
 ---
 
@@ -793,3 +793,50 @@ print — 2 dígitos na coluna 1 e 2 na coluna 4.
 agora): o painel desenha, o console fica limpo, e o número está errado. `plaus.js` existe para isso.
 Toda modalidade que entrar ou mudar precisa de um invariante lá dentro **antes** de a tela ser
 considerada pronta.
+
+---
+
+## v19.25 — auditoria do índice: dois erros, os dois empurrando o número para cima
+
+O Hélio pediu auditoria da estrutura inteira com foco no indicador. Método: **reimplementar o índice
+CRIVO do zero em Python, direto dos JSON, sem olhar o JavaScript**, e confrontar. A implementação
+batia com a especificação nas nove modalidades até a quarta casa — o erro estava na especificação.
+
+**1. O índice pagava com uma norma extinta.** A fatia das faixas menores é percentagem fixa da
+arrecadação, definida em norma, e `metricasJogo()` fazia a média da base inteira desde 1996. As
+normas mudaram: Quina 19,20% → 13,35% (11/08/2025), Mega-Sena 14,00% → 10,55% (02/08/2025),
+Dupla-Sena 17,94% → 16,33%, Lotomania 18,28% → 17,16%. **Todos os erros para cima**: Quina +21%,
+Mega-Sena +6,9%. Conserto: mediana da razão por concurso nos últimos 120 (`JANELA_RTP`), que devolve
+o valor exato quando a fatia é constante e é imune ao especial dentro da janela.
+
+**2. O eixo Frequência ignorava o prêmio mais comum de três jogos.** `probAlgumPremio()` só varria
+faixas rotuladas por número de acertos. Ficavam de fora o Mês da Sorte (1 em 12, o prêmio mais
+frequente do Dia de Sorte), o Time do Coração (1 em 80) e o 2º sorteio da Dupla-Sena. Dia de Sorte
+subestimado em **277%**, Dupla-Sena 98%, Timemania 31%. No perfil "Quero ver algo voltar" esse eixo
+pesa 45%.
+
+**3.** Eixo não medido virava nota **zero** (a +Milionária levava barra zero em Frequência). Agora é
+**n/d**, sai da média, e o índice final é renormalizado pelos pesos restantes.
+
+**4.** A tabela era ordenada pelo índice final e o veredito vinha da ordem do índice CRIVO — a
+primeira linha dizia "BOA ALTERNATIVA" e a segunda, "MELHOR OPÇÃO". Rótulo virou **MELHOR RETORNO**.
+
+**5. Barra de erro.** Backtest do modelo de volume: erro mediano de 17% a 41%. O índice quase não
+sente (λ pequeno → partilha colada em 1 → menos de 1% de efeito), **exceto na Lotofácil**, onde
+λ=2,55 e 30% de erro no volume move o índice ±8,7%. O painel mostra essa largura, calculada ao vivo.
+
+**6.** Números digitados que já mentiam: "Cinco em N" com numerador fixo; "1,96× / 1,45×" para o
+efeito de datas contra 2,05× no modelo e nenhuma regra na Quina; 43,79% contra 43,35%; "Base da
+medição" congelada lida como base de hoje.
+
+**7. Âncoras externas novas no plaus.js** — F1 (premiação bruta reconstruída ≈ 43,35% da
+arrecadação), F2 (frequência teórica × observada) e F3 (aviso de mudança de norma). O controle
+negativo confirma que F2 reprova a regra antiga nas três modalidades.
+
+**Declarado e NÃO consertado:** o percentil compara com amostra só de sorteios ganhos (viés
+conservador); o gatilho é 0–5% otimista por manter a partilha fixa; a +Milionária segue fora de dois
+eixos; e os fatores de popularidade não foram remedidos desde uma base menor — **essa é a próxima
+tarefa que vale a pena**.
+
+**Padrão confirmado pela quarta vez:** o painel desenha, o console fica limpo, e o número está
+errado. Nenhum dos dois erros desta versão lançava exceção. Só a reimplementação independente pegou.

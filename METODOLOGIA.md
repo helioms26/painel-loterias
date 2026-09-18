@@ -2033,3 +2033,140 @@ Mercado Pago). Três com uma marcação por coluna e uma com marcação múltipl
 e 2 na coluna 4, ou 4 apostas simples. A conferência do total fecha: 1 + 1 + 4 + 1 = 7 apostas
 × R$ 3,00 = R$ 21,00, exatamente o total do comprovante. Foi essa identidade que confirmou a
 leitura da marcação múltipla no print.
+
+---
+
+## 34. Auditoria do índice: dois erros que empurravam o número para cima (v19.25)
+
+O Hélio pediu uma auditoria da estrutura inteira, com foco no indicador — "para que de fato esteja
+correto e eu não esteja me guiando erroneamente". O método foi reimplementar o índice CRIVO **do
+zero, em Python, direto dos JSON**, sem olhar o JavaScript, e confrontar número a número. A
+implementação batia com a especificação nas nove modalidades, até a quarta casa. O problema não
+estava na implementação. Estava na especificação.
+
+### 34.1 O índice pagava com uma norma que não existe mais
+
+O que as faixas menores devolvem não é comportamento do jogo: é **percentagem fixa da arrecadação,
+definida em norma**. `metricasJogo()` somava a arrecadação e o pago da base inteira — 1996 em diante
+— e dividia. Uma média de regimes extintos.
+
+E os regimes mudaram, todos para baixo, todos recentemente:
+
+| modalidade | fatia antiga | fatia vigente | desde | erro no índice |
+|---|---|---|---|---|
+| **Quina** | 19,20% | **13,35%** | 11/08/2025 | **+21,0%** |
+| **Mega-Sena** | 14,00% | **10,55%** | 02/08/2025 | **+6,9%** |
+| Dupla-Sena | 17,94% | 16,33% | 10/08/2026 | +6,0% |
+| Lotomania | 18,28% | 17,16% | — | +4,4% |
+
+O sinal importa mais que o tamanho. **Todos os erros eram para cima.** Um painel que existe para
+dizer onde se perde menos estava dizendo que se perde menos do que se perde — e o erro tinha 21% de
+tamanho na Quina, 7% na Mega-Sena, que é onde ele aposta.
+
+O conserto é a **mediana da razão por concurso nos últimos 120**. Onde a fatia é constante
+(Mega-Sena, Quina, Dupla-Sena, Lotomania) a mediana devolve o valor exato da norma vigente; onde
+varia (Lotofácil, Timemania, Dia de Sorte, Super Sete, +Milionária) dá a estimativa central robusta.
+A mediana também é imune ao especial dentro da janela: a Mega da Virada paga 3,72% às faixas
+menores e contaminaria uma média.
+
+Índices de 18/09/2026, antes e depois: Quina 0,1889 → **0,1492**. Mega-Sena 0,4279 → **0,3983**.
+Dupla-Sena 0,2698 → 0,2537. Lotomania 0,2548 → 0,2437. Super Sete e Timemania sobem um pouco, porque
+neles a fatia recente é maior que a média histórica.
+
+### 34.2 O eixo "Frequência" ignorava o prêmio mais comum de três modalidades
+
+`probAlgumPremio()` varria só as faixas cujo rótulo é um número de acertos. Ficavam de fora:
+
+| modalidade | faixa ignorada | probabilidade | efeito |
+|---|---|---|---|
+| **Dia de Sorte** | Mês da Sorte | 1 em 12 | dizia 1 em 34; é **1 em 9** — subestimava **277%** |
+| **Dupla-Sena** | o 2º sorteio | dobra a chance | subestimava **98%** |
+| **Timemania** | Time do Coração | 1 em 80 | subestimava **31%** |
+
+O Mês da Sorte é o prêmio mais frequente do Dia de Sorte, e o painel fazia de conta que ele não
+existia. Conferido contra a base, nos últimos 300 concursos: Mês da Sorte observado em **8,42%** das
+apostas contra 8,33% de teoria; Time do Coração **1,20%** contra 1,25%; e a faixa de 3 acertos do 2º
+sorteio da Dupla-Sena tem **0,97** vez o número de ganhadores da mesma faixa no 1º.
+
+No perfil "Quero ver algo voltar" esse eixo pesa 45%, então o erro trocava a ordem da tabela. Depois
+do conserto, o Dia de Sorte saltou de 28 para **100** na nota de frequência e subiu duas posições.
+
+### 34.3 Eixo não medido virava nota zero
+
+A +Milionária não tem mapa de faixas conferido, então `probAlgumPremio` devolve `null` — e a matriz
+fazia `l.pAlgo||0`, desenhando uma **barra de zero**. Zero não é "não medimos"; zero é "este jogo
+nunca paga nada", o que é falso e é o tipo de afirmação que este projeto existe para não fazer.
+
+Agora o eixo não medido mostra **n/d**, não entra na média, e o índice final é renormalizado pelos
+pesos que sobraram — com a lacuna escrita na própria linha. Não creditamos o que não medimos, e
+também não debitamos.
+
+### 34.4 Duas ordenações brigando na mesma tela
+
+A tabela é ordenada pelo **índice final** (quatro eixos, pesos do perfil). O veredito vinha da
+posição no **índice CRIVO** (um eixo só). Resultado visível: a primeira linha dizia "BOA
+ALTERNATIVA" e a segunda, "MELHOR OPÇÃO". O rótulo virou **"MELHOR RETORNO"**, que é o que ele
+sempre mediu, e a linha ganhou a marca "1º no retorno".
+
+### 34.5 A barra de erro que faltava
+
+O painel mostrava o índice com quatro casas decimais e nenhuma incerteza. O backtest do próprio
+modelo de volume — prevendo cada concurso só com o passado — dá erro mediano absoluto de **17% a
+41%**, dependendo da modalidade.
+
+A boa notícia é que o índice quase não sente isso, e dá para provar: quando λ é pequeno o fator de
+partilha fica colado em 1, e um erro de 30% no volume move o índice **menos de 1%**. A exceção é a
+Lotofácil, onde λ = 2,55 e a partilha vale 0,36: ali 30% de erro no volume move o índice **±8,7%**,
+de 0,410 a 0,486.
+
+O painel passou a mostrar essa largura, calculada ao vivo. Duas modalidades separadas por menos que
+ela estão empatadas, e quem lê o índice precisa saber disso.
+
+### 34.6 Números escritos à mão que já mentiam
+
+- **"Cinco em N sorteios"** — o numerador era a palavra "Cinco", digitada, ao lado de um denominador
+  dinâmico; e a linha logo acima já imprimia o valor certo. Um sexto cruzamento faria o painel dizer
+  "6 vezes" e, duas linhas abaixo, "Cinco". Agora as duas leem o mesmo lugar, e a lista dos
+  cruzamentos é gerada da varredura.
+- **"1,96× na Mega-Sena e 1,45× na Quina"** para o efeito de datas. O modelo usa **2,05×** na
+  Mega-Sena, e na Quina **não existe regra de datas** — a nota da própria Quina diz que os efeitos
+  dela mediram nulo. Três números, duas contradições. O texto agora lê o fator direto de
+  `POPULARIDADE`.
+- **43,79%** para a fatia legal num lugar e **43,35%** em outros dois. O valor conferido contra a
+  base é 43,35%.
+- **"Base da medição: 3.411 concursos (#335–#3745)"** — string congelada que se lia como a base de
+  hoje. Agora ela diz que é a base da medição **e** quantos concursos a base tem hoje.
+
+### 34.7 Duas âncoras externas novas no teste de plausibilidade
+
+Os invariantes A–E olham para dentro do painel. Estes olham para fora, e são o que teria pego os
+dois erros desta seção sozinhos:
+
+**F1 — a fatia legal.** A premiação é 43,35% da arrecadação por lei, mas o valor publicado já vem
+líquido de 30% de IR nas faixas acima do piso de R$ 1.903,98 — por isso pago/arrecadação observa 33%
+a 39%, e não 43%. Reconstruindo o bruto faixa a faixa, o total volta para 43,4% nas seis principais.
+Se a base corromper ou a fórmula quebrar, esse número sai da faixa.
+
+**F2 — a frequência observada.** A probabilidade teórica de levar algum prêmio tem de bater com a
+observada: total de ganhadores de todas as faixas dividido pelas apostas estimadas. O controle
+negativo restaura a regra antiga e confirma a reprovação nas três modalidades: Dupla-Sena 1 em 57
+contra 1 em 29 observado, Timemania 1 em 26 contra 1 em 20, Dia de Sorte 1 em 34 contra 1 em 9.
+
+**F3 — aviso, não falha.** Quando a fatia das faixas menores dos últimos 120 concursos difere mais
+de 10% da média histórica, houve mudança de norma. Hoje ele dispara para Mega-Sena e Quina, que é
+exatamente como deveria ter disparado em agosto de 2025.
+
+### 34.8 O que a auditoria NÃO consertou, e por quê
+
+- **O percentil histórico compara com uma amostra enviesada.** A varredura só inclui sorteios em que
+  o prêmio principal foi ganho — que são, por construção, os de bolo maior. A distribuição de
+  comparação é alta demais, então o percentil de hoje sai **baixo demais**. Erra para o lado
+  conservador. Consertar exigiria o valor do prêmio oferecido em sorteios sem ganhador, que a base
+  não guarda.
+- **O gatilho é ligeiramente otimista.** Ele resolve índice = 1 mantendo a partilha de hoje, mas um
+  prêmio daquele tamanho teria atraído mais gente. Medido: o gatilho está subestimado entre 0% e 5%.
+  Pequeno, mas na direção perigosa, e fica declarado.
+- **A +Milionária continua fora** do backtest e de dois eixos. A ordem das dez faixas dela nunca foi
+  conferida contra contagens de ganhadores.
+- **Os fatores de popularidade não foram remedidos.** Eles são de uma base menor, e a tela agora diz
+  isso. Remedir é a próxima tarefa que vale a pena.

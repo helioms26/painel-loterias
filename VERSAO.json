@@ -1,8 +1,8 @@
 {
-  "versao": "19.24",
+  "versao": "19.25",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-09-18T14:00:00Z",
-  "geradoEmBrasilia": "2026-09-18 11:00",
+  "geradoEm": "2026-09-18T20:00:00Z",
+  "geradoEmBrasilia": "2026-09-18 17:00",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -127,39 +127,39 @@
   "indiceCrivoNaPublicacao": [
     {
       "modalidade": "Super Sete",
-      "indice": 0.4689
+      "indice": 0.4762
     },
     {
       "modalidade": "Lotofácil",
-      "indice": 0.4405
+      "indice": 0.4388
     },
     {
       "modalidade": "Mega-Sena",
-      "indice": 0.4279
+      "indice": 0.3983
     },
     {
       "modalidade": "Timemania",
-      "indice": 0.3586
+      "indice": 0.3684
     },
     {
       "modalidade": "+Milionária",
-      "indice": 0.2812
+      "indice": 0.2836
     },
     {
       "modalidade": "Dupla-Sena",
-      "indice": 0.2698
+      "indice": 0.2537
     },
     {
       "modalidade": "Lotomania",
-      "indice": 0.2548
+      "indice": 0.2437
     },
     {
       "modalidade": "Dia de Sorte",
-      "indice": 0.2336
+      "indice": 0.2312
     },
     {
       "modalidade": "Quina",
-      "indice": 0.1889
+      "indice": 0.1492
     }
   ],
   "artefatos": {
@@ -186,16 +186,14 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "Registradas 4 apostas de Super Sete no concurso 900 (18/09, R$ 21,00, Mercado Pago), uma delas com marcacao multipla (2 digitos na coluna 1 e 2 na coluna 4 = 4 apostas simples).",
-    "CONSERTO GRAVE: conferir() contava acerto do Super Sete por pertencimento ao conjunto, e no Super Sete acerto e por POSICAO. Bilhete com zero acertos reais marcava cinco. Conferencia agora e exata, por polinomio, e validada contra forca bruta.",
-    "Formato novo para aposta de colunas: `cols` (7 arrays de 1 a 3 digitos). Guardar em `nums` destruia a aposta, porque jogosDaAposta() ordena o array.",
-    "CONSERTO: mesclarApostas() descartava em silencio qualquer aposta sem nums nem jogos - a semente entrava com 35 de 39 registros.",
-    "Volante do Super Sete aceita ate 3 digitos por coluna, com custo exato pelo produto e chance recalculada.",
-    "Botoes 'preencher com mais/menos frequentes' funcionam no Super Sete (frequencia por coluna, empate pelo digito menor). 'Completar fugindo da multidao' foi removido da tela do Super Sete: nao ha medicao de popularidade nessa modalidade.",
-    "Contador do volante corrigido: lia `sel` e ficava travado em '0 de 7 colunas' com o volante cheio.",
-    "Registro de Super Sete saiu do formulario de dezenas para um botao no proprio volante; o formulario explica por que.",
-    "NOVO invariante E no plaus.js: contagem por polinomio contra enumeracao de todas as apostas simples (66 conferencias). Controle negativo reconstroi a regra antiga e exige divergencia (38 de 48 casos).",
-    "Caixa de honestidade na tela do Super Sete: maior desvio da tabela de frequencias e 2,66 sigma, e o esperado por puro acaso com 70 casas ja fica perto de 2,5 - nao ha digito quente nem frio."
+    "AUDITORIA DO INDICE pedida pelo Helio: indice CRIVO reimplementado do zero em Python, direto dos JSON, e confrontado com o JS. A implementacao batia ate a 4a casa nas 9 modalidades - o erro estava na especificacao.",
+    "CONSERTO 1: rtpMenores usava a media da base inteira desde 1996, mas a fatia das faixas menores e percentagem fixa definida em norma, e ela mudou. Quina 19,20->13,35% (11/08/2025), Mega-Sena 14,00->10,55% (02/08/2025), Dupla-Sena 17,94->16,33%, Lotomania 18,28->17,16%. TODOS os erros eram para cima: Quina +21%, Mega-Sena +6,9%. Agora e a mediana da razao por concurso nos ultimos 120.",
+    "CONSERTO 2: probAlgumPremio ignorava as faixas que nao sao numero de acertos. Dia de Sorte subestimado 277% (faltava o Mes da Sorte, 1 em 12, o premio mais comum do jogo), Dupla-Sena 98% (faltava o 2o sorteio), Timemania 31% (faltava o Time do Coracao).",
+    "CONSERTO 3: eixo nao medido virava nota ZERO na matriz (+Milionaria). Agora e n/d, sai da media, e o indice final e renormalizado pelos pesos restantes.",
+    "CONSERTO 4: a tabela era ordenada pelo indice final e o veredito vinha da ordem do indice CRIVO - primeira linha dizia BOA ALTERNATIVA e a segunda MELHOR OPCAO. Rotulo virou MELHOR RETORNO.",
+    "NOVO: barra de erro do indice calculada ao vivo. O backtest do modelo de volume da erro mediano de 17% a 41%; o indice quase nao sente, exceto na Lotofacil (lambda 2,55), onde 30% de erro move o indice +-8,7%.",
+    "CONSERTO 5: numeros digitados que ja mentiam - 'Cinco em N' com numerador fixo, '1,96x/1,45x' contra 2,05x no modelo e nenhuma regra de datas na Quina, 43,79% contra 43,35%, e a 'Base da medicao' congelada lida como base de hoje.",
+    "NOVO: ancoras externas no plaus.js - F1 (premiacao bruta reconstruida = 43,35% da arrecadacao), F2 (frequencia teorica x observada na base) e F3 (aviso de mudanca de norma). Controle negativo confirma que F2 reprova a regra antiga nas tres modalidades."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -211,7 +209,10 @@
     "plaus.js deixa a +Milionaria fora da varredura sintetica: a ordem das dez faixas nunca foi conferida contra contagens de ganhadores",
     "a guarda de 'a edicao especial do ano ja saiu' depende de status.json[jogo].especialDoAno ser preenchido na coleta; chave ausente = guarda nao opina, e volta o comportamento errado da v19.21",
     "o conteiner da sessao nao alcanca mais a API da Caixa (403 no CONNECT); a coleta depende da maquina do Helio estar conectada",
-    "continua sendo gerado um dados.zip redundante dentro da pasta protegida pelo Norton — nao foi removido nesta versao"
+    "continua sendo gerado um dados.zip redundante dentro da pasta protegida pelo Norton — nao foi removido nesta versao",
+    "o percentil historico compara com amostra so de sorteios em que o premio principal foi ganho - amostra enviesada para cima, entao o percentil de hoje sai baixo demais (erra para o lado conservador)",
+    "o gatilho resolve indice=1 mantendo a partilha de hoje; um premio daquele tamanho atrairia mais gente. Medido: subestimado entre 0% e 5%",
+    "os fatores de POPULARIDADE nao foram remedidos desde uma base menor; a tela agora declara isso, mas remedir e a proxima tarefa que vale a pena"
   ],
   "varreduraHistorica": {
     "sorteiosMedidos": 4679,
@@ -878,8 +879,18 @@
     "regressao": "reg.js — 81 combinacoes (9 jogos x 9 abas) x 2 temas, erros de console, botoes mortos, overflow em 390px",
     "carteira": "carteira.js — tabela de apostas, grafico e linha de total",
     "comparar": "crivo.js — ranking das nove modalidades",
-    "plausibilidade": "plaus.js — 5 invariantes de numero possivel (A premio <= pago no concurso; B aposta que nao expande paga UMA faixa; C expansao limitada; D indice <= 2,00; E Super Sete por polinomio contra forca bruta)",
+    "plausibilidade": "plaus.js — 8 invariantes: A premio <= pago no concurso; B aposta que nao expande paga UMA faixa; C expansao limitada; D indice <= 2,00; E Super Sete por polinomio contra forca bruta; F1 premiacao bruta reconstruida = fatia legal; F2 frequencia teorica x observada; F3 aviso de mudanca de norma",
     "controleNegativo": "controle.js — desfaz a v19.16 e a regra antiga do Super Sete, e exige que plaus.js reprove as duas",
     "observacao": "a regressao testa se a tela PINTA; plaus.js testa se o NUMERO E POSSIVEL. Duas vezes um numero absurdo passou so pela primeira."
+  },
+  "auditoriaDoIndice": {
+    "metodo": "reimplementacao independente em Python a partir dos JSON, confrontada com o JS",
+    "resultado": "implementacao correta, especificacao com dois erros sistematicos, ambos otimistas",
+    "sensibilidadeAoVolume": {
+      "lotofacil": "+-8,7% para 30% de erro no volume (lambda 2,55)",
+      "megasena": "+-3,0%",
+      "demais": "menos de 1%"
+    },
+    "backtestDoVolume": "erro mediano absoluto de 17% a 41% por modalidade, previsto so com o passado"
   }
 }

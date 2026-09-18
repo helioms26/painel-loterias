@@ -1215,26 +1215,39 @@ function matrizDecisao(){
     Object.entries(W).filter(([,v])=>v>0).map(([k,v])=>({negocio:'negócio',sonho:'prêmio grande',freq:'frequência',raridade:'raridade'}[k])+' '+v+'%').join(' · ')));
 
   // normalização 0–100 entre as modalidades desta rodada
+  /* v19.25: eixo não medido vira `null`, não zero. A +Milionária não tem mapa
+     de faixas conferido, então probAlgumPremio devolve null — e a versão
+     anterior fazia `l.pAlgo||0`, que desenhava uma barra de ZERO. Zero não é
+     "não medimos", zero é "esse jogo nunca paga nada", o que é falso. O mesmo
+     valia para a raridade sem varredura histórica.
+     Regra nova: o que não foi medido não entra na conta, e o índice final é
+     renormalizado pelos pesos dos eixos que sobraram. Não creditamos o que não
+     medimos — e também não debitamos. */
   const eixos={
     negocio:  L.map(l=>l.indice),
     sonho:    L.map(l=>l.idxPrincipal),
-    freq:     L.map(l=>l.pAlgo||0),
-    raridade: L.map(l=>{ const h=percentilHist(l.g,l.indice); return h? h.pct/100 : 0; })
+    freq:     L.map(l=>(l.pAlgo!=null? l.pAlgo : null)),
+    raridade: L.map(l=>{ const h=percentilHist(l.g,l.indice); return h? h.pct/100 : null; })
   };
   const norm={};
   for(const k in eixos){
-    const a=eixos[k], mn=Math.min(...a), mx=Math.max(...a);
-    norm[k]=a.map(v=> mx>mn ? 100*(v-mn)/(mx-mn) : 50);
+    const a=eixos[k], val=a.filter(v=>v!=null);
+    const mn=Math.min(...val), mx=Math.max(...val);
+    norm[k]=a.map(v=> v==null? null : (mx>mn ? 100*(v-mn)/(mx-mn) : 50));
   }
-  const somaW=Object.values(W).reduce((x,y)=>x+y,0)||1;
   const dados=L.map((l,i)=>{
     const nn={negocio:norm.negocio[i], sonho:norm.sonho[i], freq:norm.freq[i], raridade:norm.raridade[i]};
-    const final=(nn.negocio*W.negocio + nn.sonho*W.sonho + nn.freq*W.freq + nn.raridade*W.raridade)/somaW;
+    let soma=0, peso=0;
+    for(const k in nn){ if(nn[k]!=null && W[k]>0){ soma+=nn[k]*W[k]; peso+=W[k]; } }
+    const final = peso? soma/peso : 0;
+    const faltam = Object.keys(nn).filter(k=>nn[k]==null && W[k]>0);
     const h=percentilHist(l.g,l.indice);
-    return {l, nn, final, pct:h?h.pct:null};
+    return {l, nn, final, faltam, pct:h?h.pct:null};
   }).sort((a,b)=>b.final-a.final);
 
-  const barra=(v,cor)=>'<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'+
+  const barra=(v,cor)=> v==null
+    ? '<span class="t-note" title="não medido nesta modalidade">n/d</span>'
+    : '<span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">'+
     '<span style="width:46px;height:6px;border-radius:3px;background:var(--border-subtle);overflow:hidden;display:inline-block">'+
     '<i style="display:block;height:6px;width:'+Math.max(2,Math.round(v))+'%;background:'+cor+'"></i></span>'+
     '<b class="tabular">'+Math.round(v)+'</b></span>';
@@ -1262,8 +1275,9 @@ function matrizDecisao(){
       '<td class="num">'+barra(d.nn.sonho,'var(--series-7)')+'</td>'+
       '<td class="num">'+barra(d.nn.freq,'var(--series-3)')+'</td>'+
       '<td class="num">'+barra(d.nn.raridade,'var(--series-4)')+'</td>'+
-      '<td class="num"><b style="font-size:var(--text-md)">'+d.final.toFixed(1).replace('.',',')+'</b></td>'+
-      '<td>'+vereditoChip(d.l.veredito)+'</td></tr>';
+      '<td class="num"><b style="font-size:var(--text-md)">'+d.final.toFixed(1).replace('.',',')+'</b>'+
+        (d.faltam.length? '<div class="t-note">sem '+d.faltam.map(k=>({negocio:'negócio',sonho:'prêmio grande',freq:'frequência',raridade:'raridade'}[k])).join(' e ')+'</div>':'')+'</td>'+
+      '<td>'+vereditoChip(d.l.veredito)+(d.l.pos===0?'<div class="t-note">1º no retorno</div>':'')+'</td></tr>';
   }
   ht+='</tbody></table></div>';
   const bloco=htmlBloco(ht);
@@ -1286,6 +1300,38 @@ function matrizDecisao(){
       : 'repare que a primeira colocada <b>não</b> é a de maior prêmio — quem lidera em dinheiro é a '+
         esc(dados.slice().sort((a,b)=>(b.l.liquido||0)-(a.l.liquido||0))[0].l.label)+'. '+
         'É a tese do método aparecendo na tabela: o que decide não é o tamanho do prêmio, é quanta gente está disputando ele com você.')));
+  /* ===== A BARRA DE ERRO QUE FALTAVA (v19.25) =====
+     O painel mostrava o índice com quatro casas e nenhuma incerteza. A entrada
+     mais incerta dele é o VOLUME previsto: no backtest do próprio modelo, o
+     erro mediano absoluto da previsão de apostas fica entre 17% e 41%,
+     dependendo da modalidade. A boa notícia é que o índice quase não sente
+     isso — quando λ é pequeno, o fator de partilha fica colado em 1 e um erro
+     de 30% no volume move o índice menos de 1%. A exceção é a modalidade com λ
+     alto, e é justamente lá que o número precisa vir com barra de erro. */
+  (function(){
+    const faixa=dados.map(d=>{
+      const l=d.l; if(l.lambda==null) return null;
+      const f=x=>{ const lam=l.lambda*x, part=fatorPartilha(lam);
+                   return l.evMenores/l.price + (l.liquido/l.odds)*part/l.price; };
+      const lo=f(1.3), hi=f(0.7);
+      return {rot:l.label, lo, hi, amp:(hi-lo)/l.indice};
+    }).filter(Boolean).sort((a,b)=>b.amp-a.amp);
+    if(!faixa.length) return;
+    const pior=faixa[0];
+    const sensiveis=faixa.filter(x=>x.amp>=0.05);
+    p.appendChild(el('div',{class:'warnbox'},
+      '<b>Quanto desses números dá para levar a sério?</b> A entrada mais incerta do índice é o <b>volume de apostas previsto</b> — '+
+      'no backtest do próprio modelo o erro mediano fica entre 17% e 41%, dependendo da modalidade. '+
+      (sensiveis.length
+        ? 'Errando 30% para cada lado, o índice se mexe assim: '+
+          sensiveis.map(x=>'<b>'+esc(x.rot)+'</b> de '+x.lo.toFixed(3).replace('.',',')+' a '+x.hi.toFixed(3).replace('.',',')+
+                           ' (±'+(100*x.amp/2).toFixed(0)+'%)').join(', ')+
+          '. Nas outras '+(faixa.length-sensiveis.length)+', o mesmo erro de 30% move o índice menos de 5%.'
+        : 'Errando 30% para cada lado, nenhuma modalidade se mexe mais de 5% hoje — porque em todas elas o fator de partilha está colado em 1.')+
+      ' <b>Por que a diferença:</b> quando pouca gente disputa o prêmio, dividir é improvável e errar o público não muda quase nada; '+
+      'quando muita gente disputa, o índice passa a depender de quantas pessoas são, e a previsão de volume vira a metade da conta. '+
+      'Leia o índice com esta largura em mente — duas modalidades separadas por menos que isso estão empatadas.'));
+  })();
   p.appendChild(el('div',{class:'warnbox'},
     '<b>O índice final não é medição, e isso é importante.</b> Os quatro indicadores são medidos; o <b>peso</b> de cada um é preferência sua. '+
     'Por isso os pesos estão na tela e o perfil é escolhido por você: trocar de perfil troca o primeiro colocado, e isso é o comportamento correto. '+
@@ -1372,10 +1418,27 @@ function painelHistoricoCrivo(){
     'Recalculei o índice para <b>todos</b> os '+fmtInt(meta.totalSorteios)+' sorteios da base em que o prêmio principal foi '+
     'realmente ganho — usando o valor efetivamente pago, não uma estimativa. Nesses sorteios o índice cruzou 1,00 '+
     '<b>'+(meta.cruzaram1===1?'uma única vez':fmtInt(meta.cruzaram1)+' vezes')+'</b>.'));
+  /* v19.25: o numerador era a palavra "Cinco", escrita à mão, ao lado de um
+     denominador dinâmico — e a lista dos cruzamentos era outra frase fixa. Se
+     um sexto sorteio cruzasse 1,00, a linha de cima diria "6 vezes" e esta aqui
+     continuaria dizendo "Cinco". Agora as duas leem o mesmo lugar. */
+  const cruz=[];
+  for(const k in HIST){
+    if(k==='_meta' || !HIST[k].recordes) continue;
+    for(const r of HIST[k].recordes) if(r.i>=1) cruz.push({m:HIST[k].rot||k, ...r});
+  }
+  cruz.sort((a,b)=>b.i-a.i);
+  const esps=cruz.filter(x=>x.e), comuns=cruz.filter(x=>!x.e);
+  const lista = cruz.length
+    ? cruz.map(x=>esc(x.m)+' '+(x.d? x.d.slice(-4):'')+(x.e? '':' (sorteio comum)')).join(', ')
+    : '';
   p.appendChild(el('div',{class:'warnbox'},
-    '<b>Cinco em '+fmtInt(meta.totalSorteios)+' é pouco mais de um décimo de um por cento.</b> O break-even de 1,00 existe, é alcançável, e '+
-    'praticamente só aparece em sorteio especial: a Mega da Virada de 2015, a Quina de São João de 2016 e de 2018, a Timemania de Natal de 2025. '+
-    'A única exceção foi uma Lotomania comum em 2017. Tratar "índice &lt; 1" como veredito diário seria operacionalmente inútil — '+
+    '<b>'+fmtInt(meta.cruzaram1)+' em '+fmtInt(meta.totalSorteios)+' é '+
+    (100*meta.cruzaram1/meta.totalSorteios).toFixed(2).replace('.',',')+'% dos sorteios medidos.</b> '+
+    'O break-even de 1,00 existe, é alcançável, e '+
+    (esps.length>comuns.length? 'praticamente só aparece em sorteio especial' : 'aparece raramente')+
+    (lista? ': '+lista+'. ' : '. ')+
+    'Tratar "índice &lt; 1" como veredito diário seria operacionalmente inútil — '+
     'a pergunta que decide no dia a dia é outra: <b>hoje está bom para os padrões desta modalidade?</b> É o que a coluna de percentil responde.'));
 
   let ht='<div class="rolagem" style="margin-top:var(--space-6)"><table><thead><tr><th>Modalidade</th>'+
@@ -1857,29 +1920,57 @@ const IR_LOTERIA = 0;
 
    Índice = EV ÷ preço da aposta. Break-even em 1,00 — aí a aposta deixa de ser
    desfavorável. O "prêmio de gatilho" é o valor do prêmio que faria o índice bater 1,00. */
+/* ===== A FATIA DAS FAIXAS MENORES MUDA POR NORMA (v19.25) =====
+   Erro achado na auditoria de 18/09/2026, e era o mais caro do índice.
+   O que as faixas menores pagam não é um comportamento do jogo: é uma
+   PERCENTAGEM FIXA da arrecadação, definida em norma. E ela mudou:
+
+     Mega-Sena   14,00% -> 10,55% em 02/08/2025   (queda de 25%)
+     Quina       19,20% -> 13,35% em 11/08/2025   (queda de 30%)
+     Dupla-Sena  17,94% -> 16,33% em 10/08/2026
+     Lotomania   18,28% -> 17,16%
+
+   A versão anterior somava a arrecadação e o pago da BASE INTEIRA — 1996 em
+   diante — e dividia. O resultado era uma média de regimes que não existem
+   mais, e sempre para o lado otimista: o índice da Quina saía 21% acima do
+   real, o da Mega-Sena 7% acima. Num painel que existe para dizer onde se
+   perde menos, errar para cima é o pior erro possível.
+
+   O conserto é a MEDIANA DA RAZÃO por concurso nos últimos 120. Quando a fatia
+   é constante (Mega-Sena, Quina, Dupla-Sena, Lotomania) a mediana devolve o
+   valor exato da norma vigente; quando varia de concurso a concurso (Lotofácil,
+   Timemania, Dia de Sorte, Super Sete, +Milionária) ela dá a estimativa central
+   robusta. A mediana também é imune ao sorteio especial dentro da janela: a
+   Mega da Virada paga 3,72% às faixas menores e contaminaria uma média. */
+const JANELA_RTP = 120;
 function metricasJogo(g){
   const cfg=GAMES[g], prem=PREMIOS[g];
   if(!prem) return null;
   let arrTot=0, pagoMenores=0, pagoTot=0;
-  const arrs=[];
+  const arrs=[], razMen=[], razTot=[];
   const chaves=Object.keys(prem).map(Number).sort((a,b)=>a-b);
   for(const n of chaves){
     const p=prem[String(n)];
     if(!p||!p.a||p.a<1000||!p.f||!p.f.length) continue;
     arrTot+=p.a; arrs.push({n, a:p.a});
+    let men=0, tot=0;
     for(let i=0;i<p.f.length;i++){
       const v=p.f[i][0]*p.f[i][1];
-      pagoTot+=v;
-      if(i>0) pagoMenores+=v;
+      tot+=v; if(i>0) men+=v;
     }
+    pagoTot+=tot; pagoMenores+=men;
+    razMen.push(men/p.a); razTot.push(tot/p.a);
   }
   if(!arrTot||arrs.length<30) return null;
-  const rtpMenores = pagoMenores/arrTot;
-  const rtpTotal   = pagoTot/arrTot;
+  const mediana=a=>{ const x=a.slice().sort((p1,p2)=>p1-p2); return x.length? x[Math.floor(x.length/2)] : null; };
+  const rtpHist = pagoMenores/arrTot;                 // a média de todos os regimes, só para auditoria
+  const rtpMenores = mediana(razMen.slice(-JANELA_RTP));
+  const rtpTotal   = mediana(razTot.slice(-JANELA_RTP));
   // arrecadação típica: mediana dos 60 concursos mais recentes com dado
   const recentes=arrs.slice(-60).map(x=>x.a).sort((a,b)=>a-b);
   const arrTipica=recentes[Math.floor(recentes.length/2)];
-  return {rtpMenores, rtpTotal, arrTipica, nConc:arrs.length};
+  return {rtpMenores, rtpTotal, rtpHist, rtpTotalHist: pagoTot/arrTot,
+          janelaRtp:Math.min(JANELA_RTP, razMen.length), arrTipica, nConc:arrs.length};
 }
 /* ===== O PÚBLICO CRESCE COM O PRÊMIO =====
    Falha do método que ficou escondida até a v15: o índice usava o prêmio ATUAL
@@ -2032,6 +2123,24 @@ function multiplicadorVolume(g){
   return {mult:1, seq:v.seqAtual, medido:false, curva:v.curva};
 }
 /* Probabilidade de a aposta MÍNIMA levar algum prêmio, qualquer faixa. */
+/* ===== v19.25: TRÊS MODALIDADES PAGAM POR ALGO QUE NÃO É ACERTO DE DEZENA =====
+   A versão anterior varria só as faixas cujo rótulo é um número de acertos, e
+   ignorava em silêncio:
+
+     Dia de Sorte   Mês da Sorte,     1 em 12   — é o prêmio MAIS COMUM do jogo
+     Timemania      Time do Coração,  1 em 80
+     Dupla-Sena     o segundo sorteio — a mesma aposta concorre nos dois
+
+   O estrago no eixo "Frequência" da matriz: o Dia de Sorte aparecia como 1 em
+   34 quando é 1 em 9 — subestimado em 277%. A Dupla-Sena, subestimada em 98%.
+   A Timemania, 31%. No perfil "Quero ver algo voltar", esse eixo pesa 45%, e o
+   erro trocava a ordem da tabela.
+
+   Conferido contra a base (últimos 300 concursos): Mês da Sorte observado em
+   8,42% das apostas contra 8,33% de teoria; Time do Coração 1,20% contra
+   1,25%; e a faixa de 3 acertos do 2º sorteio da Dupla-Sena tem 0,97 vez o
+   número de ganhadores da mesma faixa no 1º, como manda a combinatória. */
+const EXTRA_FAIXA = { diadesorte:1/12, timemania:1/80 };   // Mês da Sorte · Time do Coração
 function probAlgumPremio(g){
   const cfg=GAMES[g], a=APOSTAS[g], F=FAIXAS[g];
   if(!F) return null;
@@ -2041,11 +2150,20 @@ function probAlgumPremio(g){
     if(typeof h==='number' && h>0 && (fmin===null||h<fmin)) fmin=h;
   }
   if(fmin==null) return null;
-  if(cfg.colunas){ let s=0; for(let k=fmin;k<=7;k++) s+=C(7,k)*Math.pow(0.1,k)*Math.pow(0.9,7-k); return s; }
-  const N=cfg.max-cfg.min+1, m=(a&&a.minN)||cfg.pick, d=cfg.pick;
-  let s=0; for(let k=fmin;k<=Math.min(m,d);k++) s+=C(d,k)*C(N-d,m-k);
-  const t=C(N,m);
-  return t? s/t : null;
+  let p;
+  if(cfg.colunas){ let s=0; for(let k=fmin;k<=7;k++) s+=C(7,k)*Math.pow(0.1,k)*Math.pow(0.9,7-k); p=s; }
+  else {
+    const N=cfg.max-cfg.min+1, m=(a&&a.minN)||cfg.pick, d=cfg.pick;
+    let s=0; for(let k=fmin;k<=Math.min(m,d);k++) s+=C(d,k)*C(N-d,m-k);
+    const t=C(N,m);
+    if(!t) return null;
+    p=s/t;
+  }
+  /* a aposta da Dupla-Sena concorre nos DOIS sorteios do concurso */
+  if(cfg.dupla) p = 1-(1-p)*(1-p);
+  const ex=EXTRA_FAIXA[g];
+  if(ex) p = 1-(1-p)*(1-ex);
+  return p;
 }
 /* ===== ORDENAÇÃO POR CLIQUE NO CABEÇALHO =====
    Vale para qualquer tabela do painel. Lê o valor numérico de dentro da célula
@@ -2256,8 +2374,14 @@ function indiceCrivo(){
       l.veredito={txt:'MOMENTO BOM', nivel:'bom',
         porque:'O retorno esperado cobre mais de 75% do custo — bem acima do patamar normal deste jogo, que fica perto de '+(l.rtpMenores!=null? (l.rtpMenores*100).toFixed(0)+'% só nas faixas menores':'40%')+'. É o tipo de momento que a regra V do método procura.'};
     } else if(pos===0 && l.indice>=0.30){
-      l.veredito={txt:'MELHOR OPÇÃO', nivel:'bom',
-        porque:'É onde o mesmo dinheiro rende mais nesta rodada. Não é lucro esperado — é o menor prejuízo esperado entre as nove modalidades.'};
+      /* v19.25: o rótulo era "MELHOR OPÇÃO" e a posição vem da ordem do índice
+         CRIVO — mas a matriz de decisão é ordenada pelo ÍNDICE FINAL, que
+         depende dos pesos do perfil. Resultado: a primeira linha da tabela
+         podia dizer "BOA ALTERNATIVA" e a segunda, "MELHOR OPÇÃO". Duas
+         ordenações brigando na mesma tela. O veredito continua sendo sobre o
+         retorno, que é o que ele mede — o rótulo agora diz isso. */
+      l.veredito={txt:'MELHOR RETORNO', nivel:'bom',
+        porque:'É onde o mesmo dinheiro rende mais nesta rodada, olhando só o retorno esperado. Não é lucro — é o menor prejuízo esperado entre as nove. A ordem da tabela pode ser outra, porque ela pesa mais três eixos além deste.'};
     } else if(razao>=0.80 && l.indice>=0.30){
       l.veredito={txt:'BOA ALTERNATIVA', nivel:'bom',
         porque:'Muito perto do primeiro colocado — a diferença de retorno esperado é pequena. Se a preferência for por este jogo, o custo de escolher ele é baixo.'};
@@ -4170,7 +4294,16 @@ function renderMeuJogo(m){
         const nl=el('details',{style:'margin-top:var(--space-4)'});
         nl.innerHTML='<summary style="cursor:pointer;font-size:var(--text-sm);color:var(--ink-muted)">O que foi medido e <b>não</b> teve efeito</summary>'+
           '<div class="note" style="margin-top:var(--space-3)">'+sc.nulas.map(x=>'• '+esc(x)).join('<br>')+
-          '<br><br>Base da medição: '+esc(sc.baseMedicao||'—')+'</div>';
+          /* v19.25: esta linha mostrava uma string fixa como "3.411 concursos
+             (#335–#3745)" e dava a entender que era a base de HOJE. Não é: é a
+             base de quando os fatores foram medidos, e ela congelou. A base
+             corrente já passou disso e ninguém remediu os fatores desde então.
+             Dizer as duas coisas é o mínimo honesto. */
+          '<br><br>Base da medição: '+esc(sc.baseMedicao||'—')+
+          (DB[g] && DB[g].draws && DB[g].draws.length
+            ? ' <b>— medição congelada.</b> A base de hoje tem '+fmtInt(DB[g].draws.length)+
+              ' concursos (até o #'+fmtInt(DB[g].last.n)+'); os fatores acima não foram remedidos desde então.'
+            : '')+'</div>';
         pd.appendChild(nl);
       }
     }
@@ -4340,7 +4473,20 @@ function painelBandeiras(g){
     return l;
   };
   if(cfg.max>31) ctr.appendChild(mk('bandDatas','Fugir de dezenas ≤ 31 (datas de aniversário)',
-    '<b>Efeito medido, e é o mais forte que existe.</b> Sorteios com muitas dezenas ≤ 31 produziram <b>1,96×</b> mais ganhadores por real arrecadado na Mega-Sena e <b>1,45×</b> na Quina.'));
+    /* v19.25: esta frase dizia "1,96× na Mega-Sena e 1,45× na Quina". O modelo
+       usa 2,05× na Mega-Sena, e na Quina NÃO EXISTE regra de datas — a nota da
+       própria Quina diz que os efeitos dela mediram nulo. Um número na tela
+       contra outro no modelo, e um terceiro que não está em lugar nenhum. Agora
+       o texto lê o fator direto de POPULARIDADE: se a medição mudar, a frase
+       muda junto, e o que não foi medido não é afirmado. */
+    (function(){
+      const r=(POPULARIDADE.megasena&&POPULARIDADE.megasena.regras||[]).find(x=>/datas/i.test(x.rot));
+      const q=(POPULARIDADE.quina&&POPULARIDADE.quina.regras||[]).find(x=>/datas/i.test(x.rot));
+      return '<b>Efeito medido, e é o mais forte que existe.</b> Sorteios com todas as dezenas ≤ 31 produziram <b>'+
+        (r? r.fator.toFixed(2).replace('.',',')+'×' : '—')+'</b> mais ganhadores por real arrecadado na Mega-Sena. '+
+        (q? 'Na Quina o efeito mede '+q.fator.toFixed(2).replace('.',',')+'×.'
+          : 'Na Quina <b>não há efeito de datas no modelo</b>: as regras testadas nela mediram nulo, e o painel não credita o que não mediu.');
+    })()));
   else ctr.appendChild(el('p',{class:'note'},'Nesta modalidade todas as dezenas são ≤ 31, então não há como fugir de datas — o efeito não existe aqui.'));
   ctr.appendChild(mk('bandQuentes','Evitar dezenas muito sorteadas',
     '<b>Efeito medido, mas fraco.</b> Controlando pelo efeito das datas, sorteios ricos em dezenas "quentes" deram cerca de <b>1,07×</b> mais ganhadores na Mega-Sena. A medida limpa vem da Lotofácil, onde não existe efeito de data para confundir: <b>1,12×</b>. Ou seja: existe gente jogando estatística, mas é muito menos gente do que a que joga aniversário.'));
@@ -5818,7 +5964,10 @@ function renderEvidencia(m){
   p3b.appendChild(el('div',{class:'okbox'},
     '<b>E se o desvio fosse real?</b> A dezena mais sobre-representada de toda a história ('+pad(est.dezMax,g)+') aparece <b>'+(est.maxRel*100).toFixed(1).replace('.',',')+'%</b> acima do esperado. '+
     'Mesmo assumindo que isso seja viés genuíno e permanente, um jogo montado só com as dezenas favorecidas melhoraria o retorno em uma fração dessa ordem — contra uma margem da casa de aproximadamente <b>56%</b> '+
-    '(a Caixa devolve cerca de 43,79% da arrecadação em prêmios, conforme a Lei 13.756/2018). '+
+    /* v19.25: aqui dizia 43,79% e em outros dois lugares do painel, 43,35% —
+       para a mesma fatia legal. O valor conferido contra a base inteira (seção
+       17 da metodologia, erro < 0,7pp em sete modalidades) é 43,35%. */
+    '(a Caixa devolve cerca de 43,35% da arrecadação em prêmios, conforme a Lei 13.756/2018). '+
     'Ou seja: mesmo um viés real e explorável desta magnitude não chega perto de virar o jogo. <b>É a razão pela qual esta busca não vale seu dinheiro nem no melhor cenário.</b>'));
   m.appendChild(p3b);
 

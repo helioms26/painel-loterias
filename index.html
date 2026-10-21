@@ -107,7 +107,7 @@ const GAMES = {
                   odds:()=>C(25,15), oddsDesc:'15 acertos, aposta simples de 15 dezenas'},
   quina:         {label:'Quina',          min:1, max:80, pick:5,  cols:10, comboMax:5, pad:2, price:3.00,
                   odds:()=>C(80,5), oddsDesc:'quina (5 acertos), aposta simples de 5 dezenas'},
-  lotomania:     {label:'Lotomania',      min:0, max:99, pick:20, cols:10, comboMax:2, pad:2, price:3.50,
+  lotomania:     {label:'Lotomania',      min:0, max:99, pick:20, cols:10, comboMax:2, pad:2, price:3.00,
                   odds:()=>C(100,20)/C(50,20), oddsDesc:'20 acertos, aposta de 50 dezenas'},
   duplasena:     {label:'Dupla-Sena',     min:1, max:50, pick:6,  cols:10, comboMax:4, pad:2, price:3.00, dupla:true,
                   odds:()=>C(50,6), oddsDesc:'sena em um sorteio, aposta simples de 6 dezenas'},
@@ -115,7 +115,7 @@ const GAMES = {
                   odds:()=>C(80,7)/C(10,7), oddsDesc:'7 acertos, aposta fixa de 10 dezenas'},
   diadesorte:    {label:'Dia de Sorte',   min:1, max:31, pick:7,  cols:7,  comboMax:4, pad:2, price:2.50, extraName:'Mês da Sorte',
                   odds:()=>C(31,7), oddsDesc:'7 acertos, aposta simples de 7 dezenas'},
-  supersete:     {label:'Super Sete',     min:0, max:9,  pick:7,  cols:7,  comboMax:0, pad:1, price:2.50, colunas:true,
+  supersete:     {label:'Super Sete',     min:0, max:9,  pick:7,  cols:7,  comboMax:0, pad:1, price:3.00, colunas:true,
                   odds:()=>Math.pow(10,7), oddsDesc:'7 colunas certas, aposta simples'},
   maismilionaria:{label:'+Milionária',    min:1, max:50, pick:6,  cols:10, comboMax:4, pad:2, price:6.00, trevos:true,
                   odds:()=>C(50,6)*C(6,2), oddsDesc:'6 dezenas + 2 trevos, aposta simples'}
@@ -303,6 +303,50 @@ function windowSelector(){
   wrap.appendChild(sel);
   return wrap;
 }
+/* ================= QUAL APOSTAR · ÍNDICE CRIVO (comparativo entre modalidades) ================= */
+function crivoParams(g){
+  const cfg=GAMES[g], prem=PREMIOS[g];
+  if(!prem) return null;
+  const ks=Object.keys(prem).map(Number).sort((a,b)=>b-a);
+  let sumA=0, sumMinor=0, n=0;
+  for(const k of ks){
+    if(n>=30) break;
+    const r=prem[k]; if(!r || !(r.a>0)) continue;
+    n++; sumA+=r.a;
+    const f=r.f||[];
+    for(let i=1;i<f.length;i++) sumMinor += f[i][0]*f[i][1];
+  }
+  if(!n || !(sumA>0)) return null;
+  const odds=cfg.odds(), price=cfg.price;
+  const ratio=sumMinor/sumA, avgA=sumA/n;
+  const lam=(avgA/price)/odds, fat=lam>0 ? (1-Math.exp(-lam))/lam : 1;
+  const retMenor=price*ratio;
+  const st=STATUS[g]||{}, est=st.proxEstimativa||null;
+  const gatilho=(price-retMenor)*odds/(0.7*fat);
+  const idx = est ? (retMenor + est*0.7/odds*fat)/price : null;
+  return {g, label:cfg.label, price, est, idx, gatilho};
+}
+async function fillCrivoPanel(box){
+  try{
+    await Promise.all(Object.keys(GAMES).map(g=>loadPremios(g)));
+    const rows=Object.keys(GAMES).map(crivoParams).filter(Boolean);
+    rows.sort((a,b)=>((b.idx==null?-1:b.idx)-(a.idx==null?-1:a.idx)));
+    if(!rows.length){ box.innerHTML='<p class="note">Sem dados de arrecadação/premiação para calcular o índice.</p>'; return; }
+    const best = rows[0].idx!=null ? rows[0] : null;
+    let h='';
+    if(best) h+='<div class="'+(best.idx>=1?'okbox':'warnbox')+'" style="margin-bottom:10px"><b>Melhor relação agora: '+best.label+'</b> — índice '+best.idx.toFixed(2).replace('.',',')+'. '+(best.idx>=1?'Acima do ponto de equilíbrio (1,00).':'Abaixo de 1,00: mesmo a melhor modalidade tem retorno esperado negativo — aposte pelo entretenimento, não pelo retorno.')+'</div>';
+    h+='<div style="overflow-x:auto"><table><tr><th>Modalidade</th><th class="num">Prêmio estimado</th><th class="num">Índice CRIVO</th><th class="num">Prêmio p/ índice 1,00</th></tr>';
+    for(const r of rows){
+      const sel = r.g===state.game;
+      const idxTxt = r.idx==null ? '<span style="color:var(--muted)">sem estimativa</span>'
+        : '<span style="color:'+(r.idx>=1?'var(--good-text)':(r.idx>=0.5?'var(--warning)':'var(--ink2)'))+'">'+r.idx.toFixed(2).replace('.',',')+'</span>';
+      h+='<tr'+(sel?' style="font-weight:600"':'')+'><td>'+(best&&r===best?'★ ':'')+r.label+'</td><td class="num">'+(r.est?fmtBRL(r.est):'—')+'</td><td class="num">'+idxTxt+'</td><td class="num">'+fmtBRL(r.gatilho)+'</td></tr>';
+    }
+    h+='</table></div>';
+    h+='<p class="note" style="margin-top:8px">Índice CRIVO = valor esperado por R$ 1 apostado: retorno médio das faixas menores (prêmios não-principais ÷ arrecadação, últimos 30 concursos) + prêmio máximo estimado × 0,70 (desconto do IR) ÷ probabilidade × fator de partilha (1−e<sup>−λ</sup>)/λ. <b>1,00 é o ponto de equilíbrio</b> — abaixo disso, retorno esperado negativo. “Prêmio p/ índice 1,00” é o prêmio que zeraria a conta com a demanda atual. Lembrete: prêmio recorde <i>não</i> é o melhor momento — a demanda cresce com elasticidade ≈1,7 ao prêmio e dilui o rateio; o bom ponto é acumulação alta antes de virar manchete.</p>';
+    box.innerHTML=h;
+  }catch(e){ box.innerHTML='<p class="note">Não foi possível calcular o índice ('+e.message+').</p>'; }
+}
 /* ================= RENDER: VISÃO GERAL ================= */
 function renderVisao(m){
   const g=state.game, cfg=GAMES[g], d=DB[g], st=STATUS[g]||{};
@@ -317,6 +361,13 @@ function renderVisao(m){
   cards.appendChild(cardHtml('Próximo prêmio estimado', st.proxEstimativa? fmtBRL(st.proxEstimativa):'—', st.proxData? 'Próximo sorteio: '+st.proxData:''));
   cards.appendChild(cardHtml('Base carregada', fmtInt(d.draws.length)+' concursos', 'histórico completo desde o nº 1'));
   m.appendChild(cards);
+
+  const crivoPanel=el('div',{class:'panel'});
+  crivoPanel.appendChild(el('h3',null,'Qual apostar agora · Índice CRIVO'));
+  const crivoBox=el('div',null,'<p class="note">calculando…</p>');
+  crivoPanel.appendChild(crivoBox);
+  m.appendChild(crivoPanel);
+  fillCrivoPanel(crivoBox);
 
   const p=el('div',{class:'panel'});
   p.appendChild(el('h3',null,'Dezenas do último sorteio'));

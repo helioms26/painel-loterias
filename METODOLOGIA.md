@@ -2170,3 +2170,104 @@ exatamente como deveria ter disparado em agosto de 2025.
   conferida contra contagens de ganhadores.
 - **Os fatores de popularidade não foram remedidos.** Eles são de uma base menor, e a tela agora diz
   isso. Remedir é a próxima tarefa que vale a pena.
+
+---
+
+## 35. O painel publicado deixou de ser o painel, e ninguém viu por um mês (v19.26)
+
+Em 23/10/2026 o Hélio mandou um print do painel que usa todo dia e perguntou uma coisa simples:
+"esse é o último que você tem?". Não era. E a investigação encontrou três camadas de problema,
+cada uma pior que a anterior.
+
+### 35.1 O que ele estava usando
+
+`painel-loterias-offline_29.html`, MD5 `c0b8077c…` — a **v19.23, de 17/09**. Ele mostrava concursos
+de outubro porque o botão "Atualizar estatísticas" busca os dados na API ao vivo. **Os dados eram de
+hoje; as fórmulas eram de setembro.** Faltavam a v19.24 (Super Sete conferido por posição) e a
+v19.25 (a auditoria do índice).
+
+Um arquivo que atualiza os dados sozinho mas não as fórmulas é mais perigoso que um arquivo
+visivelmente velho: ele parece atual.
+
+### 35.2 O que estava publicado era pior
+
+O `index.html` no repositório tinha **4.128.529 bytes e nenhuma** das marcas do painel: sem
+`indiceCrivo`, sem `Matriz de decisão`, sem carteira. O commit `8e2af7c`, de 23/09, trocou o painel
+por outra coisa:
+
+```
+index.html | 7008 +++++---------------------------
+1 file changed, 542 insertions(+), 6466 deletions(-)
+```
+
+**6.466 linhas apagadas.** O que subiu no lugar foi `dashboard/index.html` — a geração de julho, de
+antes da v10, que ainda vive numa pasta paralela do projeto. A página continuava abrindo e
+mostrando números, então ninguém percebeu por um mês.
+
+### 35.3 A causa: uma rotina semanal apontando para a pasta errada
+
+A tarefa agendada "Loterias — atualização semanal", escrita em **26/07/2026**, manda, com todas as
+letras:
+
+> "Regere o arquivo único embutindo os JSONs de **dashboard\data\** ... no **dashboard\index.html**."
+
+Ela foi escrita antes da v10 e nunca foi reapontada. Toda segunda-feira ela atualizava a base
+corretamente — conferimos 72 concursos contra a API e **todos batem** — e depois publicava o painel
+errado por cima do certo.
+
+O mesmo prompt ainda carregava a fórmula revogada na v19.12:
+
+> "EV = retorno das faixas menores + (prêmio estimado × **0,70**) ÷ odds × fator de partilha"
+
+Esse `× 0,70` é o imposto de renda, que a v19.12 removeu porque **o valor divulgado pela Caixa já
+vem líquido**. O relatório que chegava por e-mail toda segunda estava ~30% baixo no termo do prêmio
+principal.
+
+**A lição de processo:** uma rotina automática escrita contra uma versão do projeto envelhece junto
+com o projeto, e não avisa. Ela não quebra — ela continua funcionando sobre o alvo errado.
+
+### 35.4 Quanto a fórmula velha errava, de verdade
+
+Vale ser exato, porque é fácil exagerar. A correção da v19.25 é um **deslocamento fixo** no índice,
+não um percentual: −0,0394 na Quina e −0,0292 na Mega-Sena, que é a diferença entre a fatia legal
+antiga e a vigente. O peso **relativo** desse deslocamento depende do tamanho do prêmio:
+
+| | índice pela fórmula velha | índice correto | erro relativo |
+|---|---|---|---|
+| Quina (R$ 58,5 mi, 23/10) | 0,8959 | **0,8566** | +4,6% |
+| Mega-Sena (R$ 230 mi, 24/10) | 0,7924 | **0,7632** | +3,8% |
+| Lotomania (R$ 1 mi) | 0,2106 | **0,1995** | +5,6% |
+
+Em setembro, com a Quina pagando R$ 1,2 milhão, o mesmo deslocamento valia **+21%**. Hoje, com o
+prêmio cinquenta vezes maior, vale +4,6%. **O erro absoluto é o mesmo; o relativo encolhe quando o
+prêmio cresce.** Dizer "21%" hoje seria tão errado quanto a fórmula que estamos consertando.
+
+E, para ser completo: nesta rodada **o erro não mudaria a decisão**. A Quina continua em primeiro e
+os dois vereditos de topo continuam MOMENTO BOM nas duas fórmulas.
+
+### 35.5 A guarda de publicação
+
+`verificar_publicacao.py` roda sobre o arquivo antes de ele subir e exige **onze marcas
+estruturais**: `indiceCrivo`, `Matriz de decisão`, as abas "Onde apostar" e "Minhas apostas",
+`window.EMBEDDED_DATA`, `JANELA_RTP` e `EXTRA_FAIXA` (v19.25), `especialDoAno` (v19.23),
+`colsDaAposta` (v19.24), `probAlgumPremio` e `fatorPartilha` — mais um piso de 3 MB.
+
+O arquivo que foi publicado por engano falha em oito dessas onze. A guarda não é esperta: é
+literal, e é exatamente por isso que funciona. **Testar se a tela pinta não é testar se ela está
+certa** — e antes disso ainda vem uma pergunta mais burra, que é se o arquivo é mesmo o painel.
+
+### 35.6 Status congelado passa a ser dito, não escondido
+
+A API da Caixa devolve **erro 500 em todos os concursos do Super Sete** desde 09/10 — tentamos do
+910 ao 915, todos falham. Isso congela `proxEstimativa`, e o índice continuava sendo calculado com
+um prêmio velho sem nenhum aviso.
+
+Agora, quando o "próximo sorteio" de uma modalidade já passou, o painel diz isso na matriz e avisa
+que aquela linha não serve para decidir. Some seria pior: **sumir sem explicação esconde a lacuna;
+aparecer com ressalva a declara.**
+
+**Base ao fechar:** Mega-Sena 3073, Lotofácil 3811, Quina 7149, Timemania 2458, Dia de Sorte 1329
+(22/10); Lotomania 2990, Dupla-Sena 3023, +Milionária 400 (21/10); **Super Sete parado no 909
+(09/10) pela falha da API**. `historico_crivo`: 4.720 sorteios. 72 concursos conferidos contra a
+API, todos batem. Registradas 7 apostas do carrinho de 23/10 (4 Mega-Sena no 3074, 3 Quina no 7150,
+R$ 33,00) — tela de carrinho, não comprovante pago.

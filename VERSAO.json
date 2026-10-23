@@ -1,8 +1,8 @@
 {
-  "versao": "19.25",
+  "versao": "19.26",
   "nome": "Painel Loterias",
-  "geradoEm": "2026-09-18T20:00:00Z",
-  "geradoEmBrasilia": "2026-09-18 17:00",
+  "geradoEm": "2026-10-23T20:30:00Z",
+  "geradoEmBrasilia": "2026-10-23 17:30",
   "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
   "publicadoEm": "https://helioms26.github.io/painel-loterias/",
   "figma": {
@@ -15,77 +15,71 @@
     "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
   },
   "baseDeDados": {
-    "fechadaEm": "16/09/2026",
+    "fechadaEm": "22/10/2026",
     "concursosPorModalidade": {
       "lotofacil": {
-        "ultimoConcurso": 3781,
-        "data": "16/09/2026",
-        "acumulado": true,
-        "proximoSorteio": "17/09/2026",
-        "estimativa": 5000000.0,
-        "especialDoAno": {
-          "conc": 3780,
-          "data": "15/09/2026",
-          "rot": "Lotofácil da Independência",
-          "fonte": "indicadorConcursoEspecial=2 na API da Caixa, conferido em 17/09/2026"
-        }
+        "ultimoConcurso": 3811,
+        "data": "22/10/2026",
+        "acumulado": false,
+        "proximoSorteio": "23/10/2026",
+        "estimativa": 2000000.0
       },
       "megasena": {
-        "ultimoConcurso": 3058,
-        "data": "15/09/2026",
+        "ultimoConcurso": 3073,
+        "data": "22/10/2026",
         "acumulado": true,
-        "proximoSorteio": "17/09/2026",
-        "estimativa": 102000000.0
+        "proximoSorteio": "24/10/2026",
+        "estimativa": 230000000.0
       },
       "quina": {
-        "ultimoConcurso": 7119,
-        "data": "16/09/2026",
+        "ultimoConcurso": 7149,
+        "data": "22/10/2026",
         "acumulado": true,
-        "proximoSorteio": "17/09/2026",
-        "estimativa": 1200000.0
+        "proximoSorteio": "23/10/2026",
+        "estimativa": 58500000.0
       },
       "lotomania": {
-        "ultimoConcurso": 2976,
-        "data": "16/09/2026",
+        "ultimoConcurso": 2990,
+        "data": "21/10/2026",
         "acumulado": true,
-        "proximoSorteio": "18/09/2026",
-        "estimativa": 2600000.0
+        "proximoSorteio": "23/10/2026",
+        "estimativa": 1000000.0
       },
       "timemania": {
-        "ultimoConcurso": 2442,
-        "data": "15/09/2026",
+        "ultimoConcurso": 2458,
+        "data": "22/10/2026",
         "acumulado": true,
-        "proximoSorteio": "17/09/2026",
-        "estimativa": 14300000.0
+        "proximoSorteio": "24/10/2026",
+        "estimativa": 22100000.0
       },
       "duplasena": {
-        "ultimoConcurso": 3009,
-        "data": "16/09/2026",
+        "ultimoConcurso": 3023,
+        "data": "21/10/2026",
         "acumulado": true,
-        "proximoSorteio": "18/09/2026",
-        "estimativa": 4400000.0
+        "proximoSorteio": "23/10/2026",
+        "estimativa": 9200000.0
       },
       "diadesorte": {
-        "ultimoConcurso": 1299,
-        "data": "16/09/2026",
+        "ultimoConcurso": 1329,
+        "data": "22/10/2026",
         "acumulado": false,
-        "proximoSorteio": "17/09/2026",
-        "estimativa": 100000.0,
-        "especialDoAno": null
+        "proximoSorteio": "23/10/2026",
+        "estimativa": 100000.0
       },
       "supersete": {
-        "ultimoConcurso": 899,
-        "data": "16/09/2026",
+        "ultimoConcurso": 909,
+        "data": "09/10/2026",
         "acumulado": true,
         "proximoSorteio": "18/09/2026",
-        "estimativa": 8300000.0
+        "estimativa": 8300000.0,
+        "statusCongelado": true
       },
       "maismilionaria": {
-        "ultimoConcurso": 390,
-        "data": "16/09/2026",
+        "ultimoConcurso": 400,
+        "data": "21/10/2026",
         "acumulado": true,
-        "proximoSorteio": "20/09/2026",
-        "estimativa": 96000000.0
+        "proximoSorteio": "24/10/2026",
+        "estimativa": 108000000.0
       }
     },
     "arquivos": {
@@ -186,14 +180,14 @@
     "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
   },
   "mudancasDaVersao": [
-    "AUDITORIA DO INDICE pedida pelo Helio: indice CRIVO reimplementado do zero em Python, direto dos JSON, e confrontado com o JS. A implementacao batia ate a 4a casa nas 9 modalidades - o erro estava na especificacao.",
-    "CONSERTO 1: rtpMenores usava a media da base inteira desde 1996, mas a fatia das faixas menores e percentagem fixa definida em norma, e ela mudou. Quina 19,20->13,35% (11/08/2025), Mega-Sena 14,00->10,55% (02/08/2025), Dupla-Sena 17,94->16,33%, Lotomania 18,28->17,16%. TODOS os erros eram para cima: Quina +21%, Mega-Sena +6,9%. Agora e a mediana da razao por concurso nos ultimos 120.",
-    "CONSERTO 2: probAlgumPremio ignorava as faixas que nao sao numero de acertos. Dia de Sorte subestimado 277% (faltava o Mes da Sorte, 1 em 12, o premio mais comum do jogo), Dupla-Sena 98% (faltava o 2o sorteio), Timemania 31% (faltava o Time do Coracao).",
-    "CONSERTO 3: eixo nao medido virava nota ZERO na matriz (+Milionaria). Agora e n/d, sai da media, e o indice final e renormalizado pelos pesos restantes.",
-    "CONSERTO 4: a tabela era ordenada pelo indice final e o veredito vinha da ordem do indice CRIVO - primeira linha dizia BOA ALTERNATIVA e a segunda MELHOR OPCAO. Rotulo virou MELHOR RETORNO.",
-    "NOVO: barra de erro do indice calculada ao vivo. O backtest do modelo de volume da erro mediano de 17% a 41%; o indice quase nao sente, exceto na Lotofacil (lambda 2,55), onde 30% de erro move o indice +-8,7%.",
-    "CONSERTO 5: numeros digitados que ja mentiam - 'Cinco em N' com numerador fixo, '1,96x/1,45x' contra 2,05x no modelo e nenhuma regra de datas na Quina, 43,79% contra 43,35%, e a 'Base da medicao' congelada lida como base de hoje.",
-    "NOVO: ancoras externas no plaus.js - F1 (premiacao bruta reconstruida = 43,35% da arrecadacao), F2 (frequencia teorica x observada na base) e F3 (aviso de mudanca de norma). Controle negativo confirma que F2 reprova a regra antiga nas tres modalidades."
+    "INCIDENTE: o index.html publicado nao era mais o painel. O commit 8e2af7c (23/09) apagou 6.466 linhas e publicou dashboard/index.html, a geracao de julho - sem indiceCrivo, sem matriz de decisao, sem carteira. Ficou assim por um mes.",
+    "CAUSA: a tarefa agendada 'Loterias - atualizacao semanal', escrita em 26/07/2026, manda publicar dashboard\\\\index.html com os JSONs de dashboard\\\\data\\\\. Nunca foi reapontada para site/ + bundle.py. O mesmo prompt ainda usava o x0,70 de IR que a v19.12 removeu.",
+    "NOVO: verificar_publicacao.py - guarda que exige 11 marcas estruturais e 3 MB antes de publicar. O arquivo publicado por engano falha em 8 das 11.",
+    "NOVO: o painel avisa na matriz quando o status de uma modalidade esta congelado (proximo sorteio ja passou), em vez de calcular o indice com premio velho em silencio.",
+    "Base restaurada e atualizada ate 22/10/2026 a partir de dashboard/data (72 concursos conferidos contra a API, todos batem) + 28 concursos novos buscados direto.",
+    "Super Sete travado no 909 (09/10): a API devolve 500 em todos os concursos, testados 910 a 915.",
+    "Registradas 7 apostas do carrinho de 23/10 (4 Mega-Sena no 3074, 3 Quina no 7150, R$ 33,00) - tela de carrinho, nao comprovante pago.",
+    "Precisao: a correcao da v19.25 e um deslocamento FIXO (-0,0394 na Quina, -0,0292 na Mega-Sena). Hoje vale +4,6% e +3,8% de erro relativo; em setembro, com premio pequeno, o mesmo deslocamento valia +21% na Quina."
   ],
   "validacaoDaCalibracao": {
     "duplaSena_dentroDoMesmoSorteio": 0.8504,
@@ -204,7 +198,6 @@
   },
   "lacunasDeclaradas": [
     "+Milionaria fora do backtest do metodo (ordem das faixas nao verificada)",
-    "criterios anti-popularidade do Super Sete sao analogia, nao medicao — a Caixa nao publica a distribuicao das apostas",
     "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)",
     "plaus.js deixa a +Milionaria fora da varredura sintetica: a ordem das dez faixas nunca foi conferida contra contagens de ganhadores",
     "a guarda de 'a edicao especial do ano ja saiu' depende de status.json[jogo].especialDoAno ser preenchido na coleta; chave ausente = guarda nao opina, e volta o comportamento errado da v19.21",
@@ -212,10 +205,12 @@
     "continua sendo gerado um dados.zip redundante dentro da pasta protegida pelo Norton — nao foi removido nesta versao",
     "o percentil historico compara com amostra so de sorteios em que o premio principal foi ganho - amostra enviesada para cima, entao o percentil de hoje sai baixo demais (erra para o lado conservador)",
     "o gatilho resolve indice=1 mantendo a partilha de hoje; um premio daquele tamanho atrairia mais gente. Medido: subestimado entre 0% e 5%",
-    "os fatores de POPULARIDADE nao foram remedidos desde uma base menor; a tela agora declara isso, mas remedir e a proxima tarefa que vale a pena"
+    "os fatores de POPULARIDADE nao foram remedidos desde uma base menor; a tela agora declara isso, mas remedir e a proxima tarefa que vale a pena",
+    "Super Sete: a API da Caixa devolve 500 em todos os concursos desde 09/10/2026; a base para no 909 e o status do jogo esta congelado",
+    "a pasta dashboard/ e a geracao de julho e NAO pode ser publicada; ela so e mantida porque atualizar_tudo.ps1 ainda coleta dados corretamente"
   ],
   "varreduraHistorica": {
-    "sorteiosMedidos": 4679,
+    "sorteiosMedidos": 4720,
     "cruzaram1": 5,
     "cruzamentos": [
       {
@@ -892,5 +887,11 @@
       "demais": "menos de 1%"
     },
     "backtestDoVolume": "erro mediano absoluto de 17% a 41% por modalidade, previsto so com o passado"
+  },
+  "guardaDePublicacao": {
+    "script": "verificar_publicacao.py",
+    "marcas": 11,
+    "tamanhoMinimo": 3000000,
+    "porque": "em 23/09/2026 uma rotina semanal publicou dashboard/index.html por cima do painel e ninguem percebeu por um mes"
   }
 }

@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.25**, 18/09/2026.
+Última versão: **19.26**, 23/10/2026.
 
 ---
 
@@ -840,3 +840,41 @@ tarefa que vale a pena**.
 
 **Padrão confirmado pela quarta vez:** o painel desenha, o console fica limpo, e o número está
 errado. Nenhum dos dois erros desta versão lançava exceção. Só a reimplementação independente pegou.
+
+---
+
+## v19.26 — o painel publicado deixou de ser o painel (leia isto antes de publicar qualquer coisa)
+
+**O que aconteceu.** O commit `8e2af7c` (23/09) apagou 6.466 linhas do `index.html` publicado e pôs
+no lugar `dashboard/index.html`, a geração de julho — sem índice CRIVO, sem matriz, sem carteira. A
+página continuava abrindo, então ficou um mês assim. O Hélio, enquanto isso, usava um arquivo local
+da v19.23 que atualiza os DADOS sozinho pela API mas mantém as FÓRMULAS de setembro.
+
+**A causa.** A tarefa agendada "Loterias — atualização semanal" (`trig_01QG7R8GitNHNrH5Lvazpr6A`),
+escrita em 26/07/2026, manda publicar `dashboard\index.html` com os JSONs de `dashboard\data\`.
+Nunca foi reapontada para `site/` + `bundle.py`. Ela também carregava o `× 0,70` de IR que a v19.12
+removeu. **Prompt de rotina automática envelhece junto com o projeto e não avisa — ele continua
+funcionando, sobre o alvo errado.**
+
+**O que é VERDADE sobre as duas pastas:**
+- `site/index.html` + `site/data/` + `bundle.py` → **o painel**. É daqui que se publica, sempre.
+- `dashboard/` → geração de julho, mantida só porque `atualizar_tudo.ps1` ainda baixa dados bem.
+  **Os dados dela são bons** (72 concursos conferidos contra a API, todos batem). **A página dela,
+  não.** Nunca publique `dashboard/index.html`.
+
+**A guarda.** `python verificar_publicacao.py <arquivo>` exige 11 marcas estruturais e 3 MB antes de
+qualquer publicação. O arquivo publicado por engano falha em 8 das 11. **Rode isso sempre, antes do
+`git add`.**
+
+**Status congelado.** A API devolve 500 em todo concurso do Super Sete desde 09/10 (testados 910 a
+915). O painel agora avisa na matriz quando o "próximo sorteio" de um jogo já passou, em vez de
+calcular o índice com prêmio velho em silêncio.
+
+**Precisão que importa.** A correção da v19.25 é um deslocamento FIXO no índice (−0,0394 na Quina,
+−0,0292 na Mega-Sena), não um percentual. Hoje, com prêmios grandes, isso é +4,6% e +3,8% de erro
+relativo; em setembro, com prêmio pequeno, o MESMO deslocamento valia +21% na Quina. Não repita o
+"21%" fora do contexto de setembro.
+
+**Base:** Mega 3073, Lotofácil 3811, Quina 7149, Timemania 2458, Dia de Sorte 1329 (22/10);
+Lotomania 2990, Dupla-Sena 3023, +Milionária 400 (21/10); Super Sete travado no 909. 7 apostas novas
+(carrinho de 23/10, R$ 33,00).

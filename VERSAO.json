@@ -1,897 +1,896 @@
 {
-  "versao": "19.26",
-  "nome": "Painel Loterias",
-  "geradoEm": "2026-10-23T20:30:00Z",
-  "geradoEmBrasilia": "2026-10-23 17:30",
-  "commitDoConteudo": "96e3b34 — commit que publica o painel v19.14",
-  "publicadoEm": "https://helioms26.github.io/painel-loterias/",
-  "figma": {
-    "arquivo": "https://www.figma.com/design/A9hm8FcF7ctUhve0KR2aM7",
-    "paginas": [
-      "Cor",
-      "Tipografia e espaço",
-      "Painel v9 · telas"
-    ],
-    "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
-  },
-  "baseDeDados": {
-    "fechadaEm": "22/10/2026",
-    "concursosPorModalidade": {
-      "lotofacil": {
-        "ultimoConcurso": 3811,
-        "data": "22/10/2026",
-        "acumulado": false,
-        "proximoSorteio": "23/10/2026",
-        "estimativa": 2000000.0
-      },
-      "megasena": {
-        "ultimoConcurso": 3073,
-        "data": "22/10/2026",
-        "acumulado": true,
-        "proximoSorteio": "24/10/2026",
-        "estimativa": 230000000.0
-      },
-      "quina": {
-        "ultimoConcurso": 7149,
-        "data": "22/10/2026",
-        "acumulado": true,
-        "proximoSorteio": "23/10/2026",
-        "estimativa": 58500000.0
-      },
-      "lotomania": {
-        "ultimoConcurso": 2990,
-        "data": "21/10/2026",
-        "acumulado": true,
-        "proximoSorteio": "23/10/2026",
-        "estimativa": 1000000.0
-      },
-      "timemania": {
-        "ultimoConcurso": 2458,
-        "data": "22/10/2026",
-        "acumulado": true,
-        "proximoSorteio": "24/10/2026",
-        "estimativa": 22100000.0
-      },
-      "duplasena": {
-        "ultimoConcurso": 3023,
-        "data": "21/10/2026",
-        "acumulado": true,
-        "proximoSorteio": "23/10/2026",
-        "estimativa": 9200000.0
-      },
-      "diadesorte": {
-        "ultimoConcurso": 1329,
-        "data": "22/10/2026",
-        "acumulado": false,
-        "proximoSorteio": "23/10/2026",
-        "estimativa": 100000.0
-      },
-      "supersete": {
-        "ultimoConcurso": 909,
-        "data": "09/10/2026",
-        "acumulado": true,
-        "proximoSorteio": "18/09/2026",
-        "estimativa": 8300000.0,
-        "statusCongelado": true
-      },
-      "maismilionaria": {
-        "ultimoConcurso": 400,
-        "data": "21/10/2026",
-        "acumulado": true,
-        "proximoSorteio": "24/10/2026",
-        "estimativa": 108000000.0
-      }
-    },
-    "arquivos": {
-      "apostas.json": 21633,
-      "dates_diadesorte.json": 24754,
-      "dates_duplasena.json": 59014,
-      "dates_lotofacil.json": 74474,
-      "dates_lotomania.json": 58354,
-      "dates_maismilionaria.json": 7265,
-      "dates_megasena.json": 59994,
-      "dates_quina.json": 141154,
-      "dates_supersete.json": 16917,
-      "dates_timemania.json": 47674,
-      "diadesorte.json": 68129,
-      "duplasena.json": 206308,
-      "historico_crivo.json": 43907,
-      "lotofacil.json": 316330,
-      "lotomania.json": 322951,
-      "maismilionaria.json": 18139,
-      "megasena.json": 118039,
-      "premios_diadesorte.json": 112164,
-      "premios_duplasena.json": 339916,
-      "premios_lotofacil.json": 362303,
-      "premios_lotomania.json": 325164,
-      "premios_maismilionaria.json": 55877,
-      "premios_megasena.json": 199063,
-      "premios_quina.json": 533424,
-      "premios_supersete.json": 73575,
-      "premios_timemania.json": 236119,
-      "quina.json": 240736,
-      "status.json": 1305,
-      "supersete.json": 32149,
-      "timemania.json": 146548
-    },
-    "totalArquivos": 30,
-    "concursosNovosNestaVersao": 31,
-    "fonteDaColeta": "PowerShell na maquina do Helio: o conteiner da sessao passou a receber 403 no CONNECT para servicebus2.caixa.gov.br (politica de saida). Transporte por JSON gzip+base64, com CRC do gzip conferido no destino."
-  },
-  "indiceCrivoNaPublicacao": [
-    {
-      "modalidade": "Super Sete",
-      "indice": 0.4762
-    },
-    {
-      "modalidade": "Lotofácil",
-      "indice": 0.4388
-    },
-    {
-      "modalidade": "Mega-Sena",
-      "indice": 0.3983
-    },
-    {
-      "modalidade": "Timemania",
-      "indice": 0.3684
-    },
-    {
-      "modalidade": "+Milionária",
-      "indice": 0.2836
-    },
-    {
-      "modalidade": "Dupla-Sena",
-      "indice": 0.2537
-    },
-    {
-      "modalidade": "Lotomania",
-      "indice": 0.2437
-    },
-    {
-      "modalidade": "Dia de Sorte",
-      "indice": 0.2312
-    },
-    {
-      "modalidade": "Quina",
-      "indice": 0.1492
-    }
+ "versao": "19.29",
+ "nome": "Painel Loterias",
+ "geradoEm": "2026-11-09T14:45:00Z",
+ "geradoEmBrasilia": "2026-11-09 11:45",
+ "commitDoConteudo": "a preencher apos o commit - atualizacao semanal de dados v19.29 (09/11/2026)",
+ "publicadoEm": "https://helioms26.github.io/painel-loterias/",
+ "figma": {
+  "arquivo": "https://www.figma.com/design/A9hm8FcF7ctUhve0KR2aM7",
+  "paginas": [
+   "Cor",
+   "Tipografia e espaço",
+   "Painel v9 · telas"
   ],
-  "artefatos": {
-    "painelPublicado": "repo-github/index.html (arquivo único, dados embutidos)",
-    "painelOffline": "painel-loterias-offline.html (cópia idêntica)",
-    "fonteDoPainel": "site/index.html + site/data/*.json (não embutidos)",
-    "designSystem": [
-      "site/tokens.css",
-      "site/components.css",
-      "site/styleguide.html",
-      "DESIGN-SYSTEM.md"
-    ],
-    "documentacao": [
-      "README.md",
-      "METODOLOGIA.md",
-      "CONTINUAR-AQUI.md"
-    ],
-    "prototipo": "prototipo-v9.html",
-    "bundler": "bundle.py"
+  "limite": "plano Starter com assento View = 6 chamadas de MCP por MÊS; renova no dia 1"
+ },
+ "baseDeDados": {
+  "fechadaEm": "08/11/2026",
+  "concursosPorModalidade": {
+   "lotofacil": {
+    "ultimoConcurso": 3824,
+    "data": "08/11/2026",
+    "acumulado": false,
+    "proximoSorteio": "09/11/2026",
+    "estimativa": 2000000.0
+   },
+   "megasena": {
+    "ultimoConcurso": 3083,
+    "data": "08/11/2026",
+    "acumulado": false,
+    "proximoSorteio": "10/11/2026",
+    "estimativa": 3500000.0
+   },
+   "quina": {
+    "ultimoConcurso": 7162,
+    "data": "08/11/2026",
+    "acumulado": false,
+    "proximoSorteio": "09/11/2026",
+    "estimativa": 3000000.0
+   },
+   "lotomania": {
+    "ultimoConcurso": 2996,
+    "data": "06/11/2026",
+    "acumulado": true,
+    "proximoSorteio": "09/11/2026",
+    "estimativa": 4000000.0
+   },
+   "timemania": {
+    "ultimoConcurso": 2465,
+    "data": "08/11/2026",
+    "acumulado": true,
+    "proximoSorteio": "10/11/2026",
+    "estimativa": 26300000.0
+   },
+   "duplasena": {
+    "ultimoConcurso": 3029,
+    "data": "06/11/2026",
+    "acumulado": true,
+    "proximoSorteio": "09/11/2026",
+    "estimativa": 11600000.0
+   },
+   "diadesorte": {
+    "ultimoConcurso": 1342,
+    "data": "08/11/2026",
+    "acumulado": true,
+    "proximoSorteio": "09/11/2026",
+    "estimativa": 3700000.0
+   },
+   "supersete": {
+    "ultimoConcurso": 909,
+    "data": "09/10/2026",
+    "acumulado": true,
+    "proximoSorteio": "18/09/2026",
+    "estimativa": 8300000.0,
+    "statusCongelado": true
+   },
+   "maismilionaria": {
+    "ultimoConcurso": 405,
+    "data": "06/11/2026",
+    "acumulado": true,
+    "proximoSorteio": "11/11/2026",
+    "estimativa": 113000000.0
+   }
   },
-  "tarefaSemanal": {
-    "id": "trig_01QG7R8GitNHNrH5Lvazpr6A",
-    "quando": "segundas 14:00 UTC = 11h de Brasília",
-    "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
+  "arquivos": {
+   "apostas.json": 20734,
+   "dates_diadesorte.json": 25634,
+   "dates_duplasena.json": 59434,
+   "dates_lotofacil.json": 75274,
+   "dates_lotomania.json": 58774,
+   "dates_maismilionaria.json": 7550,
+   "dates_megasena.json": 60494,
+   "dates_quina.json": 142034,
+   "dates_supersete.json": 17164,
+   "dates_timemania.json": 48134,
+   "diadesorte.json": 70511,
+   "duplasena.json": 207757,
+   "historico_crivo.json": 44294,
+   "lotofacil.json": 319690,
+   "lotomania.json": 325240,
+   "maismilionaria.json": 18829,
+   "megasena.json": 119014,
+   "premios_diadesorte.json": 105652,
+   "premios_duplasena.json": 288435,
+   "premios_lotofacil.json": 339168,
+   "premios_lotomania.json": 299546,
+   "premios_maismilionaria.json": 52984,
+   "premios_megasena.json": 190689,
+   "premios_quina.json": 486737,
+   "premios_supersete.json": 70084,
+   "premios_timemania.json": 218641,
+   "quina.json": 242232,
+   "status.json": 3614,
+   "supersete.json": 32617,
+   "timemania.json": 148249
   },
-  "mudancasDaVersao": [
-    "INCIDENTE: o index.html publicado nao era mais o painel. O commit 8e2af7c (23/09) apagou 6.466 linhas e publicou dashboard/index.html, a geracao de julho - sem indiceCrivo, sem matriz de decisao, sem carteira. Ficou assim por um mes.",
-    "CAUSA: a tarefa agendada 'Loterias - atualizacao semanal', escrita em 26/07/2026, manda publicar dashboard\\\\index.html com os JSONs de dashboard\\\\data\\\\. Nunca foi reapontada para site/ + bundle.py. O mesmo prompt ainda usava o x0,70 de IR que a v19.12 removeu.",
-    "NOVO: verificar_publicacao.py - guarda que exige 11 marcas estruturais e 3 MB antes de publicar. O arquivo publicado por engano falha em 8 das 11.",
-    "NOVO: o painel avisa na matriz quando o status de uma modalidade esta congelado (proximo sorteio ja passou), em vez de calcular o indice com premio velho em silencio.",
-    "Base restaurada e atualizada ate 22/10/2026 a partir de dashboard/data (72 concursos conferidos contra a API, todos batem) + 28 concursos novos buscados direto.",
-    "Super Sete travado no 909 (09/10): a API devolve 500 em todos os concursos, testados 910 a 915.",
-    "Registradas 7 apostas do carrinho de 23/10 (4 Mega-Sena no 3074, 3 Quina no 7150, R$ 33,00) - tela de carrinho, nao comprovante pago.",
-    "Precisao: a correcao da v19.25 e um deslocamento FIXO (-0,0394 na Quina, -0,0292 na Mega-Sena). Hoje vale +4,6% e +3,8% de erro relativo; em setembro, com premio pequeno, o mesmo deslocamento valia +21% na Quina."
-  ],
-  "validacaoDaCalibracao": {
-    "duplaSena_dentroDoMesmoSorteio": 0.8504,
-    "duplaSena_teorico": 0.8503,
-    "duplaSena_entreOsDoisSorteios": 0.9994,
-    "superSete_entreColunas": 1.0,
-    "observacao": "escala calibrada nos dados reencontra a correcao hipergeometrica onde ela existe e 1,0000 onde os sorteios sao independentes"
+  "totalArquivos": 30,
+  "concursosNovosNestaVersao": 27,
+  "fonteDaColeta": "dashboard/atualizar_tudo.ps1 rodado na maquina do Helio pela rotina semanal de 09/11/2026; verificacao de integridade passou nas nove modalidades; Super Sete sem resposta da API (500), base segue no 909"
+ },
+ "indiceCrivoNaPublicacao": [
+  {
+   "modalidade": "Dia de Sorte",
+   "indice": 0.5628,
+   "observacao": "percentil 93,3 da historia da modalidade (recorde 0,8316); estimativa R$ 3,7 mi para o 1343 (09/11)"
   },
-  "lacunasDeclaradas": [
-    "+Milionaria fora do backtest do metodo (ordem das faixas nao verificada)",
-    "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)",
-    "plaus.js deixa a +Milionaria fora da varredura sintetica: a ordem das dez faixas nunca foi conferida contra contagens de ganhadores",
-    "a guarda de 'a edicao especial do ano ja saiu' depende de status.json[jogo].especialDoAno ser preenchido na coleta; chave ausente = guarda nao opina, e volta o comportamento errado da v19.21",
-    "o conteiner da sessao nao alcanca mais a API da Caixa (403 no CONNECT); a coleta depende da maquina do Helio estar conectada",
-    "continua sendo gerado um dados.zip redundante dentro da pasta protegida pelo Norton — nao foi removido nesta versao",
-    "o percentil historico compara com amostra so de sorteios em que o premio principal foi ganho - amostra enviesada para cima, entao o percentil de hoje sai baixo demais (erra para o lado conservador)",
-    "o gatilho resolve indice=1 mantendo a partilha de hoje; um premio daquele tamanho atrairia mais gente. Medido: subestimado entre 0% e 5%",
-    "os fatores de POPULARIDADE nao foram remedidos desde uma base menor; a tela agora declara isso, mas remedir e a proxima tarefa que vale a pena",
-    "Super Sete: a API da Caixa devolve 500 em todos os concursos desde 09/10/2026; a base para no 909 e o status do jogo esta congelado",
-    "a pasta dashboard/ e a geracao de julho e NAO pode ser publicada; ela so e mantida porque atualizar_tudo.ps1 ainda coleta dados corretamente"
-  ],
-  "varreduraHistorica": {
-    "sorteiosMedidos": 4720,
-    "cruzaram1": 5,
-    "cruzamentos": [
-      {
-        "m": "Lotomania",
-        "c": 1741,
-        "d": "03/03/2017",
-        "i": 1.355,
-        "tipo": "sorteio comum"
-      },
-      {
-        "m": "Mega-Sena",
-        "c": 1772,
-        "d": "22/12/2015",
-        "i": 1.155,
-        "tipo": "Mega da Virada"
-      },
-      {
-        "m": "Quina",
-        "c": 4706,
-        "d": "23/06/2018",
-        "i": 1.022,
-        "tipo": "Quina de Sao Joao"
-      },
-      {
-        "m": "Timemania",
-        "c": 2336,
-        "d": "27/12/2025",
-        "i": 1.014,
-        "tipo": "Timemania de Natal"
-      },
-      {
-        "m": "Quina",
-        "c": 4114,
-        "d": "24/06/2016",
-        "i": 1.012,
-        "tipo": "Quina de Sao Joao"
-      }
-    ],
-    "validacaoImposto": {
-      "megasena": 43.56,
-      "quina": 43.46,
-      "duplasena": 43.42,
-      "lotofacil": 43.16,
-      "lotomania": 43.16,
-      "diadesorte": 42.92,
-      "supersete": 42.69,
-      "alvoLegal": 43.35
-    },
-    "especiaisPorVolume": {
-      "megasena": {
-        "nome": "Mega da Virada",
-        "edicoes": 16,
-        "medianaEspecial": 0.4428,
-        "medianaComum": 0.2959,
-        "ganho": 1.5
-      },
-      "lotofacil": {
-        "nome": "Lotofácil da Independência",
-        "edicoes": 18,
-        "medianaEspecial": 0.6265,
-        "medianaComum": 0.37,
-        "ganho": 1.69
-      },
-      "quina": {
-        "nome": "Quina de São João",
-        "edicoes": 10,
-        "medianaEspecial": 0.8036,
-        "medianaComum": 0.2933,
-        "ganho": 2.74
-      },
-      "timemania": {
-        "nome": "Timemania de Natal",
-        "edicoes": 3,
-        "medianaEspecial": 0.4099,
-        "medianaComum": 0.3347,
-        "ganho": 1.22
-      },
-      "diadesorte": {
-        "nome": "Dia de Sorte da Primavera",
-        "edicoes": 8,
-        "medianaEspecial": 0.4867,
-        "medianaComum": 0.3195,
-        "ganho": 1.52
-      }
-    },
-    "comoAEdicaoEIdentificada": "dentro da janela de calendario, o concurso de MAIOR arrecadacao do ano — uma por ano. Antes era por data, o que rotulava dezenas de sorteios comuns de setembro como Independencia e apagava o efeito medido."
+  {
+   "modalidade": "Timemania",
+   "indice": 0.2839
   },
-  "repeticoesDeSorteio": {
-    "megasena": {
-      "obs": 0,
-      "esp": 0.09
-    },
-    "lotofacil": {
-      "obs": 0,
-      "esp": 2.14
-    },
-    "quina": {
-      "obs": 3,
-      "esp": 1.04
-    },
-    "duplasena": {
-      "obs": 2,
-      "esp": 1.12
-    },
-    "diadesorte": {
-      "obs": 0,
-      "esp": 0.3
-    },
-    "nota": "todas conferidas na API oficial da Caixa"
+  {
+   "modalidade": "Super Sete",
+   "indice": 0.2767,
+   "observacao": "status congelado desde 09/10/2026 - indice calculado com premio velho"
   },
-  "efeitosMedidos": {
-    "datas_megasena": 1.96,
-    "datas_quina": 1.45,
-    "quentes_megasena_controlado": 1.07,
-    "quentes_lotofacil_isolado": 1.12,
-    "nota": "ganhadores da faixa baixa por real arrecadado; Lotofacil isola o efeito das quentes porque todas as dezenas sao <= 31"
+  {
+   "modalidade": "Dupla-Sena",
+   "indice": 0.2433
   },
-  "curvaDeVolume": {
-    "megasena": {
-      "0": 0.67,
-      "1": 0.82,
-      "2a3": 0.95,
-      "4a6": 1.22,
-      "7+": 1.93
-    },
-    "quina": {
-      "0": 0.71,
-      "7+": 1.53
-    },
-    "lotofacil": {
-      "0": 0.91,
-      "2a3": 1.94
-    },
-    "diadesorte": {
-      "0": 0.78,
-      "7+": 1.86
-    },
-    "nota": "multiplicador do volume de apostas relativo a mediana, por sequencia de concursos acumulados"
+  {
+   "modalidade": "Lotofácil",
+   "indice": 0.1748,
+   "observacao": "a acumulacao de 3 concursos destacada na rotina de 02/11 foi ganha no 3820 (03/11): 2 ganhadores de 15 acertos, R$ 4.787.660,62 cada; estimativa voltou a R$ 2,0 mi"
   },
-  "tresEixos": {
-    "lotofacil": {
-      "total": 0.487,
-      "troco": 0.284,
-      "premio": 0.203,
-      "umEm": 9
-    },
-    "quina": {
-      "total": 0.458,
-      "troco": 0.174,
-      "premio": 0.284,
-      "umEm": 34
-    },
-    "megasena": {
-      "total": 0.36,
-      "troco": 0.135,
-      "premio": 0.224,
-      "umEm": 2298
-    }
+  {
+   "modalidade": "Lotomania",
+   "indice": 0.1172
   },
-  "custoConjuntosMedido": {
-    "lotofacil": {
-      "k4": "1,0s",
-      "k5": "3,0s",
-      "k6": "6,4s"
-    },
-    "lotomania": {
-      "k3": "1,2s",
-      "k4": "17s"
-    },
-    "timemania": {
-      "k6": "18ms"
-    },
-    "diadesorte": {
-      "k6": "4ms"
-    },
-    "orcamento": {
-      "operacoes": 15000000,
-      "chavesDistintas": 1500000
-    }
+  {
+   "modalidade": "Mega-Sena",
+   "indice": 0.1165
   },
-  "mudancas": {
-    "19.0": [
-      "Popularidade passa a ser MEDIDA (experimento natural) em vez de suposta.",
-      "Correcao de sinal: sequencias consecutivas eram penalizadas; medicao mostra que sao anti-multidao (Lotofacil 2,21x, Mega-Sena 1,41x).",
-      "Regras medidas e nulas (paridade, soma na Mega, tudo na Quina) foram removidas em vez de mantidas por intuicao.",
-      "Piso de 0,70x (teto de honestidade) sobre o produto de fatores.",
-      "Fator de desdobramento: media sobre os subconjuntos, nao o conjunto grande.",
-      "Botao copiar jogo / jogos / analise no gerador e nas tabelas de combinacoes.",
-      "Gerador nao gerava a quantidade pedida (rejeicao estourava; jogo sumia em silencio). Corrigido, com contador N de M.",
-      "Filtros de palpite removidos do gerador; selecao passa a ser pelo fator de rateio medido.",
-      "Abas Meu jogo e Gerador fundidas numa so, com botao Analisar este jogo.",
-      "Botao copiar tambem nos jogos gerados.",
-      "Seletor de tamanho em Meus numeros favoritos vinha de intervalo inventado (uma opcao so na Lotofacil); agora vem dos tamanhos reais da Caixa.",
-      "Card de custo do painel de favoritos usava o preco da aposta simples para qualquer tamanho.",
-      "Tabela dos tres eixos passa a ser ordenavel por coluna.",
-      "numDaCelula nao ordenava colunas escritas como 1 em N (devolvia sempre 1); valia para todas as tabelas ordenaveis."
-    ],
-    "19.1": [
-      "Historico de apostas sumia ao trocar de arquivo (localStorage do Chrome e por arquivo em file://). Semente versionada em data/apostas.json + exportar/importar + mesclagem por chave estavel.",
-      "Placar ignorava em silencio apostas de modalidades nao carregadas; agora carrega todas e avisa.",
-      "Deduplicacao de importacao era por id regerado (importar duas vezes duplicava tudo).",
-      "Dados atualizados ate 27/07/2026: lotofacil 3746, quina 7076, duplasena 2988, lotomania 2955, diadesorte 1256, supersete 878.",
-      "Primeiro resultado real registrado e analisado (secao 24.4)."
-    ],
-    "19.2": [
-      "Botoes de repetir aposta no historico: acumula repete as mesmas dezenas; mais procura dezenas de perfil medido melhor.",
-      "O botao de dezenas novas so troca com melhora estrita; empate nao e melhora.",
-      "Em modalidade sem medicao o botao se recusa a trocar e explica.",
-      "Analise: desdobramento vale o que valem seus piores subconjuntos (secao 24.6)."
-    ],
-    "19.3": [
-      "Base ate 28/07/2026: lotofacil 3747, megasena 3037, quina 7077, timemania 2421, diadesorte 1257.",
-      "Diario fora da amostra na aba Evidencias: recalcula sozinho a cada atualizacao e registra acertos e erros do coeficiente contra concursos posteriores a medicao.",
-      "Concurso sem padrao medido entra marcado e fora da conta, em vez de contar como acerto.",
-      "Lotofacil 3747 teve 6 ganhadores de 15 (R$ 2.125.438,65 cada) e nao acumulou."
-    ],
-    "19.4": [
-      "Minhas apostas saiu da fila de abas e virou chip ao lado de Onde apostar: e carteira, nao visao de modalidade.",
-      "Grafico do historico: por modalidade (barras gasto x premio) e no tempo (saldo acumulado vs sombra).",
-      "Escala adaptativa: com premio muito maior que o gasto, cada serie ganha seu eixo e o grafico avisa. Sem log.",
-      "Rotulo na ponta da linha estourava o viewBox; virou legenda no topo."
-    ],
-    "19.5": [
-      "Base ate 31/07/2026: lotofacil 3750, quina 7080, megasena 3038, lotomania 2957, diadesorte 1260, supersete 880, timemania 2422, maismilionaria 376, duplasena 2989.",
-      "Dupla-Sena 2990 (31/07) nao foi publicada nas fontes consultadas; base fica em 2989.",
-      "Diario fora da amostra da Lotofacil em 5 de 5; ressalvas registradas na secao 24.9.",
-      "Coleta feita da nuvem por WebFetch: a ponte com a maquina do Helio caiu e o PowerShell ficou indisponivel."
-    ],
-    "19.6": [
-      "Dupla-Sena 2990 (31/07) recuperada: a lacuna declarada na v19.5 esta fechada.",
-      "Varredura historica do CRIVO virou script reproduzivel (gerar_historico_crivo.py), validado contra o arquivo antigo antes de substituir.",
-      "historico_crivo.json regerado com a base ate 31/07/2026: 4.642 sorteios avaliados, 5 cruzaram 1,00.",
-      "_meta do arquivo passou a ser calculado; antes trazia 4.635 escrito a mao e envelhecia em silencio.",
-      "Afericao do preco reconstruido passou a usar janela de 12 meses por data, com amostra pequena sinalizada."
-    ],
-    "19.7": [
-      "Bolao vira modalidade de registro: lista de jogos, valor da cota, total de cotas, cotas compradas.",
-      "Custo registrado passa a ser o seu desembolso e o premio conferido e a sua fracao; custoTotal guarda o bilhete inteiro.",
-      "Sombra de bolao tem o mesmo formato: um jogo aleatorio para cada jogo do bilhete.",
-      "Conferencia de taxa: cotas x valor da cota contra o custo real do bilhete, com o percentual da diferenca.",
-      "Regra das consecutivas da Mega-Sena so codificava o lado popular (1,41x); o lado 0,71x estava faltando.",
-      "Registrados dois boloes da Mega-Sena 3039 (R$ 14,00 e R$ 12,60)."
-    ],
-    "19.7.1": [
-      "Correcao no registro: segundo jogo do bolao 1 e 07 10 14 17 19 26 43 (estava 11 no lugar do 10)."
-    ],
-    "19.8": [
-      "Base ate 02/08/2026: megasena 3039, lotofacil 3751, quina 7081, timemania 2423, diadesorte 1261.",
-      "+Milionaria 377 (02/08) fica pendente: nenhuma das fontes devolveu os trevos, e o formato exige 6 dezenas + 2 trevos.",
-      "historico_crivo regerado: 4.644 sorteios avaliados.",
-      "Diario fora da amostra em 6 de 9; Lotofacil errou pela primeira vez (3751) e Mega-Sena 3038 virou acerto pela correcao da v19.7.",
-      "Boloes da Mega-Sena 3039 conferidos: 1 acerto em cada um dos sete jogos, sem premio."
-    ],
-    "19.9": [
-      "O arquivo-fonte aberto solto mostrava Failed to fetch cru; agora explica que e a fonte, por que falhou e qual arquivo abrir.",
-      "Entregas passam a ser: no chat so o offline e o link; o resto vai para versoes/ na pasta, mantendo as duas ultimas."
-    ],
-    "19.10": [
-      "Matriz de decisao ganha a coluna do premio estimado, com data do sorteio e destaque do maior premio da rodada; ordenavel como as outras.",
-      "A nota da matriz compara a primeira colocada com a de maior premio, e diz quando as duas coincidem em vez de comentar so o caso favoravel a tese.",
-      "+Milionaria 377 entrou: os trevos apareceram e a lacuna da v19.8 fechou. Nove modalidades ate 02/08/2026."
-    ],
-    "19.11": [
-      "ERRO CORRIGIDO: jogo com dezenas extras pagava so a faixa do topo. C(acertos,pick) da zero quando acertos<pick. O certo e somar C(h,j)xC(n-h,pick-j) sobre todas as faixas premiadas. Um bolao real com 4 acertos em 8 dezenas recebia 1 quadra em vez de 6.",
-      "Bolao ganha campo de tarifa de servico: ela nao compra combinacao e reduz o retorno esperado na mesma proporcao. A previa mostra o percentual do desembolso.",
-      "Registrado o bolao da Mega-Sena 3042 (10 jogos de 8 dezenas, cota 1/80, R$ 28,35 com tarifa).",
-      "Base ate 09/08/2026 nas nove modalidades; historico_crivo regerado com 4.651 sorteios."
-    ],
-    "19.12": [
-      "Area de arrastar-e-soltar em Minhas apostas: le o PDF do comprovante da Caixa no proprio navegador, sem biblioteca externa, e funciona offline.",
-      "O parser NUNCA salva sozinho: monta uma ficha com tudo o que leu, aponta o que nao fechou e espera confirmacao.",
-      "A ficha confere cotas x valor da cota contra o custo dos jogos, e cota + tarifa contra o total pago, com centavos.",
-      "Tres defeitos achados no caminho: endstream contem stream; o EOL antes de endstream nao faz parte do stream; new Response(stream) falha em file://."
-    ],
-    "19.13": [
-      "Coluna Perfil no historico de apostas: o fator de rateio medido das dezenas que voce jogou.",
-      "Desdobramento entra pela media dos subconjuntos; bolao pela media dos jogos; modalidade sem medicao mostra traco.",
-      "Registradas 3 apostas de Lotofacil do concurso 3758 (R$ 3,50 cada). Uma delas mede 2,66x - o pior lado da medicao.",
-      "Base inalterada: a API oficial em 10/08/2026 devolveu os mesmos concursos ja presentes (fechada em 09/08/2026)."
-    ],
-    "19.14": [
-      "Registradas 8 apostas simples de Mega-Sena (3040, 3041, 3042) a partir dos comprovantes oficiais em PDF.",
-      "Uma delas, 02 05 10 13 41 53 no concurso 3042, fez 4 acertos: R$ 706,56, com comprovante de pagamento de premio.",
-      "O comprovante de pagamento diz 'valor total liquido' e bate com o rateio publicado - prova documental da secao 17 (sem IR).",
-      "Placar passa a avisar que cobre apenas o que foi registrado; aposta feita no app e invisivel ate ser informada.",
-      "Bolao do 3042 reconferido com extrator independente (pdftotext): 1 pagina, 10 jogos, sem truncamento. O parser estava certo."
-    ],
-    "19.15": [
-      "Base ate 10/08/2026: lotofacil 3758, quina 7088, lotomania 2961, duplasena 2994, diadesorte 1268, supersete 884.",
-      "Lotofacil 3758 nao acumulou: 8 ganhadores de 15 acertos, R$ 530.611,74 cada.",
-      "As 3 apostas do Helio no 3758: 11, 9 e 9 acertos - R$ 7,00 de retorno sobre R$ 10,50.",
-      "historico_crivo regerado: 4.652 sorteios avaliados, 5 cruzaram 1,00.",
-      "Diario fora da amostra caiu para 10 de 19 (lotofacil 8/13, megasena 2/6) - empatado com o acaso, e dito assim na tela."
-    ],
-    "19.16": [
-      "ERRO CORRIGIDO: pick (quantas o sorteio tira) era usado como tamanho de aposta. Lotomania marca 50 e sorteia 20; Timemania marca 10 e sorteia 7.",
-      "Um bilhete de Lotomania com 15 acertos devolvia R$ 3.957.264,08 no lugar de R$ 12,19 - expandia em C(50,20) apostas simples.",
-      "Timemania com 7 acertos e faixa acumulada devolvia R$ 1.011.742,20 no lugar de zero.",
-      "Volante da Lotomania mirava 20 dezenas em Montar eu mesmo; agora mira 50. O gerador ja estava certo.",
-      "Novas funcoes tamanhoBase, apostaFixa e expandeEmSimples; aplicadas em volante, custo, validacao de registro e leitor de comprovante.",
-      "Registradas 4 apostas de Lotomania do concurso 2962 (dois pares espelho perfeitos, R$ 3,00 cada).",
-      "Nota da aposta espelho no volante: nao aumenta a chance (1 em 44, igual a dois bilhetes quaisquer), so anticorrelaciona."
-    ],
-    "19.17": [
-      "Mais 4 apostas de Lotomania no concurso 2962, transcritas de prints do app - dois pares espelho perfeitos (A-D e B-C).",
-      "A transcricao se validou sozinha: um numero lido errado quebraria a complementaridade dos pares.",
-      "O 2962 fica com 8 bilhetes, R$ 24,00, quatro pares espelho.",
-      "Chance de levar algum premio com os 8: 1 em 11 - identico a oito bilhetes quaisquer. Numero de SIMULACAO (400 mil sorteios), nao formula fechada.",
-      "Ressalvas gravadas na origem de cada registro: print e tela de carrinho (nao comprovante pago) e nao mostra o concurso (2962 assumido)."
-    ],
-    "19.17.1": [
-      "Concurso 2962 confirmado pelo Helio para as 4 apostas vindas de print; a ressalva de 'concurso assumido' esta fechada.",
-      "Permanece registrado que a origem dessas 4 e print de tela, nao comprovante em PDF."
-    ],
-    "19.17.2": [
-      "CORRECAO: as 4 apostas vindas de print sao do concurso 2964, nao 2962 - informado pelo Helio.",
-      "O 2962 fica com 4 bilhetes (R$ 12,00, com comprovante PDF) e o 2964 com 4 (R$ 12,00, de print).",
-      "Chance de algum premio com 4 bilhetes em dois pares espelho: 1 em 22, razao 0,998 contra quatro bilhetes quaisquer - indistinguivel de 1 no ruido da simulacao.",
-      "Licao registrada: campo que nao aparece no print deve ser perguntado, nao deduzido com ressalva."
-    ],
-    "19.18": [
-      "Base ate 16/08/2026: 29 concursos incorporados de uma vez, nas nove modalidades.",
-      "Mapeamento de faixas validado modalidade por modalidade contra o ultimo concurso ja armazenado antes de gravar.",
-      "Lotomania 2962 conferido: 13, 7, 12 e 8 acertos - os pares espelho somam 20 exatos. Sem premio.",
-      "historico_crivo regerado: 4.658 sorteios avaliados, 5 cruzaram 1,00.",
-      "Diario fora da amostra: 15 de 27 (lotofacil 12/18, megasena 3/9). Terceira leitura seguida em torno do acaso.",
-      "Registrado que o relogio do container estava 6 dias atrasado; a data veio da API da Caixa."
-    ],
-    "19.19": [
-      "Base ate 19/08/2026: 16 concursos novos em oito modalidades.",
-      "LACUNA: Super Sete travado em 886 (14/08) - a API oficial devolveu erro 500 em todas as tentativas.",
-      "Lotomania 2964 conferido: 9, 10, 10 e 11 acertos, pares somando 20. Sem premio.",
-      "Somando 2962 e 2964, os oito bilhetes ficaram entre 7 e 13 acertos - comportamento esperado, nao azar (E[acertos]=10).",
-      "historico_crivo regerado: 4.661 sorteios avaliados.",
-      "Diario fora da amostra: 18 de 31. Quarta leitura seguida em torno do acaso."
-    ],
-    "19.20": [
-      "Linha de Total no topo do grafico por modalidade: gasto, premio recebido, saldo e retorno.",
-      "Rodape equivalente na tabela, em <tfoot> para nao ser embaralhado pelo ordenador de colunas.",
-      "A linha do total nao tem barra de proposito - na mesma escala ela engoliria a comparacao entre modalidades.",
-      "Aviso de concentracao: quando o maior premio isolado responde por 60% ou mais do total recebido, a linha diz isso.",
-      "Hoje sao 92% (a quadra de R$ 706,56 na Mega 3042); sem a aposta, o retorno cai de 390% para 31%."
-    ],
-    "19.21": [
-      "ERRO GRAVE CORRIGIDO: o painel dava indice 12,67 e veredito APOSTAR para a Lotofacil da Independencia. O correto e 0,696.",
-      "Causa: a correcao de volume da v16 e pela sequencia de acumulacao, e concurso especial nao acumula - junta publico por ser evento.",
-      "Nova funcao multiplicadorEspecial: mede o multiplicador uma edicao por vez. Independencia 33,2x, Virada 37,4x, Sao Joao 35,2x, Primavera 1,4x, Natal 1,9x.",
-      "Acumulacao e especial usam Math.max, nunca o produto - as duas causas quase nunca coincidem.",
-      "Premio de gatilho da Independencia passa de R$ 17,3 milhoes para R$ 520,9 milhoes.",
-      "Base ate 08/09/2026: 91 concursos incorporados, incluindo os do Super Sete travados desde 14/08.",
-      "historico_crivo regerado: 4.674 sorteios avaliados.",
-      "Registradas 3 apostas de Quina do concurso 7113 (R$ 24,00)."
-    ],
-    "19.22": [
-      "Registradas 2 apostas de Lotofacil no concurso 3780 - a Lotofacil da Independencia, 15/09, R$ 300 milhoes.",
-      "Registradas 3 apostas de Quina no 7114, repetindo as dezenas do 7113 (repeticao confirmada pelo Helio).",
-      "Quina 7113 conferido: saiu 01 32 57 78 80, os tres jogos fizeram zero acertos.",
-      "Analise do rateio das duas da Independencia: aposta 1 mede 1,32x (contem a coluna 3 inteira) e aposta 2 mede 0,85x.",
-      "Traduzido para a escala de 2025 (54 ganhadores, R$ 231,9 mi): cota de ~R$ 3,25 mi contra ~R$ 5,03 mi. Mesma chance de ganhar.",
-      "Base ate 09/09/2026: quina 7113, lotomania 2973, duplasena 3006, diadesorte 1293, supersete 896, maismilionaria 388.",
-      "historico_crivo regerado: 4.675 sorteios avaliados."
-    ]
+  {
+   "modalidade": "+Milionária",
+   "indice": 0.079
   },
-  "apostasReais": [
-    {
-      "data": "27/07/2026",
-      "modalidade": "lotofacil",
-      "concurso": 3746,
-      "apostas": 2,
-      "premioEstimado": 9000000,
-      "indiceCrivo": 0.4871,
-      "percentilHistorico": 98.9,
-      "gatilho": 31739231,
-      "resultado": "sem premio",
-      "acertos": 8,
-      "dezenas": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        10,
-        11,
-        14,
-        16,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25
-      ],
-      "sorteio": [
-        1,
-        3,
-        4,
-        6,
-        7,
-        8,
-        9,
-        10,
-        14,
-        15,
-        17,
-        18,
-        21,
-        22,
-        24
-      ],
-      "premio": 0
-    },
-    {
-      "data": "27/07/2026",
-      "modalidade": "quina",
-      "concurso": 7076,
-      "apostas": 1,
-      "custo": 3,
-      "dezenas": [
-        12,
-        15,
-        32,
-        65,
-        75
-      ],
-      "sorteio": [
-        1,
-        18,
-        22,
-        35,
-        41
-      ],
-      "acertos": 0,
-      "premio": 0,
-      "resultado": "sem premio"
-    },
-    {
-      "data": "01/08/2026",
-      "modalidade": "megasena",
-      "concurso": 3039,
-      "tipo": "bolao",
-      "apostas": 2,
-      "custo": 26.6,
-      "detalhe": "cota R$14 de 12 (4 jogos de 7) + cota R$12,60 de 10 (3 jogos de 7)",
-      "resultado": "sem premio",
-      "sorteio": [
-        14,
-        16,
-        21,
-        39,
-        53,
-        58
-      ],
-      "melhorAcerto": 1,
-      "premio": 0
-    },
-    {
-      "data": "07/08/2026",
-      "modalidade": "megasena",
-      "concurso": 3042,
-      "tipo": "bolao",
-      "cotas": "1/80",
-      "custo": 28.35,
-      "tarifa": 7.35,
-      "bilhete": 1680.0,
-      "resultado": "premiado",
-      "premioBilhete": 4239.36,
-      "premio": 52.99,
-      "saldo": 24.64,
-      "detalhe": "jogo 6 fez 4 acertos = 6 quadras"
-    },
-    {
-      "data": "10/08/2026",
-      "modalidade": "lotofacil",
-      "concurso": 3758,
-      "apostas": 3,
-      "custo": 10.5,
-      "origem": "print do CARRINHO do app da Caixa, nao comprovante pago - confirmar a compra",
-      "premioEstimado": 5000000,
-      "fatoresMedidos": [
-        0.824,
-        0.92,
-        2.664
-      ],
-      "resultado": "11, 9 e 9 acertos",
-      "nota": "a aposta de melhor perfil (0,82x) foi a unica premiada - coincidencia de um sorteio, nao sinal",
-      "premio": 7.0,
-      "sorteio": [
-        1,
-        3,
-        4,
-        5,
-        8,
-        9,
-        11,
-        12,
-        13,
-        14,
-        17,
-        18,
-        20,
-        24,
-        25
-      ]
-    },
-    {
-      "data": "04 a 07/08/2026",
-      "modalidade": "megasena",
-      "concursos": [
-        3040,
-        3041,
-        3042
-      ],
-      "apostas": 8,
-      "custo": 48.0,
-      "origem": "comprovantes oficiais em PDF, apostas pelo app (IOS), codigo E. Loterico 04.025304-0",
-      "resultado": "1 quadra",
-      "premio": 706.56,
-      "detalhe": "02 05 10 13 41 53 no 3042 fez 4 acertos; resgate em 09/08/2026 22:24, NSU 208855923",
-      "nota": "as oito medem 1,41x - nenhuma tem dezenas coladas, o lado que a multidao prefere"
-    },
-    {
-      "data": "11/08/2026",
-      "modalidade": "lotomania",
-      "concurso": 2962,
-      "apostas": 4,
-      "custo": 12.0,
-      "origem": "comprovantes oficiais em PDF, compra pelo app em 11/08/2026 16:29",
-      "detalhe": "13, 7, 12 e 8 acertos; os pares espelho somam 20 exatos nos dois casos",
-      "resultado": "sem premio",
-      "nota": "1 em 22 de levar algum premio; identico a quatro bilhetes quaisquer (simulacao)",
-      "premio": 0.0,
-      "sorteio": [
-        13,
-        15,
-        21,
-        29,
-        34,
-        35,
-        36,
-        42,
-        47,
-        56,
-        60,
-        64,
-        74,
-        75,
-        86,
-        89,
-        91,
-        95,
-        96,
-        99
-      ]
-    },
-    {
-      "data": "11/08/2026",
-      "modalidade": "lotomania",
-      "concurso": 2964,
-      "apostas": 4,
-      "custo": 12.0,
-      "origem": "prints da tela do app, 11/08/2026 19h23; concurso informado pelo Helio",
-      "detalhe": "9, 10, 10 e 11 acertos; pares espelho somam 20 exatos",
-      "resultado": "sem premio",
-      "premio": 0.0,
-      "sorteio": [
-        7,
-        13,
-        14,
-        16,
-        25,
-        29,
-        33,
-        40,
-        41,
-        44,
-        56,
-        60,
-        61,
-        64,
-        67,
-        68,
-        73,
-        77,
-        83,
-        85
-      ]
-    },
-    {
-      "data": "09/09/2026",
-      "modalidade": "quina",
-      "concurso": 7113,
-      "apostas": 3,
-      "custo": 24.0,
-      "origem": "print do carrinho do app da Caixa, 09/09/2026 13h42; concurso legivel no print",
-      "detalhe": "zero acertos nos tres jogos",
-      "resultado": "sem premio",
-      "ressalva": "origem e tela de carrinho, nao comprovante pago",
-      "premio": 0.0,
-      "sorteio": [
-        1,
-        32,
-        57,
-        78,
-        80
-      ]
-    },
-    {
-      "data": "10/09/2026",
-      "modalidade": "lotofacil",
-      "concurso": 3780,
-      "apostas": 2,
-      "custo": 7.0,
-      "origem": "print do carrinho do app da Caixa, 10/09/2026; concurso legivel no print",
-      "detalhe": "Lotofacil da Independencia, sorteio 15/09/2026, premio estimado R$ 300 milhoes",
-      "fatoresMedidos": [
-        1.319,
-        0.853
-      ],
-      "nota": "aposta 1 contem a coluna 3 inteira do volante (1,210x); na escala de 2025 a diferenca entre as duas e de ~R$ 1,8 milhao na cota",
-      "resultado": "aguardando sorteio",
-      "ressalva": "origem e tela de carrinho, nao comprovante pago"
-    },
-    {
-      "data": "10/09/2026",
-      "modalidade": "quina",
-      "concurso": 7114,
-      "apostas": 3,
-      "custo": 24.0,
-      "origem": "print do carrinho do app da Caixa, 10/09/2026",
-      "detalhe": "mesmas dezenas do 7113; repeticao confirmada pelo Helio, nao substituicao",
-      "resultado": "aguardando sorteio",
-      "ressalva": "origem e tela de carrinho, nao comprovante pago"
-    }
-  ],
-  "commit": "96e3b34",
-  "commitCurto": "96e3b34",
-  "carteira": {
-    "apostas": 32,
-    "gasto": 251.45,
-    "ganho": 766.55,
-    "saldo": 515.1,
-    "ressalva": "92% do ganho vem de um unico premio; sem ele o retorno e 8%"
-  },
-  "diarioForaDaAmostra": {
-    "acertos": 18,
-    "concursos": 31,
-    "lotofacil": "14 de 21",
-    "megasena": "4 de 10",
-    "leitura": "quarta leitura seguida em torno do acaso: 6/9, 10/19, 15/27, 18/31"
-  },
-  "correcaoConcursoEspecial": {
-    "lotofacil_independencia": 33.2,
-    "megasena_virada": 37.4,
-    "quina_saojoao": 35.2,
-    "diadesorte_primavera": 1.4,
-    "timemania_natal": 1.9,
-    "nota": "multiplicador de volume medido nas 5 ultimas edicoes de cada especial; combinado com a curva de acumulacao por Math.max"
-  },
-  "testes": {
-    "regressao": "reg.js — 81 combinacoes (9 jogos x 9 abas) x 2 temas, erros de console, botoes mortos, overflow em 390px",
-    "carteira": "carteira.js — tabela de apostas, grafico e linha de total",
-    "comparar": "crivo.js — ranking das nove modalidades",
-    "plausibilidade": "plaus.js — 8 invariantes: A premio <= pago no concurso; B aposta que nao expande paga UMA faixa; C expansao limitada; D indice <= 2,00; E Super Sete por polinomio contra forca bruta; F1 premiacao bruta reconstruida = fatia legal; F2 frequencia teorica x observada; F3 aviso de mudanca de norma",
-    "controleNegativo": "controle.js — desfaz a v19.16 e a regra antiga do Super Sete, e exige que plaus.js reprove as duas",
-    "observacao": "a regressao testa se a tela PINTA; plaus.js testa se o NUMERO E POSSIVEL. Duas vezes um numero absurdo passou so pela primeira."
-  },
-  "auditoriaDoIndice": {
-    "metodo": "reimplementacao independente em Python a partir dos JSON, confrontada com o JS",
-    "resultado": "implementacao correta, especificacao com dois erros sistematicos, ambos otimistas",
-    "sensibilidadeAoVolume": {
-      "lotofacil": "+-8,7% para 30% de erro no volume (lambda 2,55)",
-      "megasena": "+-3,0%",
-      "demais": "menos de 1%"
-    },
-    "backtestDoVolume": "erro mediano absoluto de 17% a 41% por modalidade, previsto so com o passado"
-  },
-  "guardaDePublicacao": {
-    "script": "verificar_publicacao.py",
-    "marcas": 11,
-    "tamanhoMinimo": 3000000,
-    "porque": "em 23/09/2026 uma rotina semanal publicou dashboard/index.html por cima do painel e ninguem percebeu por um mes"
+  {
+   "modalidade": "Quina",
+   "indice": 0.0416
   }
+ ],
+ "artefatos": {
+  "painelPublicado": "repo-github/index.html (arquivo único, dados embutidos)",
+  "painelOffline": "painel-loterias-offline.html (cópia idêntica)",
+  "fonteDoPainel": "site/index.html + site/data/*.json (não embutidos)",
+  "designSystem": [
+   "site/tokens.css",
+   "site/components.css",
+   "site/styleguide.html",
+   "DESIGN-SYSTEM.md"
+  ],
+  "documentacao": [
+   "README.md",
+   "METODOLOGIA.md",
+   "CONTINUAR-AQUI.md"
+  ],
+  "prototipo": "prototipo-v9.html",
+  "bundler": "bundle.py"
+ },
+ "tarefaSemanal": {
+  "id": "trig_01QG7R8GitNHNrH5Lvazpr6A",
+  "quando": "segundas 14:00 UTC = 11h de Brasília",
+  "faz": "recalcula o índice CRIVO e avisa se alguma acumulação passou a valer a pena"
+ },
+ "mudancasDaVersao": [
+  "Atualizacao semanal de dados pela rotina agendada (09/11/2026): 27 concursos novos, nenhum reparo. Nenhuma mudanca de codigo.",
+  "Base ate 08/11/2026: Mega-Sena 3083, Lotofacil 3824, Quina 7162, Lotomania 2996, Dupla-Sena 3029, Timemania 2465, Dia de Sorte 1342, +Milionaria 405. Super Sete segue travado no 909 (API devolve 500).",
+  "historico_crivo.json regerado: 4.734 sorteios avaliados, 5 cruzaram 1,00. Afericao de preco dentro de 10% em todas as modalidades com n>=8.",
+  "Rodada fria: nenhum indice acima de 0,60. O melhor e o Dia de Sorte (0,5628, percentil 93,3), unico MELHOR RETORNO da matriz. Lotofacil e Mega-Sena pagaram a faixa maxima na semana e voltaram ao piso (0,1748 e 0,1165); a Lotofacil 3820 que a rotina de 02/11 destacou saiu para 2 ganhadores, R$ 4,79 mi cada."
+ ],
+ "validacaoDaCalibracao": {
+  "duplaSena_dentroDoMesmoSorteio": 0.8504,
+  "duplaSena_teorico": 0.8503,
+  "duplaSena_entreOsDoisSorteios": 0.9994,
+  "superSete_entreColunas": 1.0,
+  "observacao": "escala calibrada nos dados reencontra a correcao hipergeometrica onde ela existe e 1,0000 onde os sorteios sao independentes"
+ },
+ "lacunasDeclaradas": [
+  "+Milionaria fora do backtest do metodo (ordem das faixas nao verificada)",
+  "telas 2 a 5 do redesenho existem no codigo e no prototipo, nao no Figma (cota do plano Starter)",
+  "plaus.js deixa a +Milionaria fora da varredura sintetica: a ordem das dez faixas nunca foi conferida contra contagens de ganhadores",
+  "a guarda de 'a edicao especial do ano ja saiu' depende de status.json[jogo].especialDoAno ser preenchido na coleta; chave ausente = guarda nao opina, e volta o comportamento errado da v19.21",
+  "o conteiner da sessao nao alcanca mais a API da Caixa (403 no CONNECT); a coleta depende da maquina do Helio estar conectada",
+  "continua sendo gerado um dados.zip redundante dentro da pasta protegida pelo Norton — nao foi removido nesta versao",
+  "o percentil historico compara com amostra so de sorteios em que o premio principal foi ganho - amostra enviesada para cima, entao o percentil de hoje sai baixo demais (erra para o lado conservador)",
+  "o gatilho resolve indice=1 mantendo a partilha de hoje; um premio daquele tamanho atrairia mais gente. Medido: subestimado entre 0% e 5%",
+  "os fatores de POPULARIDADE nao foram remedidos desde uma base menor; a tela agora declara isso, mas remedir e a proxima tarefa que vale a pena",
+  "Super Sete: a API da Caixa devolve 500 em todos os concursos desde 09/10/2026; a base para no 909 e o status do jogo esta congelado",
+  "a pasta dashboard/ e a geracao de julho e NAO pode ser publicada; ela so e mantida porque atualizar_tudo.ps1 ainda coleta dados corretamente"
+ ],
+ "varreduraHistorica": {
+  "sorteiosMedidos": 4734,
+  "cruzaram1": 5,
+  "cruzamentos": [
+   {
+    "m": "Lotomania",
+    "c": 1741,
+    "d": "03/03/2017",
+    "i": 1.355,
+    "tipo": "sorteio comum"
+   },
+   {
+    "m": "Mega-Sena",
+    "c": 1772,
+    "d": "22/12/2015",
+    "i": 1.155,
+    "tipo": "Mega da Virada"
+   },
+   {
+    "m": "Quina",
+    "c": 4706,
+    "d": "23/06/2018",
+    "i": 1.022,
+    "tipo": "Quina de Sao Joao"
+   },
+   {
+    "m": "Timemania",
+    "c": 2336,
+    "d": "27/12/2025",
+    "i": 1.014,
+    "tipo": "Timemania de Natal"
+   },
+   {
+    "m": "Quina",
+    "c": 4114,
+    "d": "24/06/2016",
+    "i": 1.012,
+    "tipo": "Quina de Sao Joao"
+   }
+  ],
+  "validacaoImposto": {
+   "megasena": 43.56,
+   "quina": 43.46,
+   "duplasena": 43.42,
+   "lotofacil": 43.16,
+   "lotomania": 43.16,
+   "diadesorte": 42.92,
+   "supersete": 42.69,
+   "alvoLegal": 43.35
+  },
+  "especiaisPorVolume": {
+   "megasena": {
+    "nome": "Mega da Virada",
+    "edicoes": 16,
+    "medianaEspecial": 0.4428,
+    "medianaComum": 0.2959,
+    "ganho": 1.5
+   },
+   "lotofacil": {
+    "nome": "Lotofácil da Independência",
+    "edicoes": 18,
+    "medianaEspecial": 0.6265,
+    "medianaComum": 0.37,
+    "ganho": 1.69
+   },
+   "quina": {
+    "nome": "Quina de São João",
+    "edicoes": 10,
+    "medianaEspecial": 0.8036,
+    "medianaComum": 0.2933,
+    "ganho": 2.74
+   },
+   "timemania": {
+    "nome": "Timemania de Natal",
+    "edicoes": 3,
+    "medianaEspecial": 0.4099,
+    "medianaComum": 0.3347,
+    "ganho": 1.22
+   },
+   "diadesorte": {
+    "nome": "Dia de Sorte da Primavera",
+    "edicoes": 8,
+    "medianaEspecial": 0.4867,
+    "medianaComum": 0.3195,
+    "ganho": 1.52
+   }
+  },
+  "comoAEdicaoEIdentificada": "dentro da janela de calendario, o concurso de MAIOR arrecadacao do ano — uma por ano. Antes era por data, o que rotulava dezenas de sorteios comuns de setembro como Independencia e apagava o efeito medido."
+ },
+ "repeticoesDeSorteio": {
+  "megasena": {
+   "obs": 0,
+   "esp": 0.09
+  },
+  "lotofacil": {
+   "obs": 0,
+   "esp": 2.14
+  },
+  "quina": {
+   "obs": 3,
+   "esp": 1.04
+  },
+  "duplasena": {
+   "obs": 2,
+   "esp": 1.12
+  },
+  "diadesorte": {
+   "obs": 0,
+   "esp": 0.3
+  },
+  "nota": "todas conferidas na API oficial da Caixa"
+ },
+ "efeitosMedidos": {
+  "datas_megasena": 1.96,
+  "datas_quina": 1.45,
+  "quentes_megasena_controlado": 1.07,
+  "quentes_lotofacil_isolado": 1.12,
+  "nota": "ganhadores da faixa baixa por real arrecadado; Lotofacil isola o efeito das quentes porque todas as dezenas sao <= 31"
+ },
+ "curvaDeVolume": {
+  "megasena": {
+   "0": 0.67,
+   "1": 0.82,
+   "2a3": 0.95,
+   "4a6": 1.22,
+   "7+": 1.93
+  },
+  "quina": {
+   "0": 0.71,
+   "7+": 1.53
+  },
+  "lotofacil": {
+   "0": 0.91,
+   "2a3": 1.94
+  },
+  "diadesorte": {
+   "0": 0.78,
+   "7+": 1.86
+  },
+  "nota": "multiplicador do volume de apostas relativo a mediana, por sequencia de concursos acumulados"
+ },
+ "tresEixos": {
+  "lotofacil": {
+   "total": 0.487,
+   "troco": 0.284,
+   "premio": 0.203,
+   "umEm": 9
+  },
+  "quina": {
+   "total": 0.458,
+   "troco": 0.174,
+   "premio": 0.284,
+   "umEm": 34
+  },
+  "megasena": {
+   "total": 0.36,
+   "troco": 0.135,
+   "premio": 0.224,
+   "umEm": 2298
+  }
+ },
+ "custoConjuntosMedido": {
+  "lotofacil": {
+   "k4": "1,0s",
+   "k5": "3,0s",
+   "k6": "6,4s"
+  },
+  "lotomania": {
+   "k3": "1,2s",
+   "k4": "17s"
+  },
+  "timemania": {
+   "k6": "18ms"
+  },
+  "diadesorte": {
+   "k6": "4ms"
+  },
+  "orcamento": {
+   "operacoes": 15000000,
+   "chavesDistintas": 1500000
+  }
+ },
+ "mudancas": {
+  "19.0": [
+   "Popularidade passa a ser MEDIDA (experimento natural) em vez de suposta.",
+   "Correcao de sinal: sequencias consecutivas eram penalizadas; medicao mostra que sao anti-multidao (Lotofacil 2,21x, Mega-Sena 1,41x).",
+   "Regras medidas e nulas (paridade, soma na Mega, tudo na Quina) foram removidas em vez de mantidas por intuicao.",
+   "Piso de 0,70x (teto de honestidade) sobre o produto de fatores.",
+   "Fator de desdobramento: media sobre os subconjuntos, nao o conjunto grande.",
+   "Botao copiar jogo / jogos / analise no gerador e nas tabelas de combinacoes.",
+   "Gerador nao gerava a quantidade pedida (rejeicao estourava; jogo sumia em silencio). Corrigido, com contador N de M.",
+   "Filtros de palpite removidos do gerador; selecao passa a ser pelo fator de rateio medido.",
+   "Abas Meu jogo e Gerador fundidas numa so, com botao Analisar este jogo.",
+   "Botao copiar tambem nos jogos gerados.",
+   "Seletor de tamanho em Meus numeros favoritos vinha de intervalo inventado (uma opcao so na Lotofacil); agora vem dos tamanhos reais da Caixa.",
+   "Card de custo do painel de favoritos usava o preco da aposta simples para qualquer tamanho.",
+   "Tabela dos tres eixos passa a ser ordenavel por coluna.",
+   "numDaCelula nao ordenava colunas escritas como 1 em N (devolvia sempre 1); valia para todas as tabelas ordenaveis."
+  ],
+  "19.1": [
+   "Historico de apostas sumia ao trocar de arquivo (localStorage do Chrome e por arquivo em file://). Semente versionada em data/apostas.json + exportar/importar + mesclagem por chave estavel.",
+   "Placar ignorava em silencio apostas de modalidades nao carregadas; agora carrega todas e avisa.",
+   "Deduplicacao de importacao era por id regerado (importar duas vezes duplicava tudo).",
+   "Dados atualizados ate 27/07/2026: lotofacil 3746, quina 7076, duplasena 2988, lotomania 2955, diadesorte 1256, supersete 878.",
+   "Primeiro resultado real registrado e analisado (secao 24.4)."
+  ],
+  "19.2": [
+   "Botoes de repetir aposta no historico: acumula repete as mesmas dezenas; mais procura dezenas de perfil medido melhor.",
+   "O botao de dezenas novas so troca com melhora estrita; empate nao e melhora.",
+   "Em modalidade sem medicao o botao se recusa a trocar e explica.",
+   "Analise: desdobramento vale o que valem seus piores subconjuntos (secao 24.6)."
+  ],
+  "19.3": [
+   "Base ate 28/07/2026: lotofacil 3747, megasena 3037, quina 7077, timemania 2421, diadesorte 1257.",
+   "Diario fora da amostra na aba Evidencias: recalcula sozinho a cada atualizacao e registra acertos e erros do coeficiente contra concursos posteriores a medicao.",
+   "Concurso sem padrao medido entra marcado e fora da conta, em vez de contar como acerto.",
+   "Lotofacil 3747 teve 6 ganhadores de 15 (R$ 2.125.438,65 cada) e nao acumulou."
+  ],
+  "19.4": [
+   "Minhas apostas saiu da fila de abas e virou chip ao lado de Onde apostar: e carteira, nao visao de modalidade.",
+   "Grafico do historico: por modalidade (barras gasto x premio) e no tempo (saldo acumulado vs sombra).",
+   "Escala adaptativa: com premio muito maior que o gasto, cada serie ganha seu eixo e o grafico avisa. Sem log.",
+   "Rotulo na ponta da linha estourava o viewBox; virou legenda no topo."
+  ],
+  "19.5": [
+   "Base ate 31/07/2026: lotofacil 3750, quina 7080, megasena 3038, lotomania 2957, diadesorte 1260, supersete 880, timemania 2422, maismilionaria 376, duplasena 2989.",
+   "Dupla-Sena 2990 (31/07) nao foi publicada nas fontes consultadas; base fica em 2989.",
+   "Diario fora da amostra da Lotofacil em 5 de 5; ressalvas registradas na secao 24.9.",
+   "Coleta feita da nuvem por WebFetch: a ponte com a maquina do Helio caiu e o PowerShell ficou indisponivel."
+  ],
+  "19.6": [
+   "Dupla-Sena 2990 (31/07) recuperada: a lacuna declarada na v19.5 esta fechada.",
+   "Varredura historica do CRIVO virou script reproduzivel (gerar_historico_crivo.py), validado contra o arquivo antigo antes de substituir.",
+   "historico_crivo.json regerado com a base ate 31/07/2026: 4.642 sorteios avaliados, 5 cruzaram 1,00.",
+   "_meta do arquivo passou a ser calculado; antes trazia 4.635 escrito a mao e envelhecia em silencio.",
+   "Afericao do preco reconstruido passou a usar janela de 12 meses por data, com amostra pequena sinalizada."
+  ],
+  "19.7": [
+   "Bolao vira modalidade de registro: lista de jogos, valor da cota, total de cotas, cotas compradas.",
+   "Custo registrado passa a ser o seu desembolso e o premio conferido e a sua fracao; custoTotal guarda o bilhete inteiro.",
+   "Sombra de bolao tem o mesmo formato: um jogo aleatorio para cada jogo do bilhete.",
+   "Conferencia de taxa: cotas x valor da cota contra o custo real do bilhete, com o percentual da diferenca.",
+   "Regra das consecutivas da Mega-Sena so codificava o lado popular (1,41x); o lado 0,71x estava faltando.",
+   "Registrados dois boloes da Mega-Sena 3039 (R$ 14,00 e R$ 12,60)."
+  ],
+  "19.7.1": [
+   "Correcao no registro: segundo jogo do bolao 1 e 07 10 14 17 19 26 43 (estava 11 no lugar do 10)."
+  ],
+  "19.8": [
+   "Base ate 02/08/2026: megasena 3039, lotofacil 3751, quina 7081, timemania 2423, diadesorte 1261.",
+   "+Milionaria 377 (02/08) fica pendente: nenhuma das fontes devolveu os trevos, e o formato exige 6 dezenas + 2 trevos.",
+   "historico_crivo regerado: 4.644 sorteios avaliados.",
+   "Diario fora da amostra em 6 de 9; Lotofacil errou pela primeira vez (3751) e Mega-Sena 3038 virou acerto pela correcao da v19.7.",
+   "Boloes da Mega-Sena 3039 conferidos: 1 acerto em cada um dos sete jogos, sem premio."
+  ],
+  "19.9": [
+   "O arquivo-fonte aberto solto mostrava Failed to fetch cru; agora explica que e a fonte, por que falhou e qual arquivo abrir.",
+   "Entregas passam a ser: no chat so o offline e o link; o resto vai para versoes/ na pasta, mantendo as duas ultimas."
+  ],
+  "19.10": [
+   "Matriz de decisao ganha a coluna do premio estimado, com data do sorteio e destaque do maior premio da rodada; ordenavel como as outras.",
+   "A nota da matriz compara a primeira colocada com a de maior premio, e diz quando as duas coincidem em vez de comentar so o caso favoravel a tese.",
+   "+Milionaria 377 entrou: os trevos apareceram e a lacuna da v19.8 fechou. Nove modalidades ate 02/08/2026."
+  ],
+  "19.11": [
+   "ERRO CORRIGIDO: jogo com dezenas extras pagava so a faixa do topo. C(acertos,pick) da zero quando acertos<pick. O certo e somar C(h,j)xC(n-h,pick-j) sobre todas as faixas premiadas. Um bolao real com 4 acertos em 8 dezenas recebia 1 quadra em vez de 6.",
+   "Bolao ganha campo de tarifa de servico: ela nao compra combinacao e reduz o retorno esperado na mesma proporcao. A previa mostra o percentual do desembolso.",
+   "Registrado o bolao da Mega-Sena 3042 (10 jogos de 8 dezenas, cota 1/80, R$ 28,35 com tarifa).",
+   "Base ate 09/08/2026 nas nove modalidades; historico_crivo regerado com 4.651 sorteios."
+  ],
+  "19.12": [
+   "Area de arrastar-e-soltar em Minhas apostas: le o PDF do comprovante da Caixa no proprio navegador, sem biblioteca externa, e funciona offline.",
+   "O parser NUNCA salva sozinho: monta uma ficha com tudo o que leu, aponta o que nao fechou e espera confirmacao.",
+   "A ficha confere cotas x valor da cota contra o custo dos jogos, e cota + tarifa contra o total pago, com centavos.",
+   "Tres defeitos achados no caminho: endstream contem stream; o EOL antes de endstream nao faz parte do stream; new Response(stream) falha em file://."
+  ],
+  "19.13": [
+   "Coluna Perfil no historico de apostas: o fator de rateio medido das dezenas que voce jogou.",
+   "Desdobramento entra pela media dos subconjuntos; bolao pela media dos jogos; modalidade sem medicao mostra traco.",
+   "Registradas 3 apostas de Lotofacil do concurso 3758 (R$ 3,50 cada). Uma delas mede 2,66x - o pior lado da medicao.",
+   "Base inalterada: a API oficial em 10/08/2026 devolveu os mesmos concursos ja presentes (fechada em 09/08/2026)."
+  ],
+  "19.14": [
+   "Registradas 8 apostas simples de Mega-Sena (3040, 3041, 3042) a partir dos comprovantes oficiais em PDF.",
+   "Uma delas, 02 05 10 13 41 53 no concurso 3042, fez 4 acertos: R$ 706,56, com comprovante de pagamento de premio.",
+   "O comprovante de pagamento diz 'valor total liquido' e bate com o rateio publicado - prova documental da secao 17 (sem IR).",
+   "Placar passa a avisar que cobre apenas o que foi registrado; aposta feita no app e invisivel ate ser informada.",
+   "Bolao do 3042 reconferido com extrator independente (pdftotext): 1 pagina, 10 jogos, sem truncamento. O parser estava certo."
+  ],
+  "19.15": [
+   "Base ate 10/08/2026: lotofacil 3758, quina 7088, lotomania 2961, duplasena 2994, diadesorte 1268, supersete 884.",
+   "Lotofacil 3758 nao acumulou: 8 ganhadores de 15 acertos, R$ 530.611,74 cada.",
+   "As 3 apostas do Helio no 3758: 11, 9 e 9 acertos - R$ 7,00 de retorno sobre R$ 10,50.",
+   "historico_crivo regerado: 4.652 sorteios avaliados, 5 cruzaram 1,00.",
+   "Diario fora da amostra caiu para 10 de 19 (lotofacil 8/13, megasena 2/6) - empatado com o acaso, e dito assim na tela."
+  ],
+  "19.16": [
+   "ERRO CORRIGIDO: pick (quantas o sorteio tira) era usado como tamanho de aposta. Lotomania marca 50 e sorteia 20; Timemania marca 10 e sorteia 7.",
+   "Um bilhete de Lotomania com 15 acertos devolvia R$ 3.957.264,08 no lugar de R$ 12,19 - expandia em C(50,20) apostas simples.",
+   "Timemania com 7 acertos e faixa acumulada devolvia R$ 1.011.742,20 no lugar de zero.",
+   "Volante da Lotomania mirava 20 dezenas em Montar eu mesmo; agora mira 50. O gerador ja estava certo.",
+   "Novas funcoes tamanhoBase, apostaFixa e expandeEmSimples; aplicadas em volante, custo, validacao de registro e leitor de comprovante.",
+   "Registradas 4 apostas de Lotomania do concurso 2962 (dois pares espelho perfeitos, R$ 3,00 cada).",
+   "Nota da aposta espelho no volante: nao aumenta a chance (1 em 44, igual a dois bilhetes quaisquer), so anticorrelaciona."
+  ],
+  "19.17": [
+   "Mais 4 apostas de Lotomania no concurso 2962, transcritas de prints do app - dois pares espelho perfeitos (A-D e B-C).",
+   "A transcricao se validou sozinha: um numero lido errado quebraria a complementaridade dos pares.",
+   "O 2962 fica com 8 bilhetes, R$ 24,00, quatro pares espelho.",
+   "Chance de levar algum premio com os 8: 1 em 11 - identico a oito bilhetes quaisquer. Numero de SIMULACAO (400 mil sorteios), nao formula fechada.",
+   "Ressalvas gravadas na origem de cada registro: print e tela de carrinho (nao comprovante pago) e nao mostra o concurso (2962 assumido)."
+  ],
+  "19.17.1": [
+   "Concurso 2962 confirmado pelo Helio para as 4 apostas vindas de print; a ressalva de 'concurso assumido' esta fechada.",
+   "Permanece registrado que a origem dessas 4 e print de tela, nao comprovante em PDF."
+  ],
+  "19.17.2": [
+   "CORRECAO: as 4 apostas vindas de print sao do concurso 2964, nao 2962 - informado pelo Helio.",
+   "O 2962 fica com 4 bilhetes (R$ 12,00, com comprovante PDF) e o 2964 com 4 (R$ 12,00, de print).",
+   "Chance de algum premio com 4 bilhetes em dois pares espelho: 1 em 22, razao 0,998 contra quatro bilhetes quaisquer - indistinguivel de 1 no ruido da simulacao.",
+   "Licao registrada: campo que nao aparece no print deve ser perguntado, nao deduzido com ressalva."
+  ],
+  "19.18": [
+   "Base ate 16/08/2026: 29 concursos incorporados de uma vez, nas nove modalidades.",
+   "Mapeamento de faixas validado modalidade por modalidade contra o ultimo concurso ja armazenado antes de gravar.",
+   "Lotomania 2962 conferido: 13, 7, 12 e 8 acertos - os pares espelho somam 20 exatos. Sem premio.",
+   "historico_crivo regerado: 4.658 sorteios avaliados, 5 cruzaram 1,00.",
+   "Diario fora da amostra: 15 de 27 (lotofacil 12/18, megasena 3/9). Terceira leitura seguida em torno do acaso.",
+   "Registrado que o relogio do container estava 6 dias atrasado; a data veio da API da Caixa."
+  ],
+  "19.19": [
+   "Base ate 19/08/2026: 16 concursos novos em oito modalidades.",
+   "LACUNA: Super Sete travado em 886 (14/08) - a API oficial devolveu erro 500 em todas as tentativas.",
+   "Lotomania 2964 conferido: 9, 10, 10 e 11 acertos, pares somando 20. Sem premio.",
+   "Somando 2962 e 2964, os oito bilhetes ficaram entre 7 e 13 acertos - comportamento esperado, nao azar (E[acertos]=10).",
+   "historico_crivo regerado: 4.661 sorteios avaliados.",
+   "Diario fora da amostra: 18 de 31. Quarta leitura seguida em torno do acaso."
+  ],
+  "19.20": [
+   "Linha de Total no topo do grafico por modalidade: gasto, premio recebido, saldo e retorno.",
+   "Rodape equivalente na tabela, em <tfoot> para nao ser embaralhado pelo ordenador de colunas.",
+   "A linha do total nao tem barra de proposito - na mesma escala ela engoliria a comparacao entre modalidades.",
+   "Aviso de concentracao: quando o maior premio isolado responde por 60% ou mais do total recebido, a linha diz isso.",
+   "Hoje sao 92% (a quadra de R$ 706,56 na Mega 3042); sem a aposta, o retorno cai de 390% para 31%."
+  ],
+  "19.21": [
+   "ERRO GRAVE CORRIGIDO: o painel dava indice 12,67 e veredito APOSTAR para a Lotofacil da Independencia. O correto e 0,696.",
+   "Causa: a correcao de volume da v16 e pela sequencia de acumulacao, e concurso especial nao acumula - junta publico por ser evento.",
+   "Nova funcao multiplicadorEspecial: mede o multiplicador uma edicao por vez. Independencia 33,2x, Virada 37,4x, Sao Joao 35,2x, Primavera 1,4x, Natal 1,9x.",
+   "Acumulacao e especial usam Math.max, nunca o produto - as duas causas quase nunca coincidem.",
+   "Premio de gatilho da Independencia passa de R$ 17,3 milhoes para R$ 520,9 milhoes.",
+   "Base ate 08/09/2026: 91 concursos incorporados, incluindo os do Super Sete travados desde 14/08.",
+   "historico_crivo regerado: 4.674 sorteios avaliados.",
+   "Registradas 3 apostas de Quina do concurso 7113 (R$ 24,00)."
+  ],
+  "19.22": [
+   "Registradas 2 apostas de Lotofacil no concurso 3780 - a Lotofacil da Independencia, 15/09, R$ 300 milhoes.",
+   "Registradas 3 apostas de Quina no 7114, repetindo as dezenas do 7113 (repeticao confirmada pelo Helio).",
+   "Quina 7113 conferido: saiu 01 32 57 78 80, os tres jogos fizeram zero acertos.",
+   "Analise do rateio das duas da Independencia: aposta 1 mede 1,32x (contem a coluna 3 inteira) e aposta 2 mede 0,85x.",
+   "Traduzido para a escala de 2025 (54 ganhadores, R$ 231,9 mi): cota de ~R$ 3,25 mi contra ~R$ 5,03 mi. Mesma chance de ganhar.",
+   "Base ate 09/09/2026: quina 7113, lotomania 2973, duplasena 3006, diadesorte 1293, supersete 896, maismilionaria 388.",
+   "historico_crivo regerado: 4.675 sorteios avaliados."
+  ]
+ },
+ "apostasReais": [
+  {
+   "data": "27/07/2026",
+   "modalidade": "lotofacil",
+   "concurso": 3746,
+   "apostas": 2,
+   "premioEstimado": 9000000,
+   "indiceCrivo": 0.4871,
+   "percentilHistorico": 98.9,
+   "gatilho": 31739231,
+   "resultado": "sem premio",
+   "acertos": 8,
+   "dezenas": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    10,
+    11,
+    14,
+    16,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25
+   ],
+   "sorteio": [
+    1,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9,
+    10,
+    14,
+    15,
+    17,
+    18,
+    21,
+    22,
+    24
+   ],
+   "premio": 0
+  },
+  {
+   "data": "27/07/2026",
+   "modalidade": "quina",
+   "concurso": 7076,
+   "apostas": 1,
+   "custo": 3,
+   "dezenas": [
+    12,
+    15,
+    32,
+    65,
+    75
+   ],
+   "sorteio": [
+    1,
+    18,
+    22,
+    35,
+    41
+   ],
+   "acertos": 0,
+   "premio": 0,
+   "resultado": "sem premio"
+  },
+  {
+   "data": "01/08/2026",
+   "modalidade": "megasena",
+   "concurso": 3039,
+   "tipo": "bolao",
+   "apostas": 2,
+   "custo": 26.6,
+   "detalhe": "cota R$14 de 12 (4 jogos de 7) + cota R$12,60 de 10 (3 jogos de 7)",
+   "resultado": "sem premio",
+   "sorteio": [
+    14,
+    16,
+    21,
+    39,
+    53,
+    58
+   ],
+   "melhorAcerto": 1,
+   "premio": 0
+  },
+  {
+   "data": "07/08/2026",
+   "modalidade": "megasena",
+   "concurso": 3042,
+   "tipo": "bolao",
+   "cotas": "1/80",
+   "custo": 28.35,
+   "tarifa": 7.35,
+   "bilhete": 1680.0,
+   "resultado": "premiado",
+   "premioBilhete": 4239.36,
+   "premio": 52.99,
+   "saldo": 24.64,
+   "detalhe": "jogo 6 fez 4 acertos = 6 quadras"
+  },
+  {
+   "data": "10/08/2026",
+   "modalidade": "lotofacil",
+   "concurso": 3758,
+   "apostas": 3,
+   "custo": 10.5,
+   "origem": "print do CARRINHO do app da Caixa, nao comprovante pago - confirmar a compra",
+   "premioEstimado": 5000000,
+   "fatoresMedidos": [
+    0.824,
+    0.92,
+    2.664
+   ],
+   "resultado": "11, 9 e 9 acertos",
+   "nota": "a aposta de melhor perfil (0,82x) foi a unica premiada - coincidencia de um sorteio, nao sinal",
+   "premio": 7.0,
+   "sorteio": [
+    1,
+    3,
+    4,
+    5,
+    8,
+    9,
+    11,
+    12,
+    13,
+    14,
+    17,
+    18,
+    20,
+    24,
+    25
+   ]
+  },
+  {
+   "data": "04 a 07/08/2026",
+   "modalidade": "megasena",
+   "concursos": [
+    3040,
+    3041,
+    3042
+   ],
+   "apostas": 8,
+   "custo": 48.0,
+   "origem": "comprovantes oficiais em PDF, apostas pelo app (IOS), codigo E. Loterico 04.025304-0",
+   "resultado": "1 quadra",
+   "premio": 706.56,
+   "detalhe": "02 05 10 13 41 53 no 3042 fez 4 acertos; resgate em 09/08/2026 22:24, NSU 208855923",
+   "nota": "as oito medem 1,41x - nenhuma tem dezenas coladas, o lado que a multidao prefere"
+  },
+  {
+   "data": "11/08/2026",
+   "modalidade": "lotomania",
+   "concurso": 2962,
+   "apostas": 4,
+   "custo": 12.0,
+   "origem": "comprovantes oficiais em PDF, compra pelo app em 11/08/2026 16:29",
+   "detalhe": "13, 7, 12 e 8 acertos; os pares espelho somam 20 exatos nos dois casos",
+   "resultado": "sem premio",
+   "nota": "1 em 22 de levar algum premio; identico a quatro bilhetes quaisquer (simulacao)",
+   "premio": 0.0,
+   "sorteio": [
+    13,
+    15,
+    21,
+    29,
+    34,
+    35,
+    36,
+    42,
+    47,
+    56,
+    60,
+    64,
+    74,
+    75,
+    86,
+    89,
+    91,
+    95,
+    96,
+    99
+   ]
+  },
+  {
+   "data": "11/08/2026",
+   "modalidade": "lotomania",
+   "concurso": 2964,
+   "apostas": 4,
+   "custo": 12.0,
+   "origem": "prints da tela do app, 11/08/2026 19h23; concurso informado pelo Helio",
+   "detalhe": "9, 10, 10 e 11 acertos; pares espelho somam 20 exatos",
+   "resultado": "sem premio",
+   "premio": 0.0,
+   "sorteio": [
+    7,
+    13,
+    14,
+    16,
+    25,
+    29,
+    33,
+    40,
+    41,
+    44,
+    56,
+    60,
+    61,
+    64,
+    67,
+    68,
+    73,
+    77,
+    83,
+    85
+   ]
+  },
+  {
+   "data": "09/09/2026",
+   "modalidade": "quina",
+   "concurso": 7113,
+   "apostas": 3,
+   "custo": 24.0,
+   "origem": "print do carrinho do app da Caixa, 09/09/2026 13h42; concurso legivel no print",
+   "detalhe": "zero acertos nos tres jogos",
+   "resultado": "sem premio",
+   "ressalva": "origem e tela de carrinho, nao comprovante pago",
+   "premio": 0.0,
+   "sorteio": [
+    1,
+    32,
+    57,
+    78,
+    80
+   ]
+  },
+  {
+   "data": "10/09/2026",
+   "modalidade": "lotofacil",
+   "concurso": 3780,
+   "apostas": 2,
+   "custo": 7.0,
+   "origem": "print do carrinho do app da Caixa, 10/09/2026; concurso legivel no print",
+   "detalhe": "Lotofacil da Independencia, sorteio 15/09/2026, premio estimado R$ 300 milhoes",
+   "fatoresMedidos": [
+    1.319,
+    0.853
+   ],
+   "nota": "aposta 1 contem a coluna 3 inteira do volante (1,210x); na escala de 2025 a diferenca entre as duas e de ~R$ 1,8 milhao na cota",
+   "resultado": "aguardando sorteio",
+   "ressalva": "origem e tela de carrinho, nao comprovante pago"
+  },
+  {
+   "data": "10/09/2026",
+   "modalidade": "quina",
+   "concurso": 7114,
+   "apostas": 3,
+   "custo": 24.0,
+   "origem": "print do carrinho do app da Caixa, 10/09/2026",
+   "detalhe": "mesmas dezenas do 7113; repeticao confirmada pelo Helio, nao substituicao",
+   "resultado": "aguardando sorteio",
+   "ressalva": "origem e tela de carrinho, nao comprovante pago"
+  }
+ ],
+ "commit": "2c60742",
+ "commitCurto": "2c60742",
+ "carteira": {
+  "apostas": 46,
+  "gasto": 323.45,
+  "ganho": 770.05,
+  "saldo": 446.6,
+  "ressalva": "92% do ganho vem de um unico premio (R$ 706,56); sem ele o retorno e ~20%"
+ },
+ "diarioForaDaAmostra": {
+  "acertos": 18,
+  "concursos": 31,
+  "lotofacil": "14 de 21",
+  "megasena": "4 de 10",
+  "leitura": "quarta leitura seguida em torno do acaso: 6/9, 10/19, 15/27, 18/31"
+ },
+ "correcaoConcursoEspecial": {
+  "lotofacil_independencia": 33.2,
+  "megasena_virada": 37.4,
+  "quina_saojoao": 35.2,
+  "diadesorte_primavera": 1.4,
+  "timemania_natal": 1.9,
+  "nota": "multiplicador de volume medido nas 5 ultimas edicoes de cada especial; combinado com a curva de acumulacao por Math.max"
+ },
+ "testes": {
+  "regressao": "reg.js — 81 combinacoes (9 jogos x 9 abas) x 2 temas, erros de console, botoes mortos, overflow em 390px",
+  "carteira": "carteira.js — tabela de apostas, grafico e linha de total",
+  "comparar": "crivo.js — ranking das nove modalidades",
+  "plausibilidade": "plaus.js — 8 invariantes: A premio <= pago no concurso; B aposta que nao expande paga UMA faixa; C expansao limitada; D indice <= 2,00; E Super Sete por polinomio contra forca bruta; F1 premiacao bruta reconstruida = fatia legal; F2 frequencia teorica x observada; F3 aviso de mudanca de norma",
+  "controleNegativo": "controle.js — desfaz a v19.16 e a regra antiga do Super Sete, e exige que plaus.js reprove as duas",
+  "observacao": "a regressao testa se a tela PINTA; plaus.js testa se o NUMERO E POSSIVEL. Duas vezes um numero absurdo passou so pela primeira."
+ },
+ "auditoriaDoIndice": {
+  "metodo": "reimplementacao independente em Python a partir dos JSON, confrontada com o JS",
+  "resultado": "implementacao correta, especificacao com dois erros sistematicos, ambos otimistas",
+  "sensibilidadeAoVolume": {
+   "lotofacil": "+-8,7% para 30% de erro no volume (lambda 2,55)",
+   "megasena": "+-3,0%",
+   "demais": "menos de 1%"
+  },
+  "backtestDoVolume": "erro mediano absoluto de 17% a 41% por modalidade, previsto so com o passado"
+ },
+ "guardaDePublicacao": {
+  "script": "verificar_publicacao.py",
+  "marcas": 11,
+  "tamanhoMinimo": 3000000,
+  "porque": "em 23/09/2026 uma rotina semanal publicou dashboard/index.html por cima do painel e ninguem percebeu por um mes"
+ }
 }

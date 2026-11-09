@@ -2,7 +2,7 @@
 
 Leia este arquivo primeiro. Ele diz onde está a última versão de tudo — design e metodologia — e como retomar sem refazer nada. O estado exato da publicação está em `VERSAO.json`, gerado junto com cada versão.
 
-Última versão: **19.26**, 23/10/2026.
+Última versão: **19.29**, 09/11/2026.
 
 ---
 
@@ -878,3 +878,67 @@ relativo; em setembro, com prêmio pequeno, o MESMO deslocamento valia +21% na Q
 **Base:** Mega 3073, Lotofácil 3811, Quina 7149, Timemania 2458, Dia de Sorte 1329 (22/10);
 Lotomania 2990, Dupla-Sena 3023, +Milionária 400 (21/10); Super Sete travado no 909. 7 apostas novas
 (carrinho de 23/10, R$ 33,00).
+
+---
+
+## v19.27 — atualização semanal de dados (rotina agendada de 26/10/2026)
+
+Sem mudança de código: mesmo painel da v19.26, só dados. 32 concursos novos, verificação de
+integridade passou nas nove. Base até 24/10/2026 (Mega 3074, Lotofácil 3813, Quina 7151,
+Lotomania 2991, Dupla-Sena 3024, Timemania 2459, Dia de Sorte 1331, +Milionária 401).
+Super Sete segue travado no 909 — a API continua sem responder; o status ficou congelado com
+o valor antigo, sem estimativa inventada.
+
+`historico_crivo.json` regerado: 4.722 sorteios, 5 cruzaram 1,00, aferição de preço dentro de
+10% onde a amostra permite. Guarda de publicação OK; plaus.js PASSOU; controle.js 3× CONTROLE
+OK; regressão de 162 combinações limpa; carteira renderizando 46 apostas com o aviso de
+concentração intacto.
+
+**O número da semana: Mega-Sena acumulada em R$ 280 mi, estimativa R$ 300 mi para o 3075
+(26/10) — índice CRIVO 0,9617, percentil 99,8, segundo maior já observado na modalidade**
+(só a Mega da Virada 2015, 1,1549, fica acima). Continua abaixo de 1,00: retorno esperado
+negativo, como quase sempre.
+
+## v19.28 — atualização semanal de dados (rotina agendada de 02/11/2026)
+
+Sem mudança de código: mesmo painel da v19.26, só dados. 35 concursos novos, verificação de
+integridade passou nas nove. Base até 01/11/2026 (Mega 3080, Lotofácil 3819, Quina 7157,
+Lotomania 2994, Dupla-Sena 3027, Timemania 2462, Dia de Sorte 1337, +Milionária 403).
+Super Sete segue travado no 909 — a API continua devolvendo erro; status congelado, sem
+estimativa inventada.
+
+`historico_crivo.json` regerado: 4.728 sorteios, 5 cruzaram 1,00, aferição de preço dentro
+de 10% onde a amostra permite. Guarda de publicação OK; plaus.js PASSOU; controle.js 3×
+CONTROLE OK; regressão de 162 combinações limpa; carteira com 46 apostas e o aviso de
+concentração intacto. Commit `2c60742`, MD5 das três cópias conferido.
+
+**O desfecho da semana: a Mega-Sena acumulada que a rotina de 26/10 destacou (índice 0,9617)
+foi ganha no concurso 3077 (28/10) — um ganhador levou R$ 324.898.791,61.** O acumulado
+voltou a R$ 40,7 mi e o índice caiu para 0,2472. Registro útil para a tese: o pico de índice
+durou dois concursos e terminou com rateio para um único bilhete.
+
+**O número da semana: Lotofácil acumulada 3 concursos, estimativa R$ 9,5 mi para o 3820
+(03/11) — índice CRIVO 0,5971, percentil 99,7 da história da modalidade** (recorde 0,6930,
+Independência de 2013). Continua abaixo de 1,00: retorno esperado negativo, como quase sempre.
+
+
+## v19.29 — atualização semanal de dados (rotina agendada de 09/11/2026)
+
+Sem mudança de código: mesmo painel da v19.26, só dados. 27 concursos novos, verificação de
+integridade passou nas nove. Base até 08/11/2026 (Mega 3083, Lotofácil 3824, Quina 7162,
+Lotomania 2996, Dupla-Sena 3029, Timemania 2465, Dia de Sorte 1342, +Milionária 405).
+Super Sete segue travado no 909 — a API continua devolvendo 500; status congelado, sem
+estimativa inventada.
+
+`historico_crivo.json` regerado: 4.734 sorteios, 5 cruzaram 1,00, aferição de preço dentro
+de 10% onde a amostra permite. Guarda de publicação OK; plaus.js PASSOU; controle.js 3×
+CONTROLE OK; regressão de 162 combinações limpa; carteira com 46 apostas e o aviso de
+concentração intacto. MD5 das três cópias conferido.
+
+**O desfecho da semana: a Lotofácil acumulada que a rotina de 02/11 destacou (índice 0,5971)
+foi ganha no concurso 3820 (03/11) — 2 ganhadores, R$ 4.787.660,62 cada.** A Mega-Sena também pagou:
+1 ganhador levou R$ 59.526.903,72 no 3083 (08/11). Rodada fria: nenhum índice acima de 0,60.
+
+**O número da semana: Dia de Sorte, estimativa R$ 3,7 mi para o 1343 (09/11) — índice CRIVO
+0,5628, percentil 93,3 da história da modalidade** (recorde 0,8316). Único MELHOR RETORNO da
+matriz, e ainda assim bem abaixo de 1,00: retorno esperado negativo, como quase sempre.
